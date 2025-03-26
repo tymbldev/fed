@@ -1,0 +1,623 @@
+:root {
+  font-family: 'Arial', sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  
+  --primary-color: #42c8c0; /* Turquoise from the logo */
+  --primary-dark: #2a8a84;
+  --primary-light: #7ee5df;
+  --secondary-color: #1e2d3d; /* Dark blue-gray */
+  --text-color: rgba(0, 0, 0, 0.87);
+  --background-color: #ffffff;
+  --accent-color: #e0f7f5;
+  
+  color: var(--text-color);
+  background-color: var(--background-color);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  display: block;
+  min-width: 320px;
+  position: relative;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.main-content {
+  flex: 1;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Container styles */
+.container {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+@media (max-width: 1220px) {
+  .container {
+    max-width: 100%;
+  }
+}
+
+/* Header styles */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: var(--background-color);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 1rem 0;
+  width: 100%;
+}
+
+.header .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Logo styles */
+.logo a {
+  text-decoration: none;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.logo-icon {
+  width: 36px;
+  height: 36px;
+}
+
+.logo-text {
+  color: var(--secondary-color);
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+/* Nav styles */
+.nav ul {
+  display: flex;
+  list-style: none;
+  gap: 1.5rem;
+}
+
+.nav a {
+  color: var(--secondary-color);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.nav a:hover {
+  color: var(--primary-color);
+}
+
+/* Login button in header */
+.login-btn {
+  background: none;
+  border: none;
+  color: var(--secondary-color);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.login-btn:hover {
+  color: var(--primary-color);
+}
+
+/* Footer styles */
+.footer {
+  background-color: var(--secondary-color);
+  color: white;
+  padding: 1.5rem 0;
+  margin-top: auto;
+  width: 100%;
+}
+
+.footer .container {
+  text-align: center;
+}
+
+/* Page styles */
+.home-page, .job-listings-page, .referral-form-page, .profile-page, .not-found-page {
+  padding: 2rem 0;
+  width: 100%;
+}
+
+/* Button styles */
+.btn {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  font-size: 1rem;
+}
+
+.btn:hover {
+  background-color: var(--primary-dark);
+}
+
+/* Home page specific styles */
+.hero-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 4rem 1rem;
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.hero-section h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  color: var(--secondary-color);
+}
+
+.hero-section .highlight {
+  color: var(--primary-color);
+}
+
+.hero-section .tagline {
+  font-size: 1.25rem;
+  color: var(--secondary-color);
+  margin-bottom: 1.5rem;
+}
+
+.hero-section .description {
+  font-size: 1rem;
+  margin-bottom: 2rem;
+  color: var(--text-color);
+  line-height: 1.6;
+}
+
+.home-cta-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.home-btn {
+  padding: 0.8rem 1.5rem;
+  font-size: 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.home-btn.primary-btn {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+}
+
+.home-btn.primary-btn:hover {
+  background-color: var(--primary-dark);
+}
+
+.home-btn.secondary-btn {
+  background-color: transparent;
+  border: 2px solid var(--primary-color);
+  color: var(--primary-color);
+}
+
+.home-btn.secondary-btn:hover {
+  background-color: var(--accent-color);
+}
+
+@media (max-width: 480px) {
+  .hero-section {
+    padding: 2rem 1rem;
+  }
+  
+  .hero-section h1 {
+    font-size: 1.75rem;
+    line-height: 1.2;
+  }
+  
+  .hero-section .tagline {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .hero-section .description {
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .home-cta-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .home-cta-buttons .home-btn {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+  
+  /* Legacy selector - keeping for backward compatibility */
+  .cta-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .cta-buttons .btn {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+}
+
+/* Modal overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: flex-end;
+  align-items: stretch;
+  z-index: 9999;
+}
+
+/* Login modal */
+.login-modal {
+  background-color: white;
+  width: 450px;
+  max-width: 90%;
+  height: 100vh;
+  padding: 2rem;
+  box-shadow: -4px 0 10px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow-y: auto;
+  z-index: 10000;
+  transform: translateX(100%);
+}
+
+.login-modal.visible {
+  transform: translateX(0);
+  transition: transform 0.3s ease-out;
+}
+
+/* Close button */
+.close-button {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--secondary-color);
+}
+
+/* Login container */
+.login-container {
+  display: flex;
+  flex-direction: column;
+  padding-top: 2rem;
+}
+
+.login-container h1 {
+  font-size: 2rem;
+  color: var(--secondary-color);
+  margin-bottom: 0.5rem;
+}
+
+.register-link {
+  display: block;
+  margin-bottom: 1.5rem;
+  color: var(--primary-color);
+  text-decoration: none;
+  text-align: center;
+  font-size: 1rem;
+  cursor: pointer;
+  background: none;
+  border: none;
+  width: 100%;
+}
+
+.register-link:hover {
+  text-decoration: underline;
+}
+
+/* Input styles */
+.input-group {
+  margin-bottom: 1.5rem;
+  width: 100%;
+}
+
+.input-group label {
+  display: block;
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: var(--secondary-color);
+}
+
+.input-group input {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.input-group input::placeholder {
+  color: #aaa;
+}
+
+/* Password input with show/hide button */
+.password-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.show-password {
+  position: absolute;
+  right: 1rem;
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.forgot-link {
+  display: block;
+  text-align: right;
+  margin-top: 0.5rem;
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+/* Login button */
+.login-submit-btn {
+  width: 100%;
+  padding: 0.8rem;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  font-size: 1.1rem;
+  font-weight: 500;
+  cursor: pointer;
+  margin: 1rem 0 2rem;
+  transition: background-color 0.3s;
+}
+
+.login-submit-btn:hover {
+  background-color: var(--primary-dark);
+}
+
+/* Login alternatives */
+.login-alternative {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+/* Divider with text */
+.divider {
+  width: 100%;
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+  line-height: 0.1em;
+  margin: 1.5rem 0;
+}
+
+.divider span {
+  background: white;
+  padding: 0 10px;
+  color: #888;
+}
+
+/* LinkedIn sign in button */
+.linkedin-login-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0.8rem;
+  background-color: white;
+  color: #333;
+  border: 1px solid #ddd;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-top: 1.5rem;
+}
+
+.linkedin-login-btn:hover {
+  background-color: #f8f8f8;
+}
+
+.linkedin-icon {
+  margin-right: 0.8rem;
+}
+
+/* Placeholder page styles */
+.register-page, 
+.forgot-password-page {
+  padding: 4rem 0;
+}
+
+.placeholder-message {
+  margin-top: 2rem;
+  padding: 1rem;
+  background-color: var(--accent-color);
+  border-radius: 4px;
+  color: var(--primary-dark);
+  font-weight: 500;
+  text-align: center;
+}
+
+/* Mobile menu styles */
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.mobile-menu-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 30px;
+  height: 21px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.mobile-menu-toggle span {
+  width: 100%;
+  height: 3px;
+  background-color: var(--secondary-color);
+  border-radius: 3px;
+  transition: all 0.3s ease;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .header .container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .mobile-menu-toggle {
+    display: flex;
+  }
+  
+  .nav {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    width: 100%;
+  }
+  
+  .nav.nav-open {
+    max-height: 300px;
+  }
+  
+  .nav ul {
+    flex-direction: column;
+    padding: 1rem 0;
+    gap: 1rem;
+  }
+  
+  .hero-section h1 {
+    font-size: 2rem;
+  }
+  
+  .hero-section .tagline {
+    font-size: 1.1rem;
+  }
+  
+  .hero-section .description {
+    font-size: 0.95rem;
+  }
+  
+  .home-cta-buttons {
+    flex-direction: column;
+    width: 100%;
+    max-width: 300px;
+  }
+  
+  .home-btn {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+  
+  .logo-text {
+    font-size: 1.2rem;
+  }
+
+  .header-top {
+    padding: 0.5rem 0;
+  }
+
+  .header .container {
+    padding: 0 1rem;
+  }
+
+  .nav ul li {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 0.5rem 0;
+  }
+
+  .nav ul li:last-child {
+    border-bottom: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .hero-section {
+    padding: 2rem 1rem;
+  }
+  
+  .hero-section h1 {
+    font-size: 1.75rem;
+  }
+  
+  .login-modal {
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  .input-group input,
+  .login-submit-btn,
+  .linkedin-login-btn {
+    font-size: 16px; /* Prevents zoom on mobile */
+    padding: 12px;
+  }
+  
+  .home-page {
+    padding: 1rem 0;
+  }
+} 
