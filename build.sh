@@ -19,7 +19,16 @@ npm run build
 docker login || { echo "❌ Docker login failed!"; exit 1; }
 
 # Step 4: Build the Docker image
-docker build -t "$FULL_IMAGE_TAG" -t "$LATEST_TAG" .
+#docker build -t "$FULL_IMAGE_TAG" -t "$LATEST_TAG" .
+
+
+if [ "$1" = "ec2" ]; then
+  echo "🛠 Building for EC2 (amd64 platform)..."
+  docker build --platform=linux/amd64 -t "$FULL_IMAGE_TAG" -t "$LATEST_TAG" .
+else
+  echo "🛠 Building with default platform..."
+  docker build -t "$FULL_IMAGE_TAG" -t "$LATEST_TAG" .
+fi
 
 # Step 5: Push both versioned and latest tags
 docker push "$FULL_IMAGE_TAG"
