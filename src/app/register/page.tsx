@@ -2,17 +2,192 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import InputField from '../components/fields/InputField';
+import SelectField from '../components/fields/SelectField';
+import PasswordField from '../components/fields/PasswordField';
+import { registerConfig } from '../config/registerConfig';
+import { registerUser, updateProfile } from '../services/api';
+import { toast } from 'sonner';
 
 export default function Register() {
   const [currentStep, setCurrentStep] = useState(1);
-  const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState<{ [key: string]: string }>({});
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { fields, options, styles, steps, errorMessages } = registerConfig;
 
-  const nextStep = () => {
-    setCurrentStep(currentStep + 1);
+  const getFieldsForStep = (step: number): string[] => {
+    switch (step) {
+      case 1:
+        return ['email', 'password'];
+      case 2:
+        return ['firstName', 'lastName', 'role'];
+      case 3:
+        return ['phone', 'company', 'designation'];
+      case 4:
+        return ['department', 'city', 'country', 'zipCode'];
+      default:
+        return [];
+    }
+  };
+
+  const validateStep = (step: number) => {
+    const newErrors: { [key: string]: string } = {};
+    const stepFields = getFieldsForStep(step);
+
+    stepFields.forEach(fieldName => {
+      const field = fields[fieldName as keyof typeof fields];
+      const value = formData[fieldName]?.trim();
+
+      // Check required fields
+      if ('required' in field && field.required && !value) {
+        const errorMessage = errorMessages[fieldName as keyof typeof errorMessages];
+        newErrors[fieldName] = typeof errorMessage === 'object' && 'required' in errorMessage
+          ? errorMessage.required
+          : errorMessages.required;
+        return; // Skip further validation if field is empty
+      }
+
+      // Only validate if there's a value
+      if (value) {
+        switch (fieldName) {
+          case 'email':
+            if (!/\S+@\S+\.\S+/.test(value)) {
+              newErrors[fieldName] = errorMessages.email.format;
+            }
+            break;
+
+          case 'password':
+            if (value.length < 6) {
+              newErrors[fieldName] = errorMessages.password.minLength;
+            } else {
+              delete newErrors[fieldName];
+            }
+            break;
+
+          case 'phone':
+            if (!/^\+?[\d\s-]{10,}$/.test(value)) {
+              newErrors[fieldName] = errorMessages.phone.format;
+            }
+            break;
+
+          case 'zipCode':
+            if (!/^\d{5}(-\d{4})?$/.test(value)) {
+              newErrors[fieldName] = errorMessages.zipCode.format;
+            }
+            break;
+        }
+      }
+    });
+
+    return newErrors; // Return errors instead of setting them directly
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+
+    // Mark field as touched
+    setTouched(prev => ({
+      ...prev,
+      [name]: true
+    }));
+  };
+
+  const handleBlur = (name: string) => {
+    setTouched(prev => ({
+      ...prev,
+      [name]: true
+    }));
+
+    // Validate on blur
+    const stepErrors = validateStep(currentStep);
+    setErrors(prev => ({
+      ...prev,
+      [name]: stepErrors[name]
+    }));
+  };
+
+  const handleStep1Submit = async () => {
+    try {
+      setIsSubmitting(true);
+      await registerUser(formData['email'], formData['password']);
+      setCurrentStep(2);
+    } catch (error) {
+      toast.error('Registration failed. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleProfileUpdate = async (step: number) => {
+    try {
+      setIsSubmitting(true);
+      const profileData: any = {};
+
+      // Add fields based on current step
+      if (step >= 2) {
+        profileData.firstName = formData['firstName'];
+        profileData.lastName = formData['lastName'];
+        profileData.role = formData['role'];
+      }
+      if (step >= 3) {
+        profileData.phoneNumber = formData['phone'];
+        profileData.company = formData['company'];
+        profileData.designationId = parseInt(formData['designation']);
+      }
+      if (step >= 4) {
+        profileData.departmentId = parseInt(formData['department']);
+        profileData.cityId = parseInt(formData['city']);
+        profileData.countryId = parseInt(formData['country']);
+        profileData.yearsOfExperience = 0;
+        profileData.skills = [];
+      }
+
+      await updateProfile(profileData);
+    } catch (error) {
+      setErrors({ general: 'Profile update failed. Please try again.' });
+      throw error;
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const nextStep = async () => {
+    const newErrors = validateStep(currentStep);
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length === 0) {
+      try {
+        if (currentStep === 1) {
+          await handleStep1Submit();
+        } else {
+          await handleProfileUpdate(currentStep);
+          setCurrentStep(currentStep + 1);
+        }
+      } catch (error) {
+        // Error is already handled in the respective functions
+      }
+    }
   };
 
   const prevStep = () => {
     setCurrentStep(currentStep - 1);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const newErrors = validateStep(currentStep);
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length === 0) {
+      console.log('Form submitted:', formData);
+      // Handle form submission
+    }
   };
 
   const renderStep = () => {
@@ -20,61 +195,28 @@ export default function Register() {
       case 1:
         return (
           <div className="space-y-6">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                className="mt-1 block w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a73e8]"
-                placeholder="Enter your email"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  id="password"
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  autoComplete="new-password"
-                  required
-                  className="mt-1 block w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a73e8]"
-                  placeholder="Create a password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                >
-                  {showPassword ? (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                  ) : (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                    </svg>
-                  )}
-                </button>
-              </div>
-            </div>
-
+            <InputField
+              {...fields.email}
+              value={formData['email'] || ''}
+              onChange={handleInputChange}
+              onBlur={() => handleBlur('email')}
+              error={touched['email'] ? errors['email'] : undefined}
+            />
+            <PasswordField
+              {...fields.password}
+              value={formData['password'] || ''}
+              onChange={handleInputChange}
+              onBlur={() => handleBlur('password')}
+              error={touched['password'] ? errors['password'] : undefined}
+            />
             <div className="flex justify-end">
               <button
                 type="button"
                 onClick={nextStep}
-                className="px-6 py-2 bg-[#1a73e8] text-white rounded-lg hover:bg-[#1a73e8]/90 transition duration-200"
+                className={styles.button.primary}
+                disabled={isSubmitting}
               >
-                Next
+                {isSubmitting ? 'Processing...' : 'Next'}
               </button>
             </div>
           </div>
@@ -83,65 +225,43 @@ export default function Register() {
       case 2:
         return (
           <div className="space-y-6">
-            <div>
-              <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
-                First Name
-              </label>
-              <input
-                id="firstName"
-                name="firstName"
-                type="text"
-                required
-                className="mt-1 block w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a73e8]"
-                placeholder="Enter your first name"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
-                Last Name
-              </label>
-              <input
-                id="lastName"
-                name="lastName"
-                type="text"
-                required
-                className="mt-1 block w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a73e8]"
-                placeholder="Enter your last name"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="role" className="block text-sm font-medium text-gray-700">
-                Role
-              </label>
-              <select
-                id="role"
-                name="role"
-                required
-                className="mt-1 block w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a73e8]"
-              >
-                <option value="">Select your role</option>
-                <option value="job-seeker">Job Seeker</option>
-                <option value="employer">Employer</option>
-                <option value="recruiter">Recruiter</option>
-              </select>
-            </div>
-
+            <InputField
+              {...fields.firstName}
+              value={formData['firstName'] || ''}
+              onChange={handleInputChange}
+              onBlur={() => handleBlur('firstName')}
+              error={touched['firstName'] ? errors['firstName'] : undefined}
+            />
+            <InputField
+              {...fields.lastName}
+              value={formData['lastName'] || ''}
+              onChange={handleInputChange}
+              onBlur={() => handleBlur('lastName')}
+              error={touched['lastName'] ? errors['lastName'] : undefined}
+            />
+            <SelectField
+              {...fields.role}
+              options={options.role}
+              value={formData['role'] || ''}
+              onChange={handleInputChange}
+              onBlur={() => handleBlur('role')}
+              error={touched['role'] ? errors['role'] : undefined}
+            />
             <div className="flex justify-between">
               <button
                 type="button"
                 onClick={prevStep}
-                className="px-6 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition duration-200"
+                className={styles.button.secondary}
               >
                 Back
               </button>
               <button
                 type="button"
                 onClick={nextStep}
-                className="px-6 py-2 bg-[#1a73e8] text-white rounded-lg hover:bg-[#1a73e8]/90 transition duration-200"
+                className={styles.button.primary}
+                disabled={isSubmitting}
               >
-                Next
+                {isSubmitting ? 'Processing...' : 'Next'}
               </button>
             </div>
           </div>
@@ -150,64 +270,43 @@ export default function Register() {
       case 3:
         return (
           <div className="space-y-6">
-            <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-                Phone Number
-              </label>
-              <input
-                id="phone"
-                name="phone"
-                type="tel"
-                className="mt-1 block w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a73e8]"
-                placeholder="Enter your phone number"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="company" className="block text-sm font-medium text-gray-700">
-                Company
-              </label>
-              <input
-                id="company"
-                name="company"
-                type="text"
-                className="mt-1 block w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a73e8]"
-                placeholder="Enter your company name"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="designation" className="block text-sm font-medium text-gray-700">
-                Designation
-              </label>
-              <select
-                id="designation"
-                name="designation"
-                className="mt-1 block w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a73e8]"
-              >
-                <option value="">Select your designation</option>
-                <option value="software-engineer">Software Engineer</option>
-                <option value="product-manager">Product Manager</option>
-                <option value="designer">Designer</option>
-                <option value="marketing">Marketing</option>
-                <option value="sales">Sales</option>
-              </select>
-            </div>
-
+            <InputField
+              {...fields.phone}
+              value={formData['phone'] || ''}
+              onChange={handleInputChange}
+              onBlur={() => handleBlur('phone')}
+              error={touched['phone'] ? errors['phone'] : undefined}
+            />
+            <InputField
+              {...fields.company}
+              value={formData['company'] || ''}
+              onChange={handleInputChange}
+              onBlur={() => handleBlur('company')}
+              error={touched['company'] ? errors['company'] : undefined}
+            />
+            <SelectField
+              {...fields.designation}
+              options={options.designation}
+              value={formData['designation'] || ''}
+              onChange={handleInputChange}
+              onBlur={() => handleBlur('designation')}
+              error={touched['designation'] ? errors['designation'] : undefined}
+            />
             <div className="flex justify-between">
               <button
                 type="button"
                 onClick={prevStep}
-                className="px-6 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition duration-200"
+                className={styles.button.secondary}
               >
                 Back
               </button>
               <button
                 type="button"
                 onClick={nextStep}
-                className="px-6 py-2 bg-[#1a73e8] text-white rounded-lg hover:bg-[#1a73e8]/90 transition duration-200"
+                className={styles.button.primary}
+                disabled={isSubmitting}
               >
-                Next
+                {isSubmitting ? 'Processing...' : 'Next'}
               </button>
             </div>
           </div>
@@ -216,87 +315,45 @@ export default function Register() {
       case 4:
         return (
           <div className="space-y-6">
-            <div>
-              <label htmlFor="department" className="block text-sm font-medium text-gray-700">
-                Department
-              </label>
-              <select
-                id="department"
-                name="department"
-                className="mt-1 block w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a73e8]"
-              >
-                <option value="">Select your department</option>
-                <option value="engineering">Engineering</option>
-                <option value="product">Product</option>
-                <option value="design">Design</option>
-                <option value="marketing">Marketing</option>
-                <option value="sales">Sales</option>
-                <option value="hr">HR</option>
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="city" className="block text-sm font-medium text-gray-700">
-                City
-              </label>
-              <select
-                id="city"
-                name="city"
-                className="mt-1 block w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a73e8]"
-              >
-                <option value="">Select your city</option>
-                <option value="san-francisco">San Francisco</option>
-                <option value="new-york">New York</option>
-                <option value="seattle">Seattle</option>
-                <option value="boston">Boston</option>
-                <option value="austin">Austin</option>
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="country" className="block text-sm font-medium text-gray-700">
-                Country
-              </label>
-              <select
-                id="country"
-                name="country"
-                className="mt-1 block w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a73e8]"
-              >
-                <option value="">Select your country</option>
-                <option value="united-states">United States</option>
-                <option value="canada">Canada</option>
-                <option value="united-kingdom">United Kingdom</option>
-                <option value="australia">Australia</option>
-                <option value="india">India</option>
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="zipCode" className="block text-sm font-medium text-gray-700">
-                ZIP Code
-              </label>
-              <input
-                id="zipCode"
-                name="zipCode"
-                type="text"
-                className="mt-1 block w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a73e8]"
-                placeholder="Enter your ZIP code"
-              />
-            </div>
+            <SelectField
+              {...fields.department}
+              options={options.department}
+              value={formData['department'] || ''}
+              onChange={handleInputChange}
+              onBlur={() => handleBlur('department')}
+              error={touched['department'] ? errors['department'] : undefined}
+            />
+            <SelectField
+              {...fields.city}
+              options={options.city}
+              value={formData['city'] || ''}
+              onChange={handleInputChange}
+              onBlur={() => handleBlur('city')}
+              error={touched['city'] ? errors['city'] : undefined}
+            />
+            <SelectField
+              {...fields.country}
+              options={options.country}
+              value={formData['country'] || ''}
+              onChange={handleInputChange}
+              onBlur={() => handleBlur('country')}
+              error={touched['country'] ? errors['country'] : undefined}
+            />
 
             <div className="flex justify-between">
               <button
                 type="button"
                 onClick={prevStep}
-                className="px-6 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition duration-200"
+                className={styles.button.secondary}
               >
                 Back
               </button>
               <button
                 type="submit"
-                className="px-6 py-2 bg-[#1a73e8] text-white rounded-lg hover:bg-[#1a73e8]/90 transition duration-200"
+                className={styles.button.primary}
+                disabled={isSubmitting}
               >
-                Create Account
+                {isSubmitting ? 'Processing...' : 'Create Account'}
               </button>
             </div>
           </div>
@@ -310,33 +367,29 @@ export default function Register() {
   return (
     <main className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
-        {/* Header */}
         <div className="text-center">
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-[#1a73e8] to-[#34c759] text-transparent bg-clip-text">
+          <h2 className={`text-3xl font-bold ${styles.heading.gradient}`}>
             Create Account
           </h2>
           <p className="mt-2 text-gray-600">
-            Step {currentStep} of 4
+            Step {currentStep} of {steps.total} - {steps.labels[currentStep as keyof typeof steps.labels]}
           </p>
         </div>
 
-        {/* Progress Bar */}
         <div className="relative">
-          <div className="absolute top-0 left-0 h-1 bg-gray-200 w-full rounded-full"></div>
+          <div className={`absolute top-0 left-0 h-1 ${styles.progressBar.container} w-full rounded-full`}></div>
           <div
-            className="absolute top-0 left-0 h-1 bg-gradient-to-r from-[#1a73e8] to-[#34c759] rounded-full transition-all duration-300"
-            style={{ width: `${(currentStep / 4) * 100}%` }}
+            className={`absolute top-0 left-0 h-1 ${styles.progressBar.background} rounded-full transition-all duration-300`}
+            style={{ width: `${(currentStep / steps.total) * 100}%` }}
           ></div>
         </div>
 
-        {/* Form */}
         <div className="bg-white p-8 rounded-lg shadow-sm">
-          <form className="space-y-6">
+          <form className="space-y-6" onSubmit={handleSubmit}>
             {renderStep()}
           </form>
         </div>
 
-        {/* Login Link */}
         <div className="text-center">
           <p className="text-sm text-gray-600">
             Already have an account?{' '}
@@ -348,4 +401,4 @@ export default function Register() {
       </div>
     </main>
   );
-} 
+}
