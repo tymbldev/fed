@@ -1,404 +1,308 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
-import InputField from '../components/fields/InputField';
-import SelectField from '../components/fields/SelectField';
-import PasswordField from '../components/fields/PasswordField';
-import { registerConfig } from '../config/registerConfig';
 import { registerUser, updateProfile } from '../services/api';
 import { toast } from 'sonner';
+import Email from '../components/fields/Email';
+import Password from '../components/fields/Password';
+import FirstName from '../components/fields/FirstName';
+import LastName from '../components/fields/LastName';
+import Phone from '../components/fields/Phone';
+import Location from '../components/fields/Location';
+import Department from '../components/fields/Department';
+import Company from '../components/fields/Company';
+import Designation from '../components/fields/Designation';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+
+type FormData = { [key: string]: string };
+type FormErrors = { [key: string]: string };
+type FormTouched = { [key: string]: boolean };
+
+const validateField = (name: string, value: string): string | undefined => {
+  if (!value) {
+    return 'This field is required';
+  }
+  switch (name) {
+    case 'email':
+      if (!/\S+@\S+\.\S+/.test(value)) {
+        return 'Please enter a valid email address';
+      }
+      break;
+    case 'password':
+      if (value.length < 6) {
+        return 'Password must be at least 6 characters long';
+      }
+      break;
+    case 'phoneNumber':
+      if (!/^\+?[\d\s-]{10,}$/.test(value)) {
+        return 'Please enter a valid phone number';
+      }
+      break;
+  }
+  return undefined;
+};
 
 export default function Register() {
-  const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState<{ [key: string]: string }>({});
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Initialize step from URL parameters
+  const [currentStep, setCurrentStep] = useState(() => {
+    const step = searchParams.get('step');
+    return step ? Math.min(Math.max(1, parseInt(step)), 4) : 1;
+  });
+
+  const [formData, setFormData] = useState<FormData>({});
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [touched, setTouched] = useState<FormTouched>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { fields, options, styles, steps, errorMessages } = registerConfig;
 
-  const getFieldsForStep = (step: number): string[] => {
-    switch (step) {
-      case 1:
-        return ['email', 'password'];
-      case 2:
-        return ['firstName', 'lastName', 'role'];
-      case 3:
-        return ['phone', 'company', 'designation'];
-      case 4:
-        return ['department', 'city', 'country', 'zipCode'];
-      default:
-        return [];
-    }
-  };
-
-  const validateStep = (step: number) => {
-    const newErrors: { [key: string]: string } = {};
-    const stepFields = getFieldsForStep(step);
-
-    stepFields.forEach(fieldName => {
-      const field = fields[fieldName as keyof typeof fields];
-      const value = formData[fieldName]?.trim();
-
-      // Check required fields
-      if ('required' in field && field.required && !value) {
-        const errorMessage = errorMessages[fieldName as keyof typeof errorMessages];
-        newErrors[fieldName] = typeof errorMessage === 'object' && 'required' in errorMessage
-          ? errorMessage.required
-          : errorMessages.required;
-        return; // Skip further validation if field is empty
-      }
-
-      // Only validate if there's a value
-      if (value) {
-        switch (fieldName) {
-          case 'email':
-            if (!/\S+@\S+\.\S+/.test(value)) {
-              newErrors[fieldName] = errorMessages.email.format;
-            }
-            break;
-
-          case 'password':
-            if (value.length < 6) {
-              newErrors[fieldName] = errorMessages.password.minLength;
-            } else {
-              delete newErrors[fieldName];
-            }
-            break;
-
-          case 'phone':
-            if (!/^\+?[\d\s-]{10,}$/.test(value)) {
-              newErrors[fieldName] = errorMessages.phone.format;
-            }
-            break;
-
-          case 'zipCode':
-            if (!/^\d{5}(-\d{4})?$/.test(value)) {
-              newErrors[fieldName] = errorMessages.zipCode.format;
-            }
-            break;
-        }
-      }
-    });
-
-    return newErrors; // Return errors instead of setting them directly
+  // Update URL with only step number
+  const updateStepInUrl = (step: number) => {
+    const params = new URLSearchParams();
+    params.set('step', step.toString());
+    window.history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
 
-    // Mark field as touched
-    setTouched(prev => ({
-      ...prev,
-      [name]: true
-    }));
-  };
-
-  const handleBlur = (name: string) => {
-    setTouched(prev => ({
-      ...prev,
-      [name]: true
-    }));
-
-    // Validate on blur
-    const stepErrors = validateStep(currentStep);
-    setErrors(prev => ({
-      ...prev,
-      [name]: stepErrors[name]
-    }));
-  };
-
-  const handleStep1Submit = async () => {
-    try {
-      setIsSubmitting(true);
-      await registerUser(formData['email'], formData['password']);
-      setCurrentStep(2);
-    } catch (error) {
-      toast.error('Registration failed. Please try again.');
-    } finally {
-      setIsSubmitting(false);
+    if (errors[name]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
     }
   };
 
-  const handleProfileUpdate = async (step: number) => {
-    try {
-      setIsSubmitting(true);
-      const profileData: any = {};
-
-      // Add fields based on current step
-      if (step >= 2) {
-        profileData.firstName = formData['firstName'];
-        profileData.lastName = formData['lastName'];
-        profileData.role = formData['role'];
-      }
-      if (step >= 3) {
-        profileData.phoneNumber = formData['phone'];
-        profileData.company = formData['company'];
-        profileData.designationId = parseInt(formData['designation']);
-      }
-      if (step >= 4) {
-        profileData.departmentId = parseInt(formData['department']);
-        profileData.cityId = parseInt(formData['city']);
-        profileData.countryId = parseInt(formData['country']);
-        profileData.yearsOfExperience = 0;
-        profileData.skills = [];
-      }
-
-      await updateProfile(profileData);
-    } catch (error) {
-      setErrors({ general: 'Profile update failed. Please try again.' });
-      throw error;
-    } finally {
-      setIsSubmitting(false);
+  const handleBlur = (field: string) => {
+    setTouched(prev => ({ ...prev, [field]: true }));
+    const value = formData[field] || '';
+    const error = validateField(field, value);
+    if (error) {
+      setErrors(prev => ({ ...prev, [field]: error }));
     }
   };
 
-  const nextStep = async () => {
-    const newErrors = validateStep(currentStep);
-    setErrors(newErrors);
-
-    if (Object.keys(newErrors).length === 0) {
-      try {
-        if (currentStep === 1) {
-          await handleStep1Submit();
-        } else {
-          await handleProfileUpdate(currentStep);
-          setCurrentStep(currentStep + 1);
-        }
-      } catch (error) {
-        // Error is already handled in the respective functions
-      }
-    }
-  };
-
-  const prevStep = () => {
-    setCurrentStep(currentStep - 1);
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleStepSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newErrors = validateStep(currentStep);
-    setErrors(newErrors);
+    setIsSubmitting(true);
 
-    if (Object.keys(newErrors).length === 0) {
-      console.log('Form submitted:', formData);
-      // Handle form submission
+    try {
+      // Define fields to validate for each step
+      const stepFields = {
+        1: ['email', 'password'],
+        2: ['firstName', 'lastName'],
+        3: ['phoneNumber', 'country', 'state', 'city'],
+        4: ['department', 'company', 'designation']
+      };
+
+      // Validate fields for the current step
+      const currentStepFields = stepFields[currentStep as keyof typeof stepFields] || [];
+      const stepErrors: FormErrors = {};
+      let hasErrors = false;
+
+      currentStepFields.forEach(field => {
+        const error = validateField(field, formData[field] || '');
+        if (error) {
+          stepErrors[field] = error;
+          hasErrors = true;
+        }
+      });
+
+      if (hasErrors) {
+        setErrors(prev => ({ ...prev, ...stepErrors }));
+        // Mark all fields as touched to show errors
+        const touchedFields = currentStepFields.reduce((acc, field) => ({
+          ...acc,
+          [field]: true
+        }), {});
+        setTouched(prev => ({ ...prev, ...touchedFields }));
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (currentStep === 1) {
+        const { email, password } = formData;
+        await registerUser(email, password);
+        toast.success('Account created successfully!');
+        const nextStep = 2;
+        setCurrentStep(nextStep);
+        updateStepInUrl(nextStep);
+      } else {
+        const profileData = { ...formData };
+        delete profileData.password; // Remove password from profile update
+        await updateProfile(profileData);
+
+        if (currentStep === 4) {
+          toast.success('Profile completed successfully!');
+          router.push('/profile');
+        } else {
+          toast.success('Information saved successfully!');
+          const nextStep = currentStep + 1;
+          setCurrentStep(nextStep);
+          updateStepInUrl(nextStep);
+        }
+      }
+    } catch (err) {
+      console.error('Operation failed:', err);
+      toast.error(currentStep === 1 ? 'Registration failed. Please try again.' : 'Failed to update profile. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const renderStep = () => {
+  const handlePrevStep = () => {
+    const prevStep = currentStep - 1;
+    setCurrentStep(prevStep);
+    updateStepInUrl(prevStep);
+  };
+
+  const renderStepContent = () => {
     switch (currentStep) {
       case 1:
         return (
           <div className="space-y-6">
-            <InputField
-              {...fields.email}
-              value={formData['email'] || ''}
-              onChange={handleInputChange}
-              onBlur={() => handleBlur('email')}
-              error={touched['email'] ? errors['email'] : undefined}
+            <Email
+              formData={formData}
+              errors={errors}
+              touched={touched}
+              onInputChange={handleInputChange}
+              onBlur={handleBlur}
             />
-            <PasswordField
-              {...fields.password}
-              value={formData['password'] || ''}
-              onChange={handleInputChange}
-              onBlur={() => handleBlur('password')}
-              error={touched['password'] ? errors['password'] : undefined}
+            <Password
+              formData={formData}
+              errors={errors}
+              touched={touched}
+              onInputChange={handleInputChange}
+              onBlur={handleBlur}
             />
-            <div className="flex justify-end">
-              <button
-                type="button"
-                onClick={nextStep}
-                className={styles.button.primary}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'Processing...' : 'Next'}
-              </button>
-            </div>
           </div>
         );
-
       case 2:
         return (
           <div className="space-y-6">
-            <InputField
-              {...fields.firstName}
-              value={formData['firstName'] || ''}
-              onChange={handleInputChange}
-              onBlur={() => handleBlur('firstName')}
-              error={touched['firstName'] ? errors['firstName'] : undefined}
+            <FirstName
+              formData={formData}
+              errors={errors}
+              touched={touched}
+              onInputChange={handleInputChange}
+              onBlur={handleBlur}
             />
-            <InputField
-              {...fields.lastName}
-              value={formData['lastName'] || ''}
-              onChange={handleInputChange}
-              onBlur={() => handleBlur('lastName')}
-              error={touched['lastName'] ? errors['lastName'] : undefined}
+            <LastName
+              formData={formData}
+              errors={errors}
+              touched={touched}
+              onInputChange={handleInputChange}
+              onBlur={handleBlur}
             />
-            <SelectField
-              {...fields.role}
-              options={options.role}
-              value={formData['role'] || ''}
-              onChange={handleInputChange}
-              onBlur={() => handleBlur('role')}
-              error={touched['role'] ? errors['role'] : undefined}
-            />
-            <div className="flex justify-between">
-              <button
-                type="button"
-                onClick={prevStep}
-                className={styles.button.secondary}
-              >
-                Back
-              </button>
-              <button
-                type="button"
-                onClick={nextStep}
-                className={styles.button.primary}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'Processing...' : 'Next'}
-              </button>
-            </div>
           </div>
         );
-
       case 3:
         return (
           <div className="space-y-6">
-            <InputField
-              {...fields.phone}
-              value={formData['phone'] || ''}
-              onChange={handleInputChange}
-              onBlur={() => handleBlur('phone')}
-              error={touched['phone'] ? errors['phone'] : undefined}
+            <Phone
+              formData={formData}
+              errors={errors}
+              touched={touched}
+              onInputChange={handleInputChange}
+              onBlur={handleBlur}
             />
-            <InputField
-              {...fields.company}
-              value={formData['company'] || ''}
-              onChange={handleInputChange}
-              onBlur={() => handleBlur('company')}
-              error={touched['company'] ? errors['company'] : undefined}
+            <Location
+              formData={formData}
+              errors={errors}
+              touched={touched}
+              onInputChange={handleInputChange}
+              onBlur={handleBlur}
             />
-            <SelectField
-              {...fields.designation}
-              options={options.designation}
-              value={formData['designation'] || ''}
-              onChange={handleInputChange}
-              onBlur={() => handleBlur('designation')}
-              error={touched['designation'] ? errors['designation'] : undefined}
-            />
-            <div className="flex justify-between">
-              <button
-                type="button"
-                onClick={prevStep}
-                className={styles.button.secondary}
-              >
-                Back
-              </button>
-              <button
-                type="button"
-                onClick={nextStep}
-                className={styles.button.primary}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'Processing...' : 'Next'}
-              </button>
-            </div>
           </div>
         );
-
       case 4:
         return (
           <div className="space-y-6">
-            <SelectField
-              {...fields.department}
-              options={options.department}
-              value={formData['department'] || ''}
-              onChange={handleInputChange}
-              onBlur={() => handleBlur('department')}
-              error={touched['department'] ? errors['department'] : undefined}
+            <Department
+              formData={formData}
+              errors={errors}
+              touched={touched}
+              onInputChange={handleInputChange}
+              onBlur={handleBlur}
             />
-            <SelectField
-              {...fields.city}
-              options={options.city}
-              value={formData['city'] || ''}
-              onChange={handleInputChange}
-              onBlur={() => handleBlur('city')}
-              error={touched['city'] ? errors['city'] : undefined}
+            <Company
+              formData={formData}
+              errors={errors}
+              touched={touched}
+              onInputChange={handleInputChange}
+              onBlur={handleBlur}
             />
-            <SelectField
-              {...fields.country}
-              options={options.country}
-              value={formData['country'] || ''}
-              onChange={handleInputChange}
-              onBlur={() => handleBlur('country')}
-              error={touched['country'] ? errors['country'] : undefined}
+            <Designation
+              formData={formData}
+              errors={errors}
+              touched={touched}
+              onInputChange={handleInputChange}
+              onBlur={handleBlur}
             />
-
-            <div className="flex justify-between">
-              <button
-                type="button"
-                onClick={prevStep}
-                className={styles.button.secondary}
-              >
-                Back
-              </button>
-              <button
-                type="submit"
-                className={styles.button.primary}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'Processing...' : 'Create Account'}
-              </button>
-            </div>
           </div>
         );
-
       default:
         return null;
     }
   };
 
   return (
-    <main className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
-          <h2 className={`text-3xl font-bold ${styles.heading.gradient}`}>
-            Create Account
-          </h2>
-          <p className="mt-2 text-gray-600">
-            Step {currentStep} of {steps.total} - {steps.labels[currentStep as keyof typeof steps.labels]}
-          </p>
-        </div>
+    <div className="max-w-md mx-auto mt-10 p-6">
+      <h1 className="text-4xl font-bold text-center mb-2 bg-gradient-to-r from-blue-500 to-teal-500 bg-clip-text text-transparent">
+        Create Account
+      </h1>
+      <p className="text-center text-gray-600 mb-8">
+        Step {currentStep} of 4
+      </p>
 
-        <div className="relative">
-          <div className={`absolute top-0 left-0 h-1 ${styles.progressBar.container} w-full rounded-full`}></div>
-          <div
-            className={`absolute top-0 left-0 h-1 ${styles.progressBar.background} rounded-full transition-all duration-300`}
-            style={{ width: `${(currentStep / steps.total) * 100}%` }}
-          ></div>
-        </div>
-
-        <div className="bg-white p-8 rounded-lg shadow-sm">
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            {renderStep()}
-          </form>
-        </div>
-
-        <div className="text-center">
-          <p className="text-sm text-gray-600">
-            Already have an account?{' '}
-            <Link href="/login" className="font-medium text-[#1a73e8] hover:text-[#1a73e8]/80">
-              Sign in
-            </Link>
-          </p>
-        </div>
+      <div className="h-1 w-full bg-gray-200 rounded-full mb-8">
+        <div
+          className="h-1 bg-gradient-to-r from-blue-500 to-teal-500 rounded-full transition-all duration-300"
+          style={{ width: `${(currentStep / 4) * 100}%` }}
+        />
       </div>
-    </main>
+
+      <form onSubmit={handleStepSubmit} className="space-y-8" noValidate>
+        {renderStepContent()}
+
+        <div className="flex justify-between">
+          {currentStep > 1 && (
+            <button
+              type="button"
+              onClick={handlePrevStep}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+            >
+              Previous
+            </button>
+          )}
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="ml-auto px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
+          >
+            {isSubmitting
+              ? currentStep === 4
+                ? 'Completing Setup...'
+                : 'Saving...'
+              : currentStep === 4
+                ? 'Complete Setup'
+                : 'Save & Continue'
+            }
+          </button>
+        </div>
+      </form>
+
+      <p className="text-center mt-8 text-gray-600">
+        Already have an account?{' '}
+        <Link href="/login" className="text-blue-600 hover:text-blue-800">
+          Sign in
+        </Link>
+      </p>
+    </div>
   );
 }

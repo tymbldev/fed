@@ -2,9 +2,47 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '../context/AuthContext';
+import { toast } from 'sonner';
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const { setIsLoggedIn } = useAuth();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setIsLoggedIn(true);
+        toast.success('Login successful!');
+        router.push('/profile');
+      } else {
+        toast.error(data.error || 'Login failed');
+      }
+    } catch (error: unknown) {
+      console.error('Login error:', error);
+      toast.error('An error occurred during login');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <main className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -21,7 +59,7 @@ export default function Login() {
 
         {/* Login Form */}
         <div className="bg-white p-8 rounded-lg shadow-sm">
-          <form className="space-y-6">
+          <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email address
@@ -32,6 +70,8 @@ export default function Login() {
                 type="email"
                 autoComplete="email"
                 required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="mt-1 block w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a73e8]"
                 placeholder="Enter your email"
               />
@@ -48,6 +88,8 @@ export default function Login() {
                   type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
                   required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="mt-1 block w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a73e8]"
                   placeholder="Enter your password"
                 />
@@ -93,9 +135,10 @@ export default function Login() {
             <div>
               <button
                 type="submit"
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-[#1a73e8] to-[#34c759] hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1a73e8]"
+                disabled={isLoading}
+                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-[#1a73e8] to-[#34c759] hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1a73e8] disabled:opacity-50"
               >
-                Sign in
+                {isLoading ? 'Signing in...' : 'Sign in'}
               </button>
             </div>
           </form>
@@ -128,7 +171,7 @@ export default function Login() {
 
         {/* Sign Up Link */}
         <div className="text-center">
-          <p className="mt-2 text-sm text-gray-600">
+          <p className="text-sm text-gray-600">
             Don&apos;t have an account?{' '}
             <Link href="/register" className="font-medium text-[#1a73e8] hover:text-[#1557b0]">
               Sign up
@@ -138,4 +181,4 @@ export default function Login() {
       </div>
     </main>
   );
-} 
+}

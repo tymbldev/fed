@@ -32,22 +32,6 @@ export const registerConfig = {
       { value: 'sales', label: 'Sales' },
       { value: 'hr', label: 'HR' },
     ],
-
-    city: [
-      { value: 'san-francisco', label: 'San Francisco' },
-      { value: 'new-york', label: 'New York' },
-      { value: 'seattle', label: 'Seattle' },
-      { value: 'boston', label: 'Boston' },
-      { value: 'austin', label: 'Austin' },
-    ],
-
-    country: [
-      { value: 'united-states', label: 'United States' },
-      { value: 'canada', label: 'Canada' },
-      { value: 'united-kingdom', label: 'United Kingdom' },
-      { value: 'australia', label: 'Australia' },
-      { value: 'india', label: 'India' },
-    ],
   },
 
   fields: {
@@ -118,13 +102,6 @@ export const registerConfig = {
       placeholder: 'Select your department',
       required: true,
     },
-    city: {
-      id: 'city',
-      name: 'city',
-      label: 'City',
-      placeholder: 'Select your city',
-      required: true,
-    },
     country: {
       id: 'country',
       name: 'country',
@@ -132,13 +109,45 @@ export const registerConfig = {
       placeholder: 'Select your country',
       required: true,
     },
-    // zipCode: {
-    //   id: 'zipCode',
-    //   name: 'zipCode',
-    //   label: 'ZIP Code',
-    //   placeholder: 'Enter your ZIP code',
-    //   required: true,
-    // },
+    state: {
+      id: 'state',
+      name: 'state',
+      label: 'State',
+      placeholder: 'Select your state',
+      required: true,
+    },
+    city: {
+      id: 'city',
+      name: 'city',
+      label: 'City',
+      placeholder: 'Select your city',
+      required: true,
+    },
+    cityOther: {
+      id: 'cityOther',
+      name: 'cityOther',
+      label: 'Other City',
+      placeholder: 'Enter your city name',
+      required: true,
+    },
+    yearsOfExperience: {
+      id: 'yearsOfExperience',
+      name: 'yearsOfExperience',
+      type: 'number',
+      label: 'Years of Experience',
+      placeholder: 'Enter years of experience',
+      required: true,
+      autoComplete: 'off'
+    },
+    skills: {
+      id: 'skills',
+      name: 'skills',
+      type: 'text',
+      label: 'Skills',
+      placeholder: 'Enter skills separated by commas',
+      required: true,
+      autoComplete: 'off'
+    },
   },
 
   errorMessages: {
@@ -173,16 +182,21 @@ export const registerConfig = {
     department: {
       required: 'Please select your department'
     },
-    city: {
-      required: 'Please select your city'
-    },
     country: {
       required: 'Please select your country'
     },
-    zipCode: {
-      required: 'ZIP code is required',
-      format: 'Please enter a valid ZIP code'
-    }
+    state: {
+      required: 'Please select your state'
+    },
+    city: {
+      required: 'Please select your city'
+    },
+    cityOther: {
+      required: 'Please enter your city name'
+    },
+    skills: {
+      required: 'Please select at least one skill'
+    },
   },
 
   styles: {

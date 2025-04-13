@@ -27,15 +27,15 @@ export const registerUser = async (email: string, password: string) => {
 };
 
 export const updateProfile = async (profileData: {
-  firstName: string;
-  lastName: string;
-  phoneNumber: string;
-  designationId: number;
-  departmentId: number;
-  cityId: number;
-  countryId: number;
-  yearsOfExperience: number;
-  skills: string[];
+  firstName?: string;
+  lastName?: string;
+  phoneNumber?: string;
+  designationId?: number;
+  departmentId?: number;
+  cityId?: number;
+  countryId?: number;
+  yearsOfExperience?: number;
+  skills?: string[];
 }) => {
   // Get the token from cookies
   const token = document.cookie
@@ -63,4 +63,59 @@ export const updateProfile = async (profileData: {
   }
 
   return response.json();
+};
+
+export const fetchDropdownOptions = async (type: string): Promise<{ value: string; label: string }[]> => {
+  try {
+    // Special handling for skills
+    if (type === 'skills') {
+      const response = await fetch(`${BASE_URL}/api/v1/skills`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch skills');
+      }
+      const data = await response.json();
+      return data;
+    }
+
+    // Special handling for companies
+    if (type === 'companies') {
+      const response = await fetch(`${BASE_URL}/api/v1/companies`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch companies');
+      }
+      const data = await response.json();
+      return data;
+    }
+
+    // For other dropdowns, use the dropdowns endpoint
+    const response = await fetch(`${BASE_URL}/api/v1/dropdowns/${type}`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch ${type}`);
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error(`Error fetching ${type}:`, error);
+    throw error;
+  }
+};
+
+export const fetchSkills = async (query: string) => {
+  const response = await fetch(`${BASE_URL}/api/v1/skills?query=${encodeURIComponent(query)}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to fetch skills');
+  }
+
+  const data = await response.json();
+  return data.map((skill: { id: number; name: string }) => ({
+    value: skill.id.toString(),
+    label: skill.name
+  }));
 };
