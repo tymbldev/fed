@@ -33,6 +33,7 @@ const TypeAheadField: React.FC<TypeAheadFieldProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [filteredSuggestions, setFilteredSuggestions] = useState<Suggestion[]>([]);
   const [selectedValues, setSelectedValues] = useState<string[]>([]);
+  const [inputValue, setInputValue] = useState('');
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -55,10 +56,12 @@ const TypeAheadField: React.FC<TypeAheadFieldProps> = ({
   }, [value]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputValue = e.target.value;
-    if (inputValue) {
+    const newInputValue = e.target.value;
+    setInputValue(newInputValue);
+
+    if (newInputValue) {
       const filtered = suggestions.filter(suggestion =>
-        suggestion.label.toLowerCase().includes(inputValue.toLowerCase()) &&
+        suggestion.label.toLowerCase().includes(newInputValue.toLowerCase()) &&
         !selectedValues.includes(suggestion.value)
       );
       setFilteredSuggestions(filtered);
@@ -72,6 +75,7 @@ const TypeAheadField: React.FC<TypeAheadFieldProps> = ({
   const handleSuggestionClick = (suggestion: Suggestion) => {
     const newSelectedValues = [...selectedValues, suggestion.value];
     setSelectedValues(newSelectedValues);
+    setInputValue('');
 
     const event = {
       target: {
@@ -125,7 +129,7 @@ const TypeAheadField: React.FC<TypeAheadFieldProps> = ({
             type="text"
             id={name}
             name={name}
-            value=""
+            value={inputValue}
             onChange={handleInputChange}
             onBlur={onBlur}
             placeholder={selectedValues.length === 0 ? placeholder : ''}

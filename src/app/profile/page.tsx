@@ -37,7 +37,7 @@ export default function Profile() {
         city: userProfile.cityId?.toString() || '',
         country: userProfile.countryId?.toString() || '',
         yearsOfExperience: userProfile.yearsOfExperience?.toString() || '',
-        skills: userProfile.skillIds?.join(', ') || '',
+        skillIds: userProfile.skillIds?.join(', ') || '',
         company: userProfile.company || '',
       });
     }
@@ -78,7 +78,7 @@ export default function Profile() {
         stateId: formData.state ? parseInt(formData.state) : undefined,
         cityId: formData.city ? parseInt(formData.city) : undefined,
         yearsOfExperience: parseInt(formData.yearsOfExperience) || 0,
-        skills: formData.skills ? formData.skills.split(',').map(skill => skill.trim()) : [],
+        skillIds: formData.skillIds ? formData.skillIds.split(',').map(skill => skill.trim()) : [],
         company: formData.company,
       };
 
@@ -171,7 +171,6 @@ export default function Profile() {
                   touched={touched}
                   onInputChange={handleInputChange}
                   onBlur={(field) => setTouched(prev => ({ ...prev, [field]: true }))}
-                  options={[]}
                 />
               </div>
             </div>
