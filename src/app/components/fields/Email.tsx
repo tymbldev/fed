@@ -7,6 +7,8 @@ interface EmailProps {
   touched: { [key: string]: boolean };
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
   onBlur: (field: string) => void;
+  required?: boolean;
+  disabled?: boolean;
 }
 
 const Email: React.FC<EmailProps> = ({
@@ -14,7 +16,9 @@ const Email: React.FC<EmailProps> = ({
   errors,
   touched,
   onInputChange,
-  onBlur
+  onBlur,
+  required,
+  disabled
 }) => {
   return (
     <InputField
@@ -25,7 +29,8 @@ const Email: React.FC<EmailProps> = ({
       onChange={onInputChange}
       onBlur={() => onBlur('email')}
       error={touched['email'] ? errors['email'] : undefined}
-      required
+      required={required}
+      disabled={disabled}
     />
   );
 };

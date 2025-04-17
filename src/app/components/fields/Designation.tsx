@@ -9,6 +9,7 @@ interface DesignationProps {
   touched: { [key: string]: boolean };
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
   onBlur: (field: string) => void;
+  required?: boolean;
 }
 
 interface Option {

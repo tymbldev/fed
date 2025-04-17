@@ -9,6 +9,7 @@ interface SkillsProps {
   touched: { [key: string]: boolean };
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
   onBlur: (field: string) => void;
+  required?: boolean;
   options?: { value: string; label: string }[];
 }
 
@@ -18,6 +19,7 @@ const Skills: React.FC<SkillsProps> = ({
   touched,
   onInputChange,
   onBlur,
+  required,
   options: propOptions
 }) => {
   const [skills, setSkills] = useState<{ value: string; label: string }[]>([]);
@@ -51,7 +53,7 @@ const Skills: React.FC<SkillsProps> = ({
       onBlur={() => onBlur('skillNames')}
       error={touched['skillNames'] ? errors['skillNames'] : undefined}
       suggestions={skills}
-      required
+      required={required}
       placeholder="Type to search skills..."
     />
   );

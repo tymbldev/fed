@@ -7,6 +7,7 @@ interface PhoneProps {
   touched: { [key: string]: boolean };
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
   onBlur: (field: string) => void;
+  required?: boolean;
 }
 
 const Phone: React.FC<PhoneProps> = ({

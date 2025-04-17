@@ -9,6 +9,7 @@ interface CompanyProps {
   touched: { [key: string]: boolean };
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
   onBlur: (field: string) => void;
+  required?: boolean;
 }
 
 interface Option {
@@ -21,7 +22,8 @@ const Company: React.FC<CompanyProps> = ({
   errors,
   touched,
   onInputChange,
-  onBlur
+  onBlur,
+  required
 }) => {
   const [options, setOptions] = useState<Option[]>([]);
 
@@ -51,7 +53,7 @@ const Company: React.FC<CompanyProps> = ({
         value: opt.name,
         label: opt.name
       }))}
-      required
+      required={required}
     />
   );
 };

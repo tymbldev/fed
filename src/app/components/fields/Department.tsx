@@ -10,6 +10,7 @@ interface DepartmentProps {
   touched: { [key: string]: boolean };
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
   onBlur: (field: string) => void;
+  required?: boolean;
   name?: string;
   label?: string;
   endpoint?: string;
@@ -21,6 +22,7 @@ const Department: React.FC<DepartmentProps> = ({
   touched,
   onInputChange,
   onBlur,
+  required = false,
   name = 'department',
   label = 'Department',
   endpoint = 'departments'
@@ -53,7 +55,7 @@ const Department: React.FC<DepartmentProps> = ({
       onChange={onInputChange}
       onBlur={() => onBlur(name)}
       error={touched[name] ? errors[name] : undefined}
-      required
+      required={required}
     />
   );
 };

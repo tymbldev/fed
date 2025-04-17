@@ -9,6 +9,7 @@ interface LocationProps {
   touched: { [key: string]: boolean };
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
   onBlur: (field: string) => void;
+  required?: boolean;
 }
 
 interface LocationOption {
@@ -31,7 +32,8 @@ const Location: React.FC<LocationProps> = ({
   errors,
   touched,
   onInputChange,
-  onBlur
+  onBlur,
+  required
 }) => {
   const [locationData, setLocationData] = useState<LocationOption[]>([]);
   const [countries, setCountries] = useState<{ value: string; label: string }[]>([]);
@@ -142,9 +144,9 @@ const Location: React.FC<LocationProps> = ({
         options={countries}
         value={formData.countryId || ''}
         onChange={handleCountryChange}
-        onBlur={() => onBlur('country')}
-        error={touched.country ? errors.country : undefined}
-        required
+        onBlur={() => onBlur('countryId')}
+        error={touched.countryId ? errors.countryId : undefined}
+        required={required}
         className="mb-4"
       />
 
@@ -154,9 +156,9 @@ const Location: React.FC<LocationProps> = ({
         options={cities}
         value={formData.cityId || ''}
         onChange={handleCityChange}
-        onBlur={() => onBlur('city')}
-        error={touched.city ? errors.city : undefined}
-        required
+        onBlur={() => onBlur('cityId')}
+        error={touched.cityId ? errors.cityId : undefined}
+        required={required}
         className="mb-4"
         disabled={isLoadingCities || !formData.countryId}
       />

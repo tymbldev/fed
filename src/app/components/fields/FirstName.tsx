@@ -7,6 +7,7 @@ interface FirstNameProps {
   touched: { [key: string]: boolean };
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
   onBlur: (field: string) => void;
+  required?: boolean;
 }
 
 const FirstName: React.FC<FirstNameProps> = ({
@@ -14,7 +15,8 @@ const FirstName: React.FC<FirstNameProps> = ({
   errors,
   touched,
   onInputChange,
-  onBlur
+  onBlur,
+  required
 }) => {
   return (
     <InputField
@@ -24,7 +26,7 @@ const FirstName: React.FC<FirstNameProps> = ({
       onChange={onInputChange}
       onBlur={() => onBlur('firstName')}
       error={touched['firstName'] ? errors['firstName'] : undefined}
-      required
+      required={required}
     />
   );
 };

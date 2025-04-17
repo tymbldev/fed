@@ -7,6 +7,7 @@ interface LastNameProps {
   touched: { [key: string]: boolean };
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
   onBlur: (field: string) => void;
+  required?: boolean;
 }
 
 const LastName: React.FC<LastNameProps> = ({

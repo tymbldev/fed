@@ -67,11 +67,59 @@ export default function Profile() {
     }));
   };
 
+  const validateField = (name: string, value: string, required: boolean): string | undefined => {
+    if (required && !value) {
+      return 'This field is required';
+    }
+    if (value) {  // Only validate format if there is a value
+      switch (name) {
+        case 'email':
+          if (!/\S+@\S+\.\S+/.test(value)) {
+            return 'Please enter a valid email address';
+          }
+          break;
+        case 'phone':
+          if (!/^\+?[\d\s-]{10,}$/.test(value)) {
+            return 'Please enter a valid phone number';
+          }
+          break;
+      }
+    }
+    return undefined;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    console.log(formData);
+    // Get all form fields that have values
+    const fieldsToValidate = Object.keys(formData);
+    const newErrors: { [key: string]: string } = {};
+    let hasErrors = false;
+
+    fieldsToValidate.forEach(field => {
+      // Check if the field is required by looking at the form element
+      const formElement = document.querySelector(`[name="${field}"]`) as HTMLInputElement;
+      const isRequired = formElement?.required || false;
+
+      const error = validateField(field, formData[field] || '', isRequired);
+      if (error) {
+        newErrors[field] = error;
+        hasErrors = true;
+      }
+    });
+
+    if (hasErrors) {
+      setErrors(newErrors);
+      // Mark only the fields with errors as touched
+      const touchedFields = Object.keys(newErrors).reduce((acc, field) => ({
+        ...acc,
+        [field]: true
+      }), {});
+      setTouched(prev => ({ ...prev, ...touchedFields }));
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
       const profileData = {
@@ -121,6 +169,7 @@ export default function Profile() {
                 touched={touched}
                 onInputChange={handleInputChange}
                 onBlur={(field) => setTouched(prev => ({ ...prev, [field]: true }))}
+                required={true}
               />
               <LastName
                 formData={formData}
@@ -128,6 +177,7 @@ export default function Profile() {
                 touched={touched}
                 onInputChange={handleInputChange}
                 onBlur={(field) => setTouched(prev => ({ ...prev, [field]: true }))}
+                required={true}
               />
               <Email
                 formData={formData}
@@ -135,6 +185,8 @@ export default function Profile() {
                 touched={touched}
                 onInputChange={handleInputChange}
                 onBlur={(field) => setTouched(prev => ({ ...prev, [field]: true }))}
+                required={true}
+                disabled={true}
               />
               <Phone
                 formData={formData}
@@ -142,6 +194,7 @@ export default function Profile() {
                 touched={touched}
                 onInputChange={handleInputChange}
                 onBlur={(field) => setTouched(prev => ({ ...prev, [field]: true }))}
+                required={true}
               />
               <Company
                 formData={formData}
@@ -149,6 +202,7 @@ export default function Profile() {
                 touched={touched}
                 onInputChange={handleInputChange}
                 onBlur={(field) => setTouched(prev => ({ ...prev, [field]: true }))}
+                required={true}
               />
               <Designation
                 formData={formData}
@@ -156,6 +210,7 @@ export default function Profile() {
                 touched={touched}
                 onInputChange={handleInputChange}
                 onBlur={(field) => setTouched(prev => ({ ...prev, [field]: true }))}
+                required={true}
               />
               <Department
                 formData={formData}
@@ -163,13 +218,7 @@ export default function Profile() {
                 touched={touched}
                 onInputChange={handleInputChange}
                 onBlur={(field) => setTouched(prev => ({ ...prev, [field]: true }))}
-              />
-              <Location
-                formData={formData}
-                errors={errors}
-                touched={touched}
-                onInputChange={handleInputChange}
-                onBlur={(field) => setTouched(prev => ({ ...prev, [field]: true }))}
+                required={true}
               />
               <TotalWorkExperience
                 formData={formData}
@@ -177,7 +226,17 @@ export default function Profile() {
                 touched={touched}
                 onInputChange={handleInputChange}
                 onBlur={(field) => setTouched(prev => ({ ...prev, [field]: true }))}
+                required={true}
               />
+              <Location
+                formData={formData}
+                errors={errors}
+                touched={touched}
+                onInputChange={handleInputChange}
+                onBlur={(field) => setTouched(prev => ({ ...prev, [field]: true }))}
+                required={true}
+              />
+
               <div className="col-span-1 md:col-span-2">
                 <Skills
                   formData={formData}
@@ -185,6 +244,7 @@ export default function Profile() {
                   touched={touched}
                   onInputChange={handleInputChange}
                   onBlur={(field) => setTouched(prev => ({ ...prev, [field]: true }))}
+                  required={true}
                 />
               </div>
             </div>
