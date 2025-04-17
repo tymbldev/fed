@@ -10,6 +10,7 @@ interface LocationProps {
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
   onBlur: (field: string) => void;
   required?: boolean;
+  layout?: 'horizontal' | 'vertical';
 }
 
 interface LocationOption {
@@ -33,7 +34,8 @@ const Location: React.FC<LocationProps> = ({
   touched,
   onInputChange,
   onBlur,
-  required
+  required,
+  layout = 'vertical'
 }) => {
   const [locationData, setLocationData] = useState<LocationOption[]>([]);
   const [countries, setCountries] = useState<{ value: string; label: string }[]>([]);
@@ -136,8 +138,10 @@ const Location: React.FC<LocationProps> = ({
     onInputChange(e);
   };
 
+  const containerClass = layout === 'horizontal' ? 'grid grid-cols-2 gap-4' : 'space-y-4';
+
   return (
-    <div className="space-y-4">
+    <div className={containerClass}>
       <SelectField
         label="Country"
         name="countryId"
@@ -147,7 +151,6 @@ const Location: React.FC<LocationProps> = ({
         onBlur={() => onBlur('countryId')}
         error={touched.countryId ? errors.countryId : undefined}
         required={required}
-        className="mb-4"
       />
 
       <SelectField
@@ -159,7 +162,6 @@ const Location: React.FC<LocationProps> = ({
         onBlur={() => onBlur('cityId')}
         error={touched.cityId ? errors.cityId : undefined}
         required={required}
-        className="mb-4"
         disabled={isLoadingCities || !formData.countryId}
       />
     </div>

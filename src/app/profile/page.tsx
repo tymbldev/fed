@@ -228,7 +228,21 @@ export default function Profile() {
                 onBlur={(field) => setTouched(prev => ({ ...prev, [field]: true }))}
                 required={true}
               />
-              <Location
+              <div className="col-span-2">
+                <Location
+                  formData={formData}
+                  errors={errors}
+                  touched={touched}
+                  onInputChange={handleInputChange}
+                  onBlur={(field) => setTouched(prev => ({ ...prev, [field]: true }))}
+                  required={true}
+                  layout="horizontal"
+                />
+              </div>
+            </div>
+
+            <div className="col-span-1 md:col-span-2">
+              <Skills
                 formData={formData}
                 errors={errors}
                 touched={touched}
@@ -236,17 +250,6 @@ export default function Profile() {
                 onBlur={(field) => setTouched(prev => ({ ...prev, [field]: true }))}
                 required={true}
               />
-
-              <div className="col-span-1 md:col-span-2">
-                <Skills
-                  formData={formData}
-                  errors={errors}
-                  touched={touched}
-                  onInputChange={handleInputChange}
-                  onBlur={(field) => setTouched(prev => ({ ...prev, [field]: true }))}
-                  required={true}
-                />
-              </div>
             </div>
 
             <div className="flex justify-end">
