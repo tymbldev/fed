@@ -37,7 +37,7 @@ export default function Profile() {
         cityId: userProfile.cityId?.toString() || '',
         countryId: userProfile.countryId?.toString() || '',
         yearsOfExperience: userProfile.yearsOfExperience?.toString() || '',
-        skillIds: userProfile.skillIds?.join(', ') || '',
+        skillNames: userProfile.skillNames?.join(', ') || '',
         company: userProfile.company || '',
       });
     }
@@ -46,6 +46,8 @@ export default function Profile() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     console.log(name, value);
+
+    // Update form data
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -80,7 +82,7 @@ export default function Profile() {
         stateId: formData.stateId ? parseInt(formData.stateId) : undefined,
         cityId: formData.cityId ? parseInt(formData.cityId) : undefined,
         yearsOfExperience: parseInt(formData.yearsOfExperience) || 0,
-        skillIds: formData.skillIds ? formData.skillIds.split(',').map(skill => skill.trim()) : [],
+        skillNames: formData.skillNames ? formData.skillNames.split(',').map(skill => skill.trim()) : [],
         company: formData.company,
       };
 

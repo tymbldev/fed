@@ -115,7 +115,7 @@ export const fetchSkills = async (query: string) => {
 
   const data = await response.json();
   return data.map((skill: { id: number; name: string }) => ({
-    value: skill.id.toString(),
+    value: skill.name,
     label: skill.name
   }));
 };

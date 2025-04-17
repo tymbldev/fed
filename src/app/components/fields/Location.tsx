@@ -78,8 +78,6 @@ const Location: React.FC<LocationProps> = ({
         ).values()
       );
 
-      console.log("Unique Cities", uniqueCities);
-
       setCities(uniqueCities);
       setPreviousCountryId(formData.countryId);
       setIsInitialLoad(false);
@@ -135,8 +133,6 @@ const Location: React.FC<LocationProps> = ({
   const handleCityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     onInputChange(e);
   };
-
-  console.log("Location", formData, formData.countryId, formData.cityId, cities);
 
   return (
     <div className="space-y-4">

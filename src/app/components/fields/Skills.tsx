@@ -45,11 +45,11 @@ const Skills: React.FC<SkillsProps> = ({
   return (
     <TypeAheadField
       label="Skills"
-      name="skillIds"
-      value={formData['skillIds'] || ''}
+      name="skillNames"
+      value={formData['skillNames'] || ''}
       onChange={onInputChange}
-      onBlur={() => onBlur('skillIds')}
-      error={touched['skillIds'] ? errors['skillIds'] : undefined}
+      onBlur={() => onBlur('skillNames')}
+      error={touched['skillNames'] ? errors['skillNames'] : undefined}
       suggestions={skills}
       required
       placeholder="Type to search skills..."

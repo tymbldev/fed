@@ -28,6 +28,7 @@ interface UserProfile {
   countryId?: number | null;
   yearsOfExperience?: number;
   skillIds?: string[];
+  skillNames?: string[];
   company?: string;
   role?: string;
   profileCompletionPercentage?: number;
