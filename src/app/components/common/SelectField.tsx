@@ -32,8 +32,8 @@ const SelectField: React.FC<SelectFieldProps> = ({
 }) => {
 
   return (
-    <div className="space-y-1">
-      <label htmlFor={name} className="block text-sm font-medium text-gray-700">
+    <div className="w-full">
+      <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-2">
         {label} {required && <span className="text-red-500">*</span>}
       </label>
       <select
@@ -44,7 +44,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
         onBlur={onBlur}
         required={required}
         disabled={disabled}
-        className={`block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${error ? 'border-red-500' : ''} ${className} ${disabled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+        className={`block w-full h-10 px-3 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base sm:text-sm ${error ? 'border-red-500' : ''} ${className} ${disabled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
       >
         <option value="">Select {label}</option>
         {options.map((option) => (
@@ -53,7 +53,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
           </option>
         ))}
       </select>
-      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
     </div>
   );
 };

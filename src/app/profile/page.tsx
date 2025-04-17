@@ -149,20 +149,20 @@ export default function Profile() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-gray-50 py-6 px-4 sm:py-12 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
-        <div className="text-center mb-8">
-          <h2 className={`text-3xl font-bold ${styles.heading.gradient}`}>
+        <div className="text-center mb-6">
+          <h2 className={`text-2xl sm:text-3xl font-bold ${styles.heading.gradient}`}>
             Profile
           </h2>
-          <p className="mt-2 text-gray-600">
+          <p className="mt-2 text-sm sm:text-base text-gray-600">
             View and update your profile information
           </p>
         </div>
 
-        <div className="bg-white p-8 rounded-lg shadow-sm">
-          <form className="space-y-6" onSubmit={handleSubmit} noValidate>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white p-4 sm:p-8 rounded-lg shadow-sm">
+          <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FirstName
                 formData={formData}
                 errors={errors}
@@ -228,20 +228,21 @@ export default function Profile() {
                 onBlur={(field) => setTouched(prev => ({ ...prev, [field]: true }))}
                 required={true}
               />
-              <div className="col-span-2">
-                <Location
-                  formData={formData}
-                  errors={errors}
-                  touched={touched}
-                  onInputChange={handleInputChange}
-                  onBlur={(field) => setTouched(prev => ({ ...prev, [field]: true }))}
-                  required={true}
-                  layout="horizontal"
-                />
-              </div>
             </div>
 
-            <div className="col-span-1 md:col-span-2">
+            <div className="w-full">
+              <Location
+                formData={formData}
+                errors={errors}
+                touched={touched}
+                onInputChange={handleInputChange}
+                onBlur={(field) => setTouched(prev => ({ ...prev, [field]: true }))}
+                required={true}
+                layout="horizontal"
+              />
+            </div>
+
+            <div className="w-full">
               <Skills
                 formData={formData}
                 errors={errors}
@@ -252,7 +253,7 @@ export default function Profile() {
               />
             </div>
 
-            <div className="flex justify-end">
+            <div className="flex justify-end mt-6">
               <button
                 type="submit"
                 className={styles.button.primary}
