@@ -27,6 +27,7 @@ interface UserProfile {
   cityId?: number | null;
   countryId?: number | null;
   yearsOfExperience?: number;
+  monthsOfExperience?: number;
   skillIds?: string[];
   skillNames?: string[];
   company?: string;

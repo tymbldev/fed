@@ -16,6 +16,7 @@ import Designation from '../components/fields/Designation';
 import Department from '../components/fields/Department';
 import Skills from '../components/fields/Skills';
 import Location from '../components/fields/Location';
+import TotalWorkExperience from '../components/fields/TotalWorkExperience';
 
 export default function Profile() {
   const { userProfile, fetchUserProfile } = useAuth();
@@ -37,6 +38,7 @@ export default function Profile() {
         cityId: userProfile.cityId?.toString() || '',
         countryId: userProfile.countryId?.toString() || '',
         yearsOfExperience: userProfile.yearsOfExperience?.toString() || '',
+        monthsOfExperience: userProfile.monthsOfExperience?.toString() || '',
         skillNames: userProfile.skillNames?.join(', ') || '',
         company: userProfile.company || '',
       });
@@ -82,6 +84,7 @@ export default function Profile() {
         stateId: formData.stateId ? parseInt(formData.stateId) : undefined,
         cityId: formData.cityId ? parseInt(formData.cityId) : undefined,
         yearsOfExperience: parseInt(formData.yearsOfExperience) || 0,
+        monthsOfExperience: parseInt(formData.monthsOfExperience) || 0,
         skillNames: formData.skillNames ? formData.skillNames.split(',').map(skill => skill.trim()) : [],
         company: formData.company,
       };
@@ -162,6 +165,13 @@ export default function Profile() {
                 onBlur={(field) => setTouched(prev => ({ ...prev, [field]: true }))}
               />
               <Location
+                formData={formData}
+                errors={errors}
+                touched={touched}
+                onInputChange={handleInputChange}
+                onBlur={(field) => setTouched(prev => ({ ...prev, [field]: true }))}
+              />
+              <TotalWorkExperience
                 formData={formData}
                 errors={errors}
                 touched={touched}

@@ -35,6 +35,7 @@ export const updateProfile = async (profileData: {
   cityId?: number;
   countryId?: number;
   yearsOfExperience?: number;
+  monthsOfExperience?: number;
   skills?: string[];
 }) => {
   // Get the token from cookies
