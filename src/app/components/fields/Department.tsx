@@ -2,7 +2,11 @@ import React, { useState, useEffect } from 'react';
 import SelectField from '../common/SelectField';
 import { fetchDropdownOptions } from '../../services/api';
 import { toast } from 'sonner';
-import { Option } from '../../types/common';
+
+interface DepartmentOption {
+  id: number;
+  name: string;
+}
 
 interface DepartmentProps {
   formData: { [key: string]: string };
@@ -11,9 +15,6 @@ interface DepartmentProps {
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
   onBlur: (field: string) => void;
   required?: boolean;
-  name?: string;
-  label?: string;
-  endpoint?: string;
 }
 
 const Department: React.FC<DepartmentProps> = ({
@@ -22,39 +23,38 @@ const Department: React.FC<DepartmentProps> = ({
   touched,
   onInputChange,
   onBlur,
-  required = false,
-  name = 'department',
-  label = 'Department',
-  endpoint = 'departments'
+  required = false
 }) => {
-  const [options, setOptions] = useState<Option[]>([]);
+  const [options, setOptions] = useState<DepartmentOption[]>([]);
 
   useEffect(() => {
     const loadOptions = async () => {
       try {
-        const data = await fetchDropdownOptions(endpoint);
+        const data = await fetchDropdownOptions('departments') as unknown as DepartmentOption[];
+        console.log("departments", data);
         setOptions(data);
       } catch (err) {
-        console.error(`Failed to fetch ${endpoint}:`, err);
-        toast.error(`Failed to load ${label.toLowerCase()}s. Please try again.`);
+        console.error('Failed to fetch departments:', err);
+        toast.error('Failed to load departments. Please try again.');
       }
     };
 
     loadOptions();
-  }, [endpoint, label]);
+  }, []);
 
   return (
     <SelectField
-      label={label}
-      name={name}
+      label="Department"
+      name="departmentId"
+      // options={options}
       options={options.map(opt => ({
         value: opt.id.toString(),
         label: opt.name
       }))}
-      value={options.find(opt => opt.id === parseInt(formData.departmentId))?.id.toString() || ''}
+      value={formData.departmentId || ''}
       onChange={onInputChange}
-      onBlur={() => onBlur(name)}
-      error={touched[name] ? errors[name] : undefined}
+      onBlur={() => onBlur('departmentId')}
+      error={touched.departmentId ? errors.departmentId : undefined}
       required={required}
     />
   );

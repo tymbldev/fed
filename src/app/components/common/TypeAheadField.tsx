@@ -30,7 +30,7 @@ const TypeAheadField: React.FC<TypeAheadFieldProps> = ({
   suggestions,
   className = ''
 }) => {
-  console.log("TypeAheadField", value, suggestions);
+  // console.log("TypeAheadField", value, suggestions);
   const [isOpen, setIsOpen] = useState(false);
   const [filteredSuggestions, setFilteredSuggestions] = useState<Suggestion[]>([]);
   const [selectedValues, setSelectedValues] = useState<string[]>([]);
