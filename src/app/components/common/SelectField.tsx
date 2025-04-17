@@ -15,6 +15,7 @@ interface SelectFieldProps {
   onBlur?: () => void;
   error?: string;
   className?: string;
+  disabled?: boolean;
 }
 
 const SelectField: React.FC<SelectFieldProps> = ({
@@ -26,8 +27,10 @@ const SelectField: React.FC<SelectFieldProps> = ({
   onChange,
   onBlur,
   error,
-  className = ''
+  className = '',
+  disabled = false
 }) => {
+
   return (
     <div className="space-y-1">
       <label htmlFor={name} className="block text-sm font-medium text-gray-700">
@@ -40,7 +43,8 @@ const SelectField: React.FC<SelectFieldProps> = ({
         onChange={onChange}
         onBlur={onBlur}
         required={required}
-        className={`block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${error ? 'border-red-500' : ''} ${className}`}
+        disabled={disabled}
+        className={`block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${error ? 'border-red-500' : ''} ${className} ${disabled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
       >
         <option value="">Select {label}</option>
         {options.map((option) => (

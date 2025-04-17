@@ -49,7 +49,7 @@ const Department: React.FC<DepartmentProps> = ({
         value: opt.id.toString(),
         label: opt.name
       }))}
-      value={formData[name] || ''}
+      value={options.find(opt => opt.id === parseInt(formData.departmentId))?.id.toString() || ''}
       onChange={onInputChange}
       onBlur={() => onBlur(name)}
       error={touched[name] ? errors[name] : undefined}

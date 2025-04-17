@@ -19,6 +19,7 @@ interface UserProfile {
   firstName: string;
   lastName: string;
   phoneNumber?: string;
+  designation?: string;
   designationId?: number;
   departmentId?: number;
   positionDisplay?: string;

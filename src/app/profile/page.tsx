@@ -32,10 +32,10 @@ export default function Profile() {
         lastName: userProfile.lastName || '',
         email: userProfile.email || '',
         phone: userProfile.phoneNumber || '',
-        designation: userProfile.positionDisplay || '',
-        department: userProfile.departmentDisplay || '',
-        city: userProfile.cityId?.toString() || '',
-        country: userProfile.countryId?.toString() || '',
+        designation: userProfile.designation || '',
+        departmentId: userProfile.departmentId?.toString() || '',
+        cityId: userProfile.cityId?.toString() || '',
+        countryId: userProfile.countryId?.toString() || '',
         yearsOfExperience: userProfile.yearsOfExperience?.toString() || '',
         skillIds: userProfile.skillIds?.join(', ') || '',
         company: userProfile.company || '',
@@ -67,16 +67,18 @@ export default function Profile() {
     e.preventDefault();
     setIsSubmitting(true);
 
+    console.log(formData);
+
     try {
       const profileData = {
         firstName: formData.firstName,
         lastName: formData.lastName,
         phoneNumber: formData.phone,
-        designationId: undefined,
-        departmentId: formData.department ? parseInt(formData.department) : undefined,
-        countryId: formData.country ? parseInt(formData.country) : undefined,
-        stateId: formData.state ? parseInt(formData.state) : undefined,
-        cityId: formData.city ? parseInt(formData.city) : undefined,
+        designation: formData.designation,
+        departmentId: formData.departmentId ? parseInt(formData.departmentId) : undefined,
+        countryId: formData.countryId ? parseInt(formData.countryId) : undefined,
+        stateId: formData.stateId ? parseInt(formData.stateId) : undefined,
+        cityId: formData.cityId ? parseInt(formData.cityId) : undefined,
         yearsOfExperience: parseInt(formData.yearsOfExperience) || 0,
         skillIds: formData.skillIds ? formData.skillIds.split(',').map(skill => skill.trim()) : [],
         company: formData.company,
