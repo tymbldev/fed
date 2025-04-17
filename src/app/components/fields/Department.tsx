@@ -46,7 +46,6 @@ const Department: React.FC<DepartmentProps> = ({
     <SelectField
       label="Department"
       name="departmentId"
-      // options={options}
       options={options.map(opt => ({
         value: opt.id.toString(),
         label: opt.name
