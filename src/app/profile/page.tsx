@@ -5,6 +5,7 @@ import { registerConfig } from '../config/registerConfig';
 import { updateProfile } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
+import { validateFields } from '../utils/validation';
 
 // Import field components
 import FirstName from '../components/fields/FirstName';
@@ -70,47 +71,19 @@ export default function Profile() {
     }));
   };
 
-  const validateField = (name: string, value: string, required: boolean): string | undefined => {
-    if (required && !value) {
-      return 'This field is required';
-    }
-    if (value) {  // Only validate format if there is a value
-      switch (name) {
-        case 'email':
-          if (!/\S+@\S+\.\S+/.test(value)) {
-            return 'Please enter a valid email address';
-          }
-          break;
-        case 'phone':
-          if (!/^\+?[\d\s-]{10,}$/.test(value)) {
-            return 'Please enter a valid phone number';
-          }
-          break;
-      }
-    }
-    return undefined;
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     // Get all form fields that have values
-    const fieldsToValidate = Object.keys(formData);
-    const newErrors: { [key: string]: string } = {};
-    let hasErrors = false;
+    const fieldsToValidate = Object.keys(formData).map(field => ({
+      name: field,
+      value: formData[field] || '',
+      required: true // You can customize this based on your needs
+    }));
 
-    fieldsToValidate.forEach(field => {
-      // Check if the field is required by looking at the form element
-      const formElement = document.querySelector(`[name="${field}"]`) as HTMLInputElement;
-      const isRequired = formElement?.required || false;
-
-      const error = validateField(field, formData[field] || '', isRequired);
-      if (error) {
-        newErrors[field] = error;
-        hasErrors = true;
-      }
-    });
+    const newErrors = validateFields(fieldsToValidate);
+    const hasErrors = Object.keys(newErrors).length > 0;
 
     if (hasErrors) {
       setErrors(newErrors);
