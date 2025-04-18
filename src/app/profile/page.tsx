@@ -17,6 +17,7 @@ import Department from '../components/fields/Department';
 import Skills from '../components/fields/Skills';
 import Location from '../components/fields/Location';
 import TotalWorkExperience from '../components/fields/TotalWorkExperience';
+import Salary from '../components/fields/Salary';
 
 export default function Profile() {
   const { userProfile, fetchUserProfile } = useAuth();
@@ -41,6 +42,8 @@ export default function Profile() {
         monthsOfExperience: userProfile.monthsOfExperience?.toString() || '',
         skillNames: userProfile.skillNames?.join(', ') || '',
         company: userProfile.company || '',
+        currency: userProfile.currency || '',
+        salary: userProfile.salary?.toString() || '',
       });
     }
   }, [userProfile]);
@@ -135,6 +138,8 @@ export default function Profile() {
         monthsOfExperience: parseInt(formData.monthsOfExperience) || 0,
         skillNames: formData.skillNames ? formData.skillNames.split(',').map(skill => skill.trim()) : [],
         company: formData.company,
+        currency: formData.currency,
+        salary: formData.salary ? parseFloat(formData.salary) : undefined,
       };
 
       await updateProfile(profileData);
@@ -244,6 +249,17 @@ export default function Profile() {
 
             <div className="w-full">
               <Skills
+                formData={formData}
+                errors={errors}
+                touched={touched}
+                onInputChange={handleInputChange}
+                onBlur={(field) => setTouched(prev => ({ ...prev, [field]: true }))}
+                required={true}
+              />
+            </div>
+
+            <div className="w-full">
+              <Salary
                 formData={formData}
                 errors={errors}
                 touched={touched}

@@ -56,6 +56,8 @@ interface UserProfile {
   credentialsNonExpired?: boolean;
   authorities?: { authority: string }[];
   updatedAt?: string;
+  currency?: string;
+  salary?: number;
 }
 
 interface AuthContextType {

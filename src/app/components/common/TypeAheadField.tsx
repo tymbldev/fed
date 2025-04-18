@@ -49,16 +49,13 @@ const TypeAheadField: React.FC<TypeAheadFieldProps> = ({
 
   useEffect(() => {
     if (value) {
-      console.log("useEffect", value.split(','));
       setSelectedValues(value.split(','));
     } else {
-      console.log("useEffect blank", []);
       setSelectedValues([]);
     }
   }, [value]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log("handleInputChange", e.target.value);
     const newInputValue = e.target.value;
     setInputValue(newInputValue);
 
@@ -112,7 +109,6 @@ const TypeAheadField: React.FC<TypeAheadFieldProps> = ({
         <div className="flex flex-wrap gap-2 p-2 border rounded-md">
           {selectedValues.map((value) => {
             const suggestion = suggestions.find(s => s.value.toLowerCase() === value.trim().toLowerCase());
-            console.log("selectedValues", suggestions, selectedValues, value, suggestion);
             return (
               <span
                 key={value}
