@@ -8,7 +8,7 @@ import Password from '../components/fields/Password';
 import FirstName from '../components/fields/FirstName';
 import LastName from '../components/fields/LastName';
 import Phone from '../components/fields/Phone';
-import LocationWithPrefill from '../components/fields/LocationWithPrefill';
+import Location from '../components/fields/Location';
 import Department from '../components/fields/Department';
 import Company from '../components/fields/Company';
 import Designation from '../components/fields/Designation';
@@ -185,7 +185,7 @@ export default function Register() {
               onInputChange={handleInputChange}
               onBlur={handleBlur}
             />
-            <LocationWithPrefill
+            <Location
               formData={formData}
               errors={errors}
               touched={touched}

@@ -70,26 +70,31 @@ const Location: React.FC<LocationProps> = ({
 
   // Effect to handle initial city loading and prefilling
   useEffect(() => {
-    if (locationData.length > 0 && formData.countryId && formData.cityId && isInitialLoad) {
-      const countryLocations = locationData.filter(loc =>
-        loc.countryId !== null && loc.countryId.toString() === formData.countryId
-      );
-      const uniqueCities = Array.from(
-        new Map(
-          countryLocations
-            .filter(loc => loc.cityId !== null)
-            .map(loc => [`${loc.cityId}`, { value: loc.cityId.toString(), label: loc.city }])
-        ).values()
-      );
+    if (locationData.length > 0 && isInitialLoad) {
+      if (formData.countryId && formData.cityId) {
+        // If we have both country and city, load cities for that country
+        const countryLocations = locationData.filter(loc =>
+          loc.countryId !== null && loc.countryId.toString() === formData.countryId
+        );
+        const uniqueCities = Array.from(
+          new Map(
+            countryLocations
+              .filter(loc => loc.cityId !== null)
+              .map(loc => [`${loc.cityId}`, { value: loc.cityId.toString(), label: loc.city }])
+          ).values()
+        );
 
-      setCities(uniqueCities);
-      setPreviousCountryId(formData.countryId);
+        setCities(uniqueCities);
+        setPreviousCountryId(formData.countryId);
+      }
+      // Set isInitialLoad to false regardless of whether we have initial data or not
       setIsInitialLoad(false);
     }
   }, [locationData, formData.countryId, formData.cityId, isInitialLoad]);
 
   useEffect(() => {
     const updateCities = async () => {
+      console.log("updateCities");
       if (formData.countryId !== previousCountryId && !isInitialLoad) {
         setPreviousCountryId(formData.countryId);
         setIsLoadingCities(true);
@@ -104,6 +109,8 @@ const Location: React.FC<LocationProps> = ({
           } as React.ChangeEvent<HTMLSelectElement>);
         }
 
+        console.log("formData.countryId", formData.countryId);
+
         // Update cities based on selected country
         if (formData.countryId) {
           const countryLocations = locationData.filter(loc =>
@@ -116,6 +123,8 @@ const Location: React.FC<LocationProps> = ({
                 .map(loc => [`${loc.cityId}`, { value: loc.cityId.toString(), label: loc.city }])
             ).values()
           );
+
+          console.log("uniqueCities", uniqueCities);
 
           setCities(uniqueCities);
         } else {
