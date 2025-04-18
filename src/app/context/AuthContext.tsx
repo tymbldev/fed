@@ -37,6 +37,7 @@ interface UserProfile {
   resume?: string | null;
   education?: Education[];
   currentSalary?: number | null;
+  currentSalaryCurrencyId?: number | null;
   expectedSalary?: number | null;
   noticePeriod?: number | null;
   githubProfile?: string | null;
@@ -56,8 +57,6 @@ interface UserProfile {
   credentialsNonExpired?: boolean;
   authorities?: { authority: string }[];
   updatedAt?: string;
-  currency?: string;
-  salary?: number;
 }
 
 interface AuthContextType {

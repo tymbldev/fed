@@ -13,8 +13,8 @@ interface DesignationProps {
 }
 
 interface Option {
-  id: number;
-  name: string;
+  value: string;
+  label: string;
 }
 
 const Designation: React.FC<DesignationProps> = ({
@@ -49,8 +49,8 @@ const Designation: React.FC<DesignationProps> = ({
       onBlur={() => onBlur('designation')}
       error={touched['designation'] ? errors['designation'] : undefined}
       suggestions={options.map(opt => ({
-        value: opt.name,
-        label: opt.name
+        value: opt.value,
+        label: opt.label
       }))}
       required
     />

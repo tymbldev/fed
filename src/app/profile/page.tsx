@@ -42,8 +42,8 @@ export default function Profile() {
         monthsOfExperience: userProfile.monthsOfExperience?.toString() || '',
         skillNames: userProfile.skillNames?.join(', ') || '',
         company: userProfile.company || '',
-        currency: userProfile.currency || '',
-        salary: userProfile.salary?.toString() || '',
+        currentSalaryCurrencyId: userProfile.currentSalaryCurrencyId?.toString() || '',
+        currentSalary: userProfile.currentSalary?.toString() || '',
       });
     }
   }, [userProfile]);
@@ -138,8 +138,8 @@ export default function Profile() {
         monthsOfExperience: parseInt(formData.monthsOfExperience) || 0,
         skillNames: formData.skillNames ? formData.skillNames.split(',').map(skill => skill.trim()) : [],
         company: formData.company,
-        currency: formData.currency,
-        salary: formData.salary ? parseFloat(formData.salary) : undefined,
+        currentSalaryCurrencyId: formData.currentSalaryCurrencyId ? parseInt(formData.currentSalaryCurrencyId) : undefined,
+        currentSalary: formData.currentSalary ? parseFloat(formData.currentSalary) : undefined,
       };
 
       await updateProfile(profileData);

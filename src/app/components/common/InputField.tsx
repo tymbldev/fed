@@ -12,6 +12,7 @@ interface InputFieldProps {
   error?: string;
   className?: string;
   disabled?: boolean;
+  min?: string;
 }
 
 const InputField: React.FC<InputFieldProps> = ({
@@ -25,7 +26,8 @@ const InputField: React.FC<InputFieldProps> = ({
   onBlur,
   error,
   className = '',
-  disabled = false
+  disabled = false,
+  min
 }) => {
   return (
     <div className="w-full mb-4">
@@ -42,6 +44,7 @@ const InputField: React.FC<InputFieldProps> = ({
         placeholder={placeholder}
         required={required}
         disabled={disabled}
+        min={min}
         className={`block w-full h-10 px-3 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base sm:text-sm ${error ? 'border-red-500' : ''} ${disabled ? 'bg-gray-100 cursor-not-allowed' : ''} ${className}`}
       />
       {error && <p className="mt-2 text-sm text-red-600">{error}</p>}

@@ -28,7 +28,7 @@ const TotalWorkExperience: React.FC<TotalWorkExperienceProps> = ({
 
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700">
+      <label className="block text-sm font-medium text-gray-700 mb-2">
         Total Work Experience {required && <span className="text-red-500">*</span>}
       </label>
       <div className="grid grid-cols-2 gap-4">

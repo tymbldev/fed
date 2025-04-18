@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import SelectField from '../common/SelectField';
-import { InputField } from '../form/InputField';
+import InputField from '../common/InputField';
 import { fetchDropdownOptions } from '../../services/api';
 import { toast } from 'sonner';
 
@@ -47,25 +47,25 @@ const Salary: React.FC<SalaryProps> = ({
     <div className="grid grid-cols-2 gap-4">
       <SelectField
         label="Currency"
-        name="currency"
+        name="currentSalaryCurrencyId"
         options={currencies.map(opt => ({
           value: opt.id.toString(),
           label: opt.name
         }))}
-        value={formData.currency || ''}
+        value={formData.currentSalaryCurrencyId || ''}
         onChange={onInputChange}
-        onBlur={() => onBlur('currency')}
-        error={touched.currency ? errors.currency : undefined}
+        onBlur={() => onBlur('currentSalaryCurrencyId')}
+        error={touched.currentSalaryCurrencyId ? errors.currentSalaryCurrencyId : undefined}
         required={required}
       />
       <InputField
         label="Salary"
-        name="salary"
+        name="currentSalary"
         type="number"
-        value={formData.salary || ''}
+        value={formData.currentSalary || ''}
         onChange={onInputChange}
-        onBlur={() => onBlur('salary')}
-        error={touched.salary ? errors.salary : undefined}
+        onBlur={() => onBlur('currentSalary')}
+        error={touched.currentSalary ? errors.currentSalary : undefined}
         required={required}
         placeholder="Enter your salary"
         min="0"

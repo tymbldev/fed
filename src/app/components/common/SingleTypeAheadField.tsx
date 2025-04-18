@@ -74,7 +74,7 @@ const SingleTypeAheadField: React.FC<SingleTypeAheadFieldProps> = ({
 
   return (
     <div className="space-y-1" ref={wrapperRef}>
-      <label htmlFor={name} className="block text-sm font-medium text-gray-700">
+      <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1">
         {label} {required && <span className="text-red-500">*</span>}
       </label>
       <div className="relative">

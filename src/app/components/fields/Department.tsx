@@ -4,8 +4,8 @@ import { fetchDropdownOptions } from '../../services/api';
 import { toast } from 'sonner';
 
 interface DepartmentOption {
-  id: number;
-  name: string;
+    id: number;
+    name: string;
 }
 
 interface DepartmentProps {
