@@ -8,40 +8,20 @@ import Password from '../components/fields/Password';
 import FirstName from '../components/fields/FirstName';
 import LastName from '../components/fields/LastName';
 import Phone from '../components/fields/Phone';
-import Location from '../components/fields/Location';
+import LocationWithPrefill from '../components/fields/LocationWithPrefill';
 import Department from '../components/fields/Department';
 import Company from '../components/fields/Company';
 import Designation from '../components/fields/Designation';
+import Skills from '../components/fields/Skills';
+import TotalWorkExperience from '../components/fields/TotalWorkExperience';
+import Salary from '../components/fields/Salary';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { validateFields } from '../utils/validation';
 
 type FormData = { [key: string]: string };
 type FormErrors = { [key: string]: string };
 type FormTouched = { [key: string]: boolean };
-
-const validateField = (name: string, value: string): string | undefined => {
-  if (!value) {
-    return 'This field is required';
-  }
-  switch (name) {
-    case 'email':
-      if (!/\S+@\S+\.\S+/.test(value)) {
-        return 'Please enter a valid email address';
-      }
-      break;
-    case 'password':
-      if (value.length < 6) {
-        return 'Password must be at least 6 characters long';
-      }
-      break;
-    case 'phoneNumber':
-      if (!/^\+?[\d\s-]{10,}$/.test(value)) {
-        return 'Please enter a valid phone number';
-      }
-      break;
-  }
-  return undefined;
-};
 
 export default function Register() {
   const router = useRouter();
@@ -81,9 +61,10 @@ export default function Register() {
   const handleBlur = (field: string) => {
     setTouched(prev => ({ ...prev, [field]: true }));
     const value = formData[field] || '';
-    const error = validateField(field, value);
-    if (error) {
-      setErrors(prev => ({ ...prev, [field]: error }));
+    const fieldsToValidate = [{ name: field, value, required: true }];
+    const newErrors = validateFields(fieldsToValidate);
+    if (newErrors[field]) {
+      setErrors(prev => ({ ...prev, [field]: newErrors[field] }));
     }
   };
 
@@ -95,23 +76,21 @@ export default function Register() {
       // Define fields to validate for each step
       const stepFields = {
         1: ['email', 'password'],
-        2: ['firstName', 'lastName'],
-        3: ['phoneNumber', 'country', 'state', 'city'],
-        4: ['department', 'company', 'designation']
+        2: ['firstName', 'lastName', 'phone', 'countryId', 'cityId'],
+        3: ['yearsOfExperience', 'monthsOfExperience', 'company', 'designation', 'departmentId'],
+        4: ['currentSalary', 'currentSalaryCurrencyId', 'skills']
       };
 
       // Validate fields for the current step
       const currentStepFields = stepFields[currentStep as keyof typeof stepFields] || [];
-      const stepErrors: FormErrors = {};
-      let hasErrors = false;
+      const fieldsToValidate = currentStepFields.map(field => ({
+        name: field,
+        value: formData[field] || '',
+        required: true
+      }));
 
-      currentStepFields.forEach(field => {
-        const error = validateField(field, formData[field] || '');
-        if (error) {
-          stepErrors[field] = error;
-          hasErrors = true;
-        }
-      });
+      const stepErrors = validateFields(fieldsToValidate);
+      const hasErrors = Object.keys(stepErrors).length > 0;
 
       if (hasErrors) {
         setErrors(prev => ({ ...prev, ...stepErrors }));
@@ -199,11 +178,6 @@ export default function Register() {
               onInputChange={handleInputChange}
               onBlur={handleBlur}
             />
-          </div>
-        );
-      case 3:
-        return (
-          <div className="space-y-6">
             <Phone
               formData={formData}
               errors={errors}
@@ -211,7 +185,7 @@ export default function Register() {
               onInputChange={handleInputChange}
               onBlur={handleBlur}
             />
-            <Location
+            <LocationWithPrefill
               formData={formData}
               errors={errors}
               touched={touched}
@@ -220,10 +194,10 @@ export default function Register() {
             />
           </div>
         );
-      case 4:
+      case 3:
         return (
           <div className="space-y-6">
-            <Department
+            <TotalWorkExperience
               formData={formData}
               errors={errors}
               touched={touched}
@@ -238,6 +212,32 @@ export default function Register() {
               onBlur={handleBlur}
             />
             <Designation
+              formData={formData}
+              errors={errors}
+              touched={touched}
+              onInputChange={handleInputChange}
+              onBlur={handleBlur}
+            />
+            <Department
+              formData={formData}
+              errors={errors}
+              touched={touched}
+              onInputChange={handleInputChange}
+              onBlur={handleBlur}
+            />
+          </div>
+        );
+      case 4:
+        return (
+          <div className="space-y-6">
+            <Salary
+              formData={formData}
+              errors={errors}
+              touched={touched}
+              onInputChange={handleInputChange}
+              onBlur={handleBlur}
+            />
+            <Skills
               formData={formData}
               errors={errors}
               touched={touched}

@@ -31,7 +31,7 @@ const Department: React.FC<DepartmentProps> = ({
     const loadOptions = async () => {
       try {
         const data = await fetchDropdownOptions('departments') as unknown as DepartmentOption[];
-        console.log("departments", data);
+        // console.log("departments", data);
         setOptions(data);
       } catch (err) {
         console.error('Failed to fetch departments:', err);

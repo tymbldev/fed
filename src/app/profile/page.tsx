@@ -51,7 +51,7 @@ export default function Profile() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    console.log(name, value);
+    // console.log(name, value);
 
     // Update form data
     setFormData(prev => ({

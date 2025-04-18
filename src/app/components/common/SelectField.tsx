@@ -30,7 +30,6 @@ const SelectField: React.FC<SelectFieldProps> = ({
   className = '',
   disabled = false
 }) => {
-  console.log("SelectField", name, options);
   return (
     <div className="w-full">
       <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-2">

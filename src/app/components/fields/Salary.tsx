@@ -32,7 +32,7 @@ const Salary: React.FC<SalaryProps> = ({
     const loadCurrencies = async () => {
       try {
         const data = await fetchDropdownOptions('currencies') as unknown as CurrencyOption[];
-        console.log("currencies", data);
+        // console.log("currencies", data);
         setCurrencies(data);
       } catch (err) {
         console.error('Failed to fetch currencies:', err);
