@@ -37,18 +37,18 @@ const Location: React.FC<LocationProps> = ({
   required,
   layout = 'vertical'
 }) => {
-  const [locationData, setLocationData] = useState<LocationOption[]>([]);
   const [countries, setCountries] = useState<{ value: string; label: string }[]>([]);
   const [cities, setCities] = useState<{ value: string; label: string }[]>([]);
   const [isLoadingCities, setIsLoadingCities] = useState(false);
   const [previousCountryId, setPreviousCountryId] = useState('');
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
+  // Load initial countries data
   useEffect(() => {
-    const loadLocations = async () => {
+    console.log('loadCountries', formData.countryId, formData.cityId);
+    const loadCountries = async () => {
       try {
         const data = await fetchDropdownOptions('locations') as unknown as LocationOption[];
-        setLocationData(data);
 
         const uniqueCountries = Array.from(
           new Map(
@@ -59,43 +59,40 @@ const Location: React.FC<LocationProps> = ({
         );
 
         setCountries(uniqueCountries);
+
+        // Handle initial city loading if we have both country and city
+        if (formData.countryId && formData.cityId) {
+          const countryLocations = data.filter(loc =>
+            loc.countryId !== null && loc.countryId.toString() === formData.countryId
+          );
+          const uniqueCities = Array.from(
+            new Map(
+              countryLocations
+                .filter(loc => loc.cityId !== null)
+                .map(loc => [`${loc.cityId}`, { value: loc.cityId.toString(), label: loc.city }])
+            ).values()
+          );
+
+          setCities(uniqueCities);
+          setPreviousCountryId(formData.countryId);
+        }
+        setTimeout(() => {
+          setIsInitialLoad(false);
+        }, 1000);
       } catch (err) {
         console.error('Failed to fetch location data:', err);
         toast.error('Failed to load location data. Please try again.');
       }
     };
 
-    loadLocations();
-  }, []);
+    loadCountries();
+  }, [formData.countryId, formData.cityId]);
 
-  // Effect to handle initial city loading and prefilling
-  useEffect(() => {
-    if (locationData.length > 0 && isInitialLoad) {
-      if (formData.countryId && formData.cityId) {
-        // If we have both country and city, load cities for that country
-        const countryLocations = locationData.filter(loc =>
-          loc.countryId !== null && loc.countryId.toString() === formData.countryId
-        );
-        const uniqueCities = Array.from(
-          new Map(
-            countryLocations
-              .filter(loc => loc.cityId !== null)
-              .map(loc => [`${loc.cityId}`, { value: loc.cityId.toString(), label: loc.city }])
-          ).values()
-        );
-
-        setCities(uniqueCities);
-        setPreviousCountryId(formData.countryId);
-      }
-      // Set isInitialLoad to false regardless of whether we have initial data or not
-      setIsInitialLoad(false);
-    }
-  }, [locationData, formData.countryId, formData.cityId, isInitialLoad]);
-
+  // Handle country change and update cities
   useEffect(() => {
     const updateCities = async () => {
-      console.log("updateCities");
       if (formData.countryId !== previousCountryId && !isInitialLoad) {
+        console.log('updateCities', formData.countryId, previousCountryId);
         setPreviousCountryId(formData.countryId);
         setIsLoadingCities(true);
 
@@ -109,24 +106,25 @@ const Location: React.FC<LocationProps> = ({
           } as React.ChangeEvent<HTMLSelectElement>);
         }
 
-        console.log("formData.countryId", formData.countryId);
-
-        // Update cities based on selected country
         if (formData.countryId) {
-          const countryLocations = locationData.filter(loc =>
-            loc.countryId !== null && loc.countryId.toString() === formData.countryId
-          );
-          const uniqueCities = Array.from(
-            new Map(
-              countryLocations
-                .filter(loc => loc.cityId !== null)
-                .map(loc => [`${loc.cityId}`, { value: loc.cityId.toString(), label: loc.city }])
-            ).values()
-          );
+          try {
+            const data = await fetchDropdownOptions('locations') as unknown as LocationOption[];
+            const countryLocations = data.filter(loc =>
+              loc.countryId !== null && loc.countryId.toString() === formData.countryId
+            );
+            const uniqueCities = Array.from(
+              new Map(
+                countryLocations
+                  .filter(loc => loc.cityId !== null)
+                  .map(loc => [`${loc.cityId}`, { value: loc.cityId.toString(), label: loc.city }])
+              ).values()
+            );
 
-          console.log("uniqueCities", uniqueCities);
-
-          setCities(uniqueCities);
+            setCities(uniqueCities);
+          } catch (err) {
+            console.error('Failed to fetch cities:', err);
+            toast.error('Failed to load cities. Please try again.');
+          }
         } else {
           setCities([]);
         }
@@ -135,15 +133,17 @@ const Location: React.FC<LocationProps> = ({
     };
 
     updateCities();
-  }, [formData.countryId, locationData, onInputChange, previousCountryId, isInitialLoad]);
+  }, [formData.countryId]);
 
   // Custom handler for country field to update countryId
   const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    console.log('handleCountryChange', e);
     onInputChange(e);
   };
 
   // Custom handler for city field to update cityId
   const handleCityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    console.log('handleCityChange', e);
     onInputChange(e);
   };
 

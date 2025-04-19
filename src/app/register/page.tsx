@@ -18,14 +18,30 @@ import Salary from '../components/fields/Salary';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { validateFields } from '../utils/validation';
+import { useAuth } from '../context/AuthContext';
 
 type FormData = { [key: string]: string };
 type FormErrors = { [key: string]: string };
 type FormTouched = { [key: string]: boolean };
 
+type ProfileData = {
+  firstName?: string;
+  lastName?: string;
+  phoneNumber?: string;
+  designationId?: number;
+  departmentId?: number;
+  cityId?: number;
+  countryId?: number;
+  yearsOfExperience?: number;
+  monthsOfExperience?: number;
+  skillNames?: string | string[];
+  [key: string]: string | number | string[] | undefined;
+};
+
 export default function Register() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { fetchUserProfile } = useAuth();
 
   // Initialize step from URL parameters
   const [currentStep, setCurrentStep] = useState(() => {
@@ -78,7 +94,7 @@ export default function Register() {
         1: ['email', 'password'],
         2: ['firstName', 'lastName', 'phone', 'countryId', 'cityId'],
         3: ['yearsOfExperience', 'monthsOfExperience', 'company', 'designation', 'departmentId'],
-        4: ['currentSalary', 'currentSalaryCurrencyId', 'skills']
+        4: ['currentSalary', 'currentSalaryCurrencyId', 'skillNames']
       };
 
       // Validate fields for the current step
@@ -114,7 +130,20 @@ export default function Register() {
       } else {
         const profileData = { ...formData };
         delete profileData.password; // Remove password from profile update
-        await updateProfile(profileData);
+        // Map phone to phoneNumber for API
+        if (profileData.phone) {
+          profileData.phoneNumber = profileData.phone;
+          delete profileData.phone;
+        }
+
+        // Create API data object
+        const apiData: ProfileData = { ...profileData };
+        // Convert skillNames string to array for API
+        if (apiData.skillNames && typeof apiData.skillNames === 'string') {
+          apiData.skillNames = apiData.skillNames.split(',').map((skill: string) => skill.trim());
+        }
+        await updateProfile(apiData);
+        await fetchUserProfile(); // Fetch fresh profile data
 
         if (currentStep === 4) {
           toast.success('Profile completed successfully!');
