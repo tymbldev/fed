@@ -51,6 +51,11 @@ export const validateField = (name: string, value: string, required: boolean): s
           return validationMessages.currentSalary;
         }
         break;
+      case 'currentSalaryCurrencyId':
+        if (!value) {
+          return validationMessages.required;
+        }
+        break;
       case 'password':
         if (value.length < 8) {
           return validationMessages.password;
@@ -67,14 +72,29 @@ export const validateField = (name: string, value: string, required: boolean): s
           return validationMessages.department;
         }
         break;
-      case 'location':
+      case 'countryId':
         if (!value) {
           return validationMessages.location;
         }
         break;
-      case 'skills':
+      case 'cityId':
+        if (!value) {
+          return validationMessages.location;
+        }
+        break;
+      case 'skillNames':
         if (!value) {
           return validationMessages.skills;
+        }
+        break;
+      case 'title':
+        if (value.length < 2) {
+          return validationMessages.title;
+        }
+        break;
+      case 'description':
+        if (value.length < 10) {
+          return validationMessages.description;
         }
         break;
     }

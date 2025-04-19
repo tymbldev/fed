@@ -10,11 +10,13 @@ interface DesignationProps {
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
   onBlur: (field: string) => void;
   required?: boolean;
+  label?: string;
+  fieldName?: string;
 }
 
 interface Option {
-  value: string;
-  label: string;
+  id: string;
+  name: string;
 }
 
 const Designation: React.FC<DesignationProps> = ({
@@ -22,14 +24,17 @@ const Designation: React.FC<DesignationProps> = ({
   errors,
   touched,
   onInputChange,
-  onBlur
+  onBlur,
+  required = false,
+  label = "Designation",
+  fieldName = "designation"
 }) => {
   const [options, setOptions] = useState<Option[]>([]);
 
   useEffect(() => {
     const loadOptions = async () => {
       try {
-        const data: Option[] = await fetchDropdownOptions('designations');
+        const data: Option[] = await fetchDropdownOptions('designations') as unknown as Option[];
         setOptions(data);
       } catch (err) {
         console.error('Failed to fetch designations:', err);
@@ -42,17 +47,17 @@ const Designation: React.FC<DesignationProps> = ({
 
   return (
     <SingleTypeAheadField
-      label="Designation"
-      name="designation"
-      value={formData['designation'] || ''}
+      label={label}
+      name={fieldName}
+      value={formData[fieldName] || ''}
       onChange={onInputChange}
-      onBlur={() => onBlur('designation')}
-      error={touched['designation'] ? errors['designation'] : undefined}
+      onBlur={() => onBlur(fieldName)}
+      error={touched[fieldName] ? errors[fieldName] : undefined}
       suggestions={options.map(opt => ({
-        value: opt.value,
-        label: opt.label
+        value: opt.name,
+        label: opt.name
       }))}
-      required
+      required={required}
     />
   );
 };

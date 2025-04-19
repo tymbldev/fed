@@ -32,6 +32,8 @@ export default function Header() {
   const loggedInNavItems = [
     { href: '/profile', label: 'Profile' },
     { href: '/jobs', label: 'Jobs' },
+    { href: '/post-job', label: 'Post a Job' },
+    { href: '/my-jobs', label: 'My Jobs' },
     { href: '/refer', label: 'Refer' },
   ];
 
