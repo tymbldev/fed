@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
+import { BASE_URL } from '../../services/api';
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { email, password } = body;
 
-    const response = await fetch('https://www.tymblhub.com/tymbl-service/api/v1/login', {
+    const response = await fetch(`${BASE_URL}/api/v1/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

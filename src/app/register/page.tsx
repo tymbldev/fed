@@ -41,7 +41,15 @@ type ProfileData = {
 export default function Register() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { fetchUserProfile } = useAuth();
+  const { fetchUserProfile, isLoggedIn } = useAuth();
+
+  // Redirect if user is already logged in
+  React.useEffect(() => {
+    if (isLoggedIn) {
+      toast.info('You are already logged in');
+      router.push('/profile');
+    }
+  }, [isLoggedIn, router]);
 
   // Initialize step from URL parameters
   const [currentStep, setCurrentStep] = useState(() => {

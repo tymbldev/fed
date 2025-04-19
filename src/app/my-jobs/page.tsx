@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { BASE_URL } from '../services/api';
 
 interface Job {
   id: number;
@@ -25,7 +26,7 @@ export default function MyJobs() {
   const fetchJobs = async (page: number) => {
     try {
       setIsLoading(true);
-      const response = await fetch(`/api/v1/jobsmanagement/my-posts?page=${page}&size=10`);
+      const response = await fetch(`${BASE_URL}/api/v1/jobsmanagement/my-posts?page=${page}&size=10`);
       if (!response.ok) {
         throw new Error('Failed to fetch jobs');
       }

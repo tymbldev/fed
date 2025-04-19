@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { BASE_URL } from '../../services/api';
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    const response = await fetch('https://www.tymblhub.com/tymbl-service/api/v1/registration', {
+    const response = await fetch(`${BASE_URL}/api/v1/registration`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

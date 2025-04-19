@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { BASE_URL } from '../services/api';
 
 interface Education {
   id?: number;
@@ -84,7 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error('No auth token found');
       }
 
-      const response = await fetch('https://www.tymblhub.com/tymbl-service/api/v1/users/profile', {
+      const response = await fetch(`${BASE_URL}/api/v1/users/profile`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
