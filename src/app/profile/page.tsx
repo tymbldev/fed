@@ -217,6 +217,8 @@ export default function Profile() {
                 onBlur={(field) => setTouched(prev => ({ ...prev, [field]: true }))}
                 required={true}
                 layout="horizontal"
+                countryLabel="Work Country"
+                cityLabel="Work City"
               />
             </div>
 
@@ -228,6 +230,7 @@ export default function Profile() {
                 onInputChange={handleInputChange}
                 onBlur={(field) => setTouched(prev => ({ ...prev, [field]: true }))}
                 required={true}
+                label="Professional Skills"
               />
             </div>
 
@@ -239,6 +242,8 @@ export default function Profile() {
                 onInputChange={handleInputChange}
                 onBlur={(field) => setTouched(prev => ({ ...prev, [field]: true }))}
                 required={true}
+                currencyLabel="Current Salary Currency"
+                salaryLabel="Current Annual Salary"
               />
             </div>
 

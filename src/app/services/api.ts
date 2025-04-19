@@ -1,4 +1,4 @@
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+export const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export const registerUser = async (email: string, password: string) => {
   const response = await fetch(`${BASE_URL}/api/v1/registration`, {

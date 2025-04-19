@@ -11,6 +11,8 @@ interface SalaryProps {
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
   onBlur: (field: string) => void;
   required?: boolean;
+  currencyLabel?: string;
+  salaryLabel?: string;
 }
 
 interface CurrencyOption {
@@ -24,7 +26,9 @@ const Salary: React.FC<SalaryProps> = ({
   touched,
   onInputChange,
   onBlur,
-  required = false
+  required = false,
+  currencyLabel = "Currency",
+  salaryLabel = "Salary"
 }) => {
   const [currencies, setCurrencies] = useState<CurrencyOption[]>([]);
 
@@ -46,7 +50,7 @@ const Salary: React.FC<SalaryProps> = ({
   return (
     <div className="grid grid-cols-2 gap-4">
       <SelectField
-        label="Currency"
+        label={currencyLabel}
         name="currentSalaryCurrencyId"
         options={currencies.map(opt => ({
           value: opt.id.toString(),
@@ -59,7 +63,7 @@ const Salary: React.FC<SalaryProps> = ({
         required={required}
       />
       <InputField
-        label="Salary"
+        label={salaryLabel}
         name="currentSalary"
         type="number"
         value={formData.currentSalary || ''}

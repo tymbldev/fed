@@ -11,6 +11,8 @@ interface LocationProps {
   onBlur: (field: string) => void;
   required?: boolean;
   layout?: 'horizontal' | 'vertical';
+  countryLabel?: string;
+  cityLabel?: string;
 }
 
 interface LocationOption {
@@ -35,7 +37,9 @@ const Location: React.FC<LocationProps> = ({
   onInputChange,
   onBlur,
   required,
-  layout = 'vertical'
+  layout = 'vertical',
+  countryLabel = "Country",
+  cityLabel = "City"
 }) => {
   const [countries, setCountries] = useState<{ value: string; label: string }[]>([]);
   const [cities, setCities] = useState<{ value: string; label: string }[]>([]);
@@ -152,7 +156,7 @@ const Location: React.FC<LocationProps> = ({
   return (
     <div className={containerClass}>
       <SelectField
-        label="Country"
+        label={countryLabel}
         name="countryId"
         options={countries}
         value={formData.countryId || ''}
@@ -163,7 +167,7 @@ const Location: React.FC<LocationProps> = ({
       />
 
       <SelectField
-        label="City"
+        label={cityLabel}
         name="cityId"
         options={cities}
         value={formData.cityId || ''}

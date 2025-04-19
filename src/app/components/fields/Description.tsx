@@ -7,6 +7,7 @@ interface DescriptionProps {
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
   onBlur: (field: string) => void;
   required?: boolean;
+  label?: string;
 }
 
 export default function Description({
@@ -16,11 +17,12 @@ export default function Description({
   onInputChange,
   onBlur,
   required = false,
+  label = "Description"
 }: DescriptionProps) {
   return (
     <div>
       <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-        Description {required && <span className="text-red-500">*</span>}
+        {label} {required && <span className="text-red-500">*</span>}
       </label>
       <div className="mt-1">
         <textarea

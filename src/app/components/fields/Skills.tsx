@@ -11,6 +11,7 @@ interface SkillsProps {
   onBlur: (field: string) => void;
   required?: boolean;
   options?: { value: string; label: string }[];
+  label?: string;
 }
 
 const Skills: React.FC<SkillsProps> = ({
@@ -20,7 +21,8 @@ const Skills: React.FC<SkillsProps> = ({
   onInputChange,
   onBlur,
   required,
-  options: propOptions
+  options: propOptions,
+  label = "Skills"
 }) => {
   const [skills, setSkills] = useState<{ value: string; label: string }[]>([]);
 
@@ -46,7 +48,7 @@ const Skills: React.FC<SkillsProps> = ({
 
   return (
     <TypeAheadField
-      label="Skills"
+      label={label}
       name="skillNames"
       value={formData['skillNames'] || ''}
       onChange={onInputChange}

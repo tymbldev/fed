@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
 import { validateFields } from '../utils/validation';
+import { BASE_URL } from '../services/api';
 
 // Import field components
 import Designation from '../components/fields/Designation';
@@ -106,7 +107,7 @@ export default function PostJob() {
         company: userProfile?.company,
       };
 
-      const response = await fetch('/api/v1/jobs', {
+      const response = await fetch(`${BASE_URL}/api/v1/jobs`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -151,6 +152,7 @@ export default function PostJob() {
           onInputChange={handleInputChange}
           onBlur={() => handleBlur('description')}
           required={true}
+          label="Job Description"
         />
 
         <Location
@@ -161,6 +163,8 @@ export default function PostJob() {
           onBlur={() => handleBlur('location')}
           required={true}
           layout="horizontal"
+          countryLabel="Job Country"
+          cityLabel="Job City"
         />
 
         <Salary
@@ -170,6 +174,8 @@ export default function PostJob() {
           onInputChange={handleInputChange}
           onBlur={() => handleBlur('salary')}
           required={true}
+          currencyLabel="Select Currency"
+          salaryLabel="Annual Salary"
         />
 
         <Skills
@@ -179,6 +185,7 @@ export default function PostJob() {
           onInputChange={handleInputChange}
           onBlur={() => handleBlur('skillNames')}
           required={true}
+          label="Required Skills"
         />
 
         <div className="flex justify-end">

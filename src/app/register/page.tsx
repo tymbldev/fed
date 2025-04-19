@@ -219,7 +219,11 @@ export default function Register() {
               errors={errors}
               touched={touched}
               onInputChange={handleInputChange}
-              onBlur={handleBlur}
+              onBlur={(field) => setTouched(prev => ({ ...prev, [field]: true }))}
+              required={true}
+              layout="horizontal"
+              countryLabel="Preferred Country"
+              cityLabel="Preferred City"
             />
           </div>
         );
@@ -259,20 +263,29 @@ export default function Register() {
       case 4:
         return (
           <div className="space-y-6">
-            <Salary
-              formData={formData}
-              errors={errors}
-              touched={touched}
-              onInputChange={handleInputChange}
-              onBlur={handleBlur}
-            />
-            <Skills
-              formData={formData}
-              errors={errors}
-              touched={touched}
-              onInputChange={handleInputChange}
-              onBlur={handleBlur}
-            />
+            <div className="w-full">
+              <Skills
+                formData={formData}
+                errors={errors}
+                touched={touched}
+                onInputChange={handleInputChange}
+                onBlur={(field) => setTouched(prev => ({ ...prev, [field]: true }))}
+                required={true}
+                label="Key Skills"
+              />
+            </div>
+            <div className="w-full">
+              <Salary
+                formData={formData}
+                errors={errors}
+                touched={touched}
+                onInputChange={handleInputChange}
+                onBlur={(field) => setTouched(prev => ({ ...prev, [field]: true }))}
+                required={true}
+                currencyLabel="Expected Salary Currency"
+                salaryLabel="Expected Annual Salary"
+              />
+            </div>
           </div>
         );
       default:
