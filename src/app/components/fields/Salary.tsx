@@ -13,6 +13,8 @@ interface SalaryProps {
   required?: boolean;
   currencyLabel?: string;
   salaryLabel?: string;
+  salaryFieldName: string;
+  currencyFieldName: string;
 }
 
 interface CurrencyOption {
@@ -28,7 +30,9 @@ const Salary: React.FC<SalaryProps> = ({
   onBlur,
   required = false,
   currencyLabel = "Currency",
-  salaryLabel = "Salary"
+  salaryLabel = "Salary",
+  salaryFieldName,
+  currencyFieldName
 }) => {
   const [currencies, setCurrencies] = useState<CurrencyOption[]>([]);
 
@@ -51,25 +55,25 @@ const Salary: React.FC<SalaryProps> = ({
     <div className="grid grid-cols-2 gap-4">
       <SelectField
         label={currencyLabel}
-        name="currentSalaryCurrencyId"
+        name={currencyFieldName}
         options={currencies.map(opt => ({
           value: opt.id.toString(),
           label: opt.name
         }))}
-        value={formData.currentSalaryCurrencyId || ''}
+        value={formData[currencyFieldName] || ''}
         onChange={onInputChange}
-        onBlur={() => onBlur('currentSalaryCurrencyId')}
-        error={touched.currentSalaryCurrencyId ? errors.currentSalaryCurrencyId : undefined}
+        onBlur={() => onBlur(currencyFieldName)}
+        error={touched[currencyFieldName] ? errors[currencyFieldName] : undefined}
         required={required}
       />
       <InputField
         label={salaryLabel}
-        name="currentSalary"
+        name={salaryFieldName}
         type="number"
-        value={formData.currentSalary || ''}
+        value={formData[salaryFieldName] || ''}
         onChange={onInputChange}
-        onBlur={() => onBlur('currentSalary')}
-        error={touched.currentSalary ? errors.currentSalary : undefined}
+        onBlur={() => onBlur(salaryFieldName)}
+        error={touched[salaryFieldName] ? errors[salaryFieldName] : undefined}
         required={required}
         placeholder="Enter your salary"
         min="0"

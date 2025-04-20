@@ -70,8 +70,8 @@ export default function PostJob() {
       'description',
       'countryId',
       'cityId',
-      'currentSalary',
-      'currentSalaryCurrencyId',
+      'salary',
+      'currencyId',
       'skillNames'
     ];
     const touchedFields = allFields.reduce((acc, field) => ({
@@ -101,13 +101,15 @@ export default function PostJob() {
         description: formData.description,
         countryId: formData.countryId ? parseInt(formData.countryId) : undefined,
         cityId: formData.cityId ? parseInt(formData.cityId) : undefined,
-        currentSalary: formData.currentSalary ? parseFloat(formData.currentSalary) : undefined,
-        currentSalaryCurrencyId: formData.currentSalaryCurrencyId ? parseInt(formData.currentSalaryCurrencyId) : undefined,
+        salary: formData.salary ? parseFloat(formData.salary) : undefined,
+        currencyId: formData.currencyId ? parseInt(formData.currencyId) : undefined,
         skillNames: formData.skillNames ? formData.skillNames.split(',').map(skill => skill.trim()) : [],
         company: userProfile?.company,
+        companyId: 1000,
+        designationId: 1000
       };
 
-      const response = await fetch(`${BASE_URL}/api/v1/jobs`, {
+      const response = await fetch(`${BASE_URL}/api/v1/jobmanagement/my-posts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -172,10 +174,12 @@ export default function PostJob() {
           errors={errors}
           touched={touched}
           onInputChange={handleInputChange}
-          onBlur={() => handleBlur('salary')}
+          onBlur={handleBlur}
           required={true}
           currencyLabel="Select Currency"
           salaryLabel="Annual Salary"
+          salaryFieldName="salary"
+          currencyFieldName="currencyId"
         />
 
         <Skills

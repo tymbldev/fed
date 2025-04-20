@@ -9,24 +9,66 @@ interface Job {
   id: number;
   title: string;
   description: string;
-  location: string;
-  employmentType: string;
-  experienceLevel: string;
+  cityId: number;
+  company: string;
+  companyId: number;
+  countryId: number;
+  currencyId: number;
+  designation: string | null;
+  designationId: number;
   salary: number;
-  currency: string;
+  active: boolean;
+  postedBy: number;
   createdAt: string;
+  updatedAt: string;
+}
+
+interface Currency {
+  id: number;
+  code: string;
+  name: string;
+  symbol: string;
+  exchangeRate: number;
+  isActive: boolean;
 }
 
 export default function MyJobs() {
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [currencies, setCurrencies] = useState<{ [key: number]: string }>({});
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
+  const fetchCurrencies = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/api/v1/dropdowns/currencies`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch currencies');
+      }
+      const data: Currency[] = await response.json();
+      const currencyMap = data.reduce((acc, currency) => {
+        acc[currency.id] = currency.code;
+        return acc;
+      }, {} as { [key: number]: string });
+      setCurrencies(currencyMap);
+    } catch (error) {
+      console.error('Error fetching currencies:', error);
+      toast.error('Failed to fetch currencies');
+    }
+  };
+
   const fetchJobs = async (page: number) => {
     try {
       setIsLoading(true);
-      const response = await fetch(`${BASE_URL}/api/v1/jobsmanagement/my-posts?page=${page}&size=10`);
+      const token = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('auth_token='))
+        ?.split('=')[1];
+      const response = await fetch(`${BASE_URL}/api/v1/jobmanagement/my-posts?page=${page}&size=10`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
       if (!response.ok) {
         throw new Error('Failed to fetch jobs');
       }
@@ -42,6 +84,7 @@ export default function MyJobs() {
   };
 
   useEffect(() => {
+    fetchCurrencies();
     fetchJobs(currentPage);
   }, [currentPage]);
 
@@ -53,10 +96,10 @@ export default function MyJobs() {
     });
   };
 
-  const formatSalary = (salary: number, currency: string) => {
+  const formatSalary = (salary: number, currencyId: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: currency,
+      currency: currencies[currencyId] || 'USD',
     }).format(salary);
   };
 
@@ -97,13 +140,11 @@ export default function MyJobs() {
                           {job.title}
                         </h2>
                         <div className="mt-2 flex items-center text-sm text-gray-500">
-                          <span className="truncate">{job.location}</span>
+                          <span className="truncate">{job.company}</span>
                           <span className="mx-2">•</span>
-                          <span>{job.employmentType}</span>
+                          <span>{job.designation || 'Not specified'}</span>
                           <span className="mx-2">•</span>
-                          <span>{job.experienceLevel}</span>
-                          <span className="mx-2">•</span>
-                          <span>{formatSalary(job.salary, job.currency)}</span>
+                          <span>{formatSalary(job.salary, job.currencyId)}</span>
                         </div>
                       </div>
                       <div className="ml-4 flex-shrink-0">

@@ -242,6 +242,8 @@ export default function Profile() {
                 onInputChange={handleInputChange}
                 onBlur={(field) => setTouched(prev => ({ ...prev, [field]: true }))}
                 required={true}
+                salaryFieldName="currentSalary"
+                currencyFieldName="currentSalaryCurrencyId"
                 currencyLabel="Current Salary Currency"
                 salaryLabel="Current Annual Salary"
               />

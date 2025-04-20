@@ -290,8 +290,10 @@ export default function Register() {
                 onInputChange={handleInputChange}
                 onBlur={(field) => setTouched(prev => ({ ...prev, [field]: true }))}
                 required={true}
-                currencyLabel="Expected Salary Currency"
-                salaryLabel="Expected Annual Salary"
+                currencyLabel="Select Currency"
+                salaryLabel="Annual Salary"
+                salaryFieldName="currentSalary"
+                currencyFieldName="currentSalaryCurrencyId"
               />
             </div>
           </div>
