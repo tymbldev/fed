@@ -49,7 +49,7 @@ const Location: React.FC<LocationProps> = ({
 
   // Load initial countries data
   useEffect(() => {
-    console.log('loadCountries', formData.countryId, formData.cityId);
+    // console.log('loadCountries', formData.countryId, formData.cityId);
     const loadCountries = async () => {
       try {
         const data = await fetchDropdownOptions('locations') as unknown as LocationOption[];

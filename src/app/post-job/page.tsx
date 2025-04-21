@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
 import { validateFields } from '../utils/validation';
@@ -16,14 +16,72 @@ import Skills from '../components/fields/Skills';
 
 export default function PostJob() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { userProfile } = useAuth();
   const [formData, setFormData] = useState<{ [key: string]: string }>({});
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
+  const isEditMode = searchParams.get('edit') === 'true';
+  const jobId = searchParams.get('id');
+
+  useEffect(() => {
+    const fetchJobDetails = async () => {
+      if (isEditMode && jobId) {
+        setIsLoading(true);
+        try {
+          const token = document.cookie
+            .split('; ')
+            .find(row => row.startsWith('auth_token='))
+            ?.split('=')[1];
+
+          const response = await fetch(`${BASE_URL}/api/v1/jobmanagement/${jobId}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to fetch job details');
+          }
+
+          const job = await response.json();
+          setFormData({
+            title: job.title || '',
+            description: job.description || '',
+            countryId: job.countryId?.toString() || '',
+            cityId: job.cityId?.toString() || '',
+            salary: job.salary?.toString() || '',
+            currencyId: job.currencyId?.toString() || '',
+            skillNames: job.skillNames?.join(', ') || '',
+          });
+        } catch (error) {
+          console.error('Error fetching job details:', error);
+          toast.error('Failed to fetch job details');
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchJobDetails();
+  }, [isEditMode, jobId, router]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement> | string) => {
+    let name: string;
+    let value: string;
+
+    if (typeof e === 'string') {
+      // Handle direct string input from Tiptap
+      name = 'description';
+      value = e;
+    } else {
+      // Handle form input events
+      name = e.target.name;
+      value = e.target.value;
+    }
 
     setFormData(prev => ({
       ...prev,
@@ -109,32 +167,49 @@ export default function PostJob() {
         designationId: 1000
       };
 
-      const response = await fetch(`${BASE_URL}/api/v1/jobmanagement/my-posts`, {
-        method: 'POST',
+      const token = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('auth_token='))
+        ?.split('=')[1];
+
+      const url = isEditMode && jobId
+        ? `${BASE_URL}/api/v1/jobmanagement/${jobId}`
+        : `${BASE_URL}/api/v1/jobmanagement/my-posts`;
+
+      const response = await fetch(url, {
+        method: isEditMode ? 'PUT' : 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${document.cookie.split('auth_token=')[1]?.split(';')[0]}`,
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify(jobData),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to post job');
+        throw new Error(isEditMode ? 'Failed to update job' : 'Failed to post job');
       }
 
-      toast.success('Job posted successfully!');
+      toast.success(isEditMode ? 'Job updated successfully!' : 'Job posted successfully!');
       router.push('/my-jobs');
     } catch (error) {
-      console.error('Error posting job:', error);
-      toast.error('Failed to post job. Please try again.');
+      console.error('Error saving job:', error);
+      toast.error(isEditMode ? 'Failed to update job. Please try again.' : 'Failed to post job. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="max-w-2xl mx-auto p-6">
+        <div className="text-center py-8">Loading...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-8">Post a Job</h1>
+      <h1 className="text-3xl font-bold mb-8">{isEditMode ? 'Edit Job' : 'Post a Job'}</h1>
       <form onSubmit={handleSubmit} className="space-y-6" noValidate>
         <Designation
           formData={formData}
@@ -198,7 +273,7 @@ export default function PostJob() {
             disabled={isSubmitting}
             className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
           >
-            {isSubmitting ? 'Posting...' : 'Post Job'}
+            {isSubmitting ? (isEditMode ? 'Updating...' : 'Posting...') : (isEditMode ? 'Update Job' : 'Post Job')}
           </button>
         </div>
       </form>

@@ -30,9 +30,9 @@ const SelectField: React.FC<SelectFieldProps> = ({
   className = '',
   disabled = false
 }) => {
-  if(name === "cityId") {
-    console.log("SelectField", name, value, options);
-  }
+  // if(name === "cityId") {
+  //   console.log("SelectField", name, value, options);
+  // }
   return (
     <div className="w-full">
       <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-2">

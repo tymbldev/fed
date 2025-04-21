@@ -151,6 +151,14 @@ export default function MyJobs() {
                         <span className="text-sm text-gray-500">
                           Posted on {formatDate(job.createdAt)}
                         </span>
+                        <div className="mt-2">
+                          <Link
+                            href={`/post-job?edit=true&id=${job.id}`}
+                            className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
+                          >
+                            Edit Job
+                          </Link>
+                        </div>
                       </div>
                     </div>
                     <div className="mt-2">
