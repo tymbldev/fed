@@ -37,7 +37,7 @@ export default function PostJob() {
             .find(row => row.startsWith('auth_token='))
             ?.split('=')[1];
 
-          const response = await fetch(`${BASE_URL}/api/v1/jobmanagement/${jobId}`, {
+          const response = await fetch(`${BASE_URL}/api/v1/jobsearch/${jobId}`, {
             headers: {
               'Authorization': `Bearer ${token}`,
             },
@@ -174,7 +174,7 @@ export default function PostJob() {
 
       const url = isEditMode && jobId
         ? `${BASE_URL}/api/v1/jobmanagement/${jobId}`
-        : `${BASE_URL}/api/v1/jobmanagement/my-posts`;
+        : `${BASE_URL}/api/v1/jobmanagement`;
 
       const response = await fetch(url, {
         method: isEditMode ? 'PUT' : 'POST',

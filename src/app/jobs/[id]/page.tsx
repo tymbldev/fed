@@ -241,7 +241,7 @@ export default function JobDetails() {
             </div>
 
             <h2 className="text-2xl font-semibold mb-4">Job Description</h2>
-            <div className="whitespace-pre-wrap text-gray-700">{job.description}</div>
+            <div className="whitespace-pre-wrap text-gray-700" dangerouslySetInnerHTML={{ __html: job.description }} />
           </div>
 
           <div className="mt-8">

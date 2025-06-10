@@ -155,7 +155,7 @@ export default function Jobs() {
             <p className="text-gray-500">No jobs found matching your criteria.</p>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {jobs.map((job) => (
               <div key={job.id} className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition duration-200">
                 <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">

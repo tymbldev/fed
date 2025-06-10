@@ -162,9 +162,10 @@ export default function MyJobs() {
                       </div>
                     </div>
                     <div className="mt-2">
-                      <p className="text-sm text-gray-500 line-clamp-2">
-                        {job.description}
-                      </p>
+                      <div
+                        className="text-sm text-gray-500 line-clamp-2"
+                        dangerouslySetInnerHTML={{ __html: job.description }}
+                      />
                     </div>
                   </div>
                 </li>
