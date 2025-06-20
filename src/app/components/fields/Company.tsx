@@ -30,7 +30,7 @@ const Company: React.FC<CompanyProps> = ({
   useEffect(() => {
     const loadOptions = async () => {
       try {
-        const data: Option[] = await fetchDropdownOptions('companies');
+        const data: Option[] = await fetchDropdownOptions('companies') as unknown as Option[];
         setOptions(data);
       } catch (err) {
         console.error('Failed to fetch companies:', err);

@@ -64,7 +64,6 @@ const ProfessionalInfoFields: React.FC<ProfessionalInfoFieldsProps> = ({
         touched={touched}
         onInputChange={onInputChange}
         onBlur={onBlur}
-        options={dropdownOptions.companies}
       />
       <Designation
         formData={formData}
@@ -72,7 +71,6 @@ const ProfessionalInfoFields: React.FC<ProfessionalInfoFieldsProps> = ({
         touched={touched}
         onInputChange={onInputChange}
         onBlur={onBlur}
-        options={dropdownOptions.designations}
       />
       <Skills
         formData={formData}

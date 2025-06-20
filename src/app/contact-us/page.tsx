@@ -32,7 +32,7 @@ export default function ContactUs() {
         <div>
           <div className="prose max-w-none">
             <p className="text-lg text-gray-600 mb-6">
-              Have questions or need assistance? We're here to help! Fill out the form
+              Have questions or need assistance? We&apos;re here to help! Fill out the form
               or use our contact information below to get in touch with us.
             </p>
           </div>

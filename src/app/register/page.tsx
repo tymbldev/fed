@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { registerUser, updateProfile } from '../services/api';
 import { toast } from 'sonner';
 import Email from '../components/fields/Email';
@@ -38,7 +38,7 @@ type ProfileData = {
   [key: string]: string | number | string[] | undefined;
 };
 
-export default function Register() {
+function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { fetchUserProfile, isLoggedIn } = useAuth();
@@ -363,5 +363,31 @@ export default function Register() {
         </div>
       </div>
     </div>
+  );
+}
+
+function LoadingFallback() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div className="max-w-md w-full space-y-8">
+        <div className="animate-pulse">
+          <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-8"></div>
+          <div className="h-1 bg-gray-200 dark:bg-gray-700 rounded-full mb-8"></div>
+          <div className="space-y-4">
+            <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function Register() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <RegisterForm />
+    </Suspense>
   );
 }

@@ -34,7 +34,7 @@ export async function POST(request: Request) {
     corsResponse.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
     return corsResponse;
-  } catch (error) {
+  } catch {
     const errorResponse = NextResponse.json(
       { error: 'Registration failed' },
       { status: 500 }
