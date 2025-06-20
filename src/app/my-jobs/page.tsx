@@ -21,39 +21,54 @@ interface Job {
   postedBy: number;
   createdAt: string;
   updatedAt: string;
-}
-
-interface Currency {
-  id: number;
-  code: string;
-  name: string;
-  symbol: string;
-  exchangeRate: number;
-  isActive: boolean;
+  applicationCount?: number;
 }
 
 export default function MyJobs() {
   const [jobs, setJobs] = useState<Job[]>([]);
-  const [currencies, setCurrencies] = useState<{ [key: number]: string }>({});
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchCurrencies = async () => {
+  const fetchApplicationCounts = async (jobIds: number[]) => {
     try {
-      const response = await fetch(`${BASE_URL}/api/v1/dropdowns/currencies`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch currencies');
-      }
-      const data: Currency[] = await response.json();
-      const currencyMap = data.reduce((acc, currency) => {
-        acc[currency.id] = currency.code;
+      const token = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('auth_token='))
+        ?.split('=')[1];
+
+      const promises = jobIds.map(async (jobId) => {
+        try {
+          const response = await fetch(`${BASE_URL}/api/v1/job-applications/job/${jobId}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          });
+          if (response.ok) {
+            const data = await response.json();
+            return { jobId, count: data.length || 0 };
+          }
+          return { jobId, count: 0 };
+        } catch (error) {
+          console.error(`Error fetching application count for job ${jobId}:`, error);
+          return { jobId, count: 0 };
+        }
+      });
+
+      const results = await Promise.all(promises);
+      const countMap = results.reduce((acc, { jobId, count }) => {
+        acc[jobId] = count;
         return acc;
-      }, {} as { [key: number]: string });
-      setCurrencies(currencyMap);
+      }, {} as { [key: number]: number });
+
+      setJobs(prevJobs =>
+        prevJobs.map(job => ({
+          ...job,
+          applicationCount: countMap[job.id] || 0
+        }))
+      );
     } catch (error) {
-      console.error('Error fetching currencies:', error);
-      toast.error('Failed to fetch currencies');
+      console.error('Error fetching application counts:', error);
     }
   };
 
@@ -75,6 +90,12 @@ export default function MyJobs() {
       const data = await response.json();
       setJobs(data.content);
       setTotalPages(data.totalPages);
+
+      // Fetch application counts for the jobs
+      if (data.content.length > 0) {
+        const jobIds = data.content.map((job: Job) => job.id);
+        await fetchApplicationCounts(jobIds);
+      }
     } catch (error) {
       toast.error('Failed to fetch jobs');
       console.error('Error fetching jobs:', error);
@@ -84,23 +105,26 @@ export default function MyJobs() {
   };
 
   useEffect(() => {
-    fetchCurrencies();
     fetchJobs(currentPage);
   }, [currentPage]);
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
+    const date = new Date(dateString);
+    const day = date.getDate();
+    const month = date.toLocaleString('en-US', { month: 'short' });
+    const year = date.getFullYear().toString().slice(-2);
 
-  const formatSalary = (salary: number, currencyId: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currencies[currencyId] || 'USD',
-    }).format(salary);
+    const getDayWithOrdinal = (d: number) => {
+      if (d > 3 && d < 21) return `${d}th`;
+      switch (d % 10) {
+        case 1:  return `${d}st`;
+        case 2:  return `${d}nd`;
+        case 3:  return `${d}rd`;
+        default: return `${d}th`;
+      }
+    };
+
+    return `${getDayWithOrdinal(day)} ${month} ${year}`;
   };
 
   return (
@@ -129,43 +153,39 @@ export default function MyJobs() {
         </div>
       ) : (
         <>
-          <div className="bg-white shadow overflow-hidden sm:rounded-md">
-            <ul className="divide-y divide-gray-200">
+          <div className="overflow-hidden">
+            <ul>
               {jobs.map((job) => (
                 <li key={job.id}>
-                  <div className="px-4 py-4 sm:px-6">
-                    <div className="flex items-center justify-between">
+                  <div className="p-4 border border-gray-200 rounded-lg mb-4 shadow-sm bg-white">
+                    <div className="flex justify-between items-start">
                       <div className="flex-1 min-w-0">
-                        <h2 className="text-xl font-semibold text-gray-900 truncate">
-                          {job.title}
+                        <h2 className="text-lg font-bold text-gray-800 truncate">
+                          <Link href={`/my-jobs/${job.id}`} className="hover:underline">
+                            {job.title}
+                          </Link>
                         </h2>
-                        <div className="mt-2 flex items-center text-sm text-gray-500">
-                          <span className="truncate">{job.company}</span>
-                          <span className="mx-2">•</span>
-                          <span>{job.designation || 'Not specified'}</span>
-                          <span className="mx-2">•</span>
-                          <span>{formatSalary(job.salary, job.currencyId)}</span>
+                        <div className="mt-1 text-sm text-gray-500">
+                          <span>Company: {job.company}</span>
+                          <span className="mx-2">|</span>
+                          <span>Posted by: me on {formatDate(job.createdAt)}</span>
                         </div>
-                      </div>
-                      <div className="ml-4 flex-shrink-0">
-                        <span className="text-sm text-gray-500">
-                          Posted on {formatDate(job.createdAt)}
-                        </span>
-                        <div className="mt-2">
-                          <Link
-                            href={`/post-job?edit=true&id=${job.id}`}
-                            className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
-                          >
-                            Edit Job
+                        <div className="mt-3 flex items-center">
+                          <Link href={`/my-jobs/${job.id}`} className="hover:underline">
+                            <span className="text-sm font-semibold text-gray-700">
+                              {job.applicationCount || 0} Total Responses
+                            </span>
                           </Link>
                         </div>
                       </div>
-                    </div>
-                    <div className="mt-2">
-                      <div
-                        className="text-sm text-gray-500 line-clamp-2"
-                        dangerouslySetInnerHTML={{ __html: job.description }}
-                      />
+                      <div className="ml-4 flex-shrink-0">
+                        <Link
+                          href={`/post-job?edit=true&id=${job.id}`}
+                          className="text-indigo-600 hover:text-indigo-500 font-medium"
+                        >
+                          Edit Job
+                        </Link>
+                      </div>
                     </div>
                   </div>
                 </li>

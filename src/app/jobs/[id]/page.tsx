@@ -44,14 +44,26 @@ interface DesignationOption {
   name: string;
 }
 
+interface Application {
+  id: number;
+  jobId: number;
+  jobTitle: string;
+  applicantId: number;
+  applicantName: string;
+  status: string;
+  createdAt: string;
+}
+
 export default function JobDetails() {
   const params = useParams();
-  const { userProfile } = useAuth();
+  const { userProfile, isLoggedIn } = useAuth();
   const [job, setJob] = useState<Job | null>(null);
   const [currencies, setCurrencies] = useState<{ [key: number]: string }>({});
   const [locations, setLocations] = useState<{ [key: number]: LocationOption }>({});
   const [designations, setDesignations] = useState<{ [key: number]: string }>({});
   const [isLoading, setIsLoading] = useState(true);
+  const [applicationStatus, setApplicationStatus] = useState<string | null>(null);
+  const [isCheckingApplication, setIsCheckingApplication] = useState(false);
 
   const fetchCurrencies = async () => {
     try {
@@ -107,6 +119,44 @@ export default function JobDetails() {
     }
   };
 
+  const fetchApplicationStatus = async () => {
+    if (!isLoggedIn) {
+      return; // Don't fetch if user is not logged in
+    }
+
+    try {
+      setIsCheckingApplication(true);
+      const token = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('auth_token='))
+        ?.split('=')[1];
+
+      if (!token) {
+        console.log('No auth token found for application status fetch');
+        return;
+      }
+
+      const response = await fetch(`${BASE_URL}/api/v1/my-applications`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch application status');
+      }
+
+      const data: Application[] = await response.json();
+      const application = data.find(app => app.jobId === Number(params.id));
+      setApplicationStatus(application ? application.status : null);
+    } catch (error) {
+      console.error('Error fetching application status:', error);
+      // Don't show error toast for this as it might be expected for non-logged in users
+    } finally {
+      setIsCheckingApplication(false);
+    }
+  };
+
   const fetchJobDetails = async () => {
     try {
       setIsLoading(true);
@@ -129,7 +179,8 @@ export default function JobDetails() {
     fetchLocations();
     fetchDesignations();
     fetchJobDetails();
-  }, [params.id]);
+    fetchApplicationStatus();
+  }, [params.id, isLoggedIn]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -152,8 +203,13 @@ export default function JobDetails() {
       return;
     }
 
+    if (applicationStatus) {
+      toast.error('You have already applied for this job');
+      return;
+    }
+
     try {
-      const response = await fetch(`${BASE_URL}/api/v1/job-applications`, {
+      const response = await fetch(`${BASE_URL}/api/v1/my-applications`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -161,7 +217,7 @@ export default function JobDetails() {
         },
         body: JSON.stringify({
           jobId: params.id,
-          applicantId: userProfile.id
+          coverLetter: 'test'
         })
       });
 
@@ -170,6 +226,8 @@ export default function JobDetails() {
       }
 
       toast.success('Successfully applied for the job!');
+      // Refresh application status after successful application
+      fetchApplicationStatus();
     } catch (error) {
       console.error('Error applying for job:', error);
       toast.error('Failed to apply for job');
@@ -245,11 +303,37 @@ export default function JobDetails() {
           </div>
 
           <div className="mt-8">
+            {isLoggedIn && applicationStatus && (
+              <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-center">
+                  <svg className="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="text-green-700 font-medium">
+                    You have already applied for this job - Status: {applicationStatus}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {!isLoggedIn && (
+              <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-blue-700 text-sm">
+                  💡 Please <a href="/login" className="underline font-medium">log in</a> to apply for this job.
+                </p>
+              </div>
+            )}
+
             <button
               onClick={handleApply}
-              className="px-6 py-3 bg-[#1a73e8] text-white rounded-lg hover:bg-[#1a73e8]/90 transition duration-200"
+              disabled={!isLoggedIn || !!applicationStatus || isCheckingApplication}
+              className={`px-6 py-3 rounded-lg transition duration-200 ${
+                !isLoggedIn || !!applicationStatus
+                  ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                  : 'bg-[#1a73e8] text-white hover:bg-[#1a73e8]/90'
+              }`}
             >
-              Apply Now
+              {isCheckingApplication ? 'Checking...' : applicationStatus ? 'Already Applied' : 'Apply Now'}
             </button>
           </div>
         </div>

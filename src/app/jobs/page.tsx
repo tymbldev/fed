@@ -4,8 +4,37 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { BASE_URL } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 interface Job {
+  id: number;
+  title: string;
+  description: string;
+  cityId: number;
+  company: string;
+  companyId: number;
+  countryId: number;
+  currencyId: number;
+  designation: string | null;
+  designationId: number;
+  salary: number;
+  active: boolean;
+  postedBy: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Application {
+  id: number;
+  jobId: number;
+  jobTitle: string;
+  applicantId: number;
+  applicantName: string;
+  status: string;
+  createdAt: string;
+}
+
+interface PostedJob {
   id: number;
   title: string;
   description: string;
@@ -39,8 +68,11 @@ interface LocationOption {
 }
 
 export default function Jobs() {
+  const { isLoggedIn } = useAuth();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [locations, setLocations] = useState<{ [key: number]: LocationOption }>({});
+  const [appliedJobs, setAppliedJobs] = useState<{ [key: number]: Application }>({});
+  const [postedJobs, setPostedJobs] = useState<{ [key: number]: PostedJob }>({});
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -66,6 +98,82 @@ export default function Jobs() {
     }
   };
 
+  const fetchAppliedJobs = async () => {
+    if (!isLoggedIn) {
+      return; // Don't fetch if user is not logged in
+    }
+
+    try {
+      const token = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('auth_token='))
+        ?.split('=')[1];
+
+      if (!token) {
+        console.log('No auth token found for applied jobs fetch');
+        return;
+      }
+
+      const response = await fetch(`${BASE_URL}/api/v1/my-applications`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch applied jobs');
+      }
+
+      const data: Application[] = await response.json();
+      const appliedJobsMap = data.reduce((acc, application) => {
+        acc[application.jobId] = application;
+        return acc;
+      }, {} as { [key: number]: Application });
+      setAppliedJobs(appliedJobsMap);
+    } catch (error) {
+      console.error('Error fetching applied jobs:', error);
+      // Don't show error toast for this as it might be expected for non-logged in users
+    }
+  };
+
+  const fetchPostedJobs = async () => {
+    if (!isLoggedIn) {
+      return; // Don't fetch if user is not logged in
+    }
+
+    try {
+      const token = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('auth_token='))
+        ?.split('=')[1];
+
+      if (!token) {
+        console.log('No auth token found for posted jobs fetch');
+        return;
+      }
+
+      const response = await fetch(`${BASE_URL}/api/v1/jobmanagement/my-posts`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch posted jobs');
+      }
+
+      const data = await response.json();
+      const postedJobsMap = data.content.reduce((acc: { [key: number]: PostedJob }, job: PostedJob) => {
+        acc[job.id] = job;
+        return acc;
+      }, {} as { [key: number]: PostedJob });
+      setPostedJobs(postedJobsMap);
+    } catch (error) {
+      console.error('Error fetching posted jobs:', error);
+      // Don't show error toast for this as it might be expected for non-logged in users
+    }
+  };
+
   const fetchJobs = async (page: number) => {
     try {
       setIsLoading(true);
@@ -86,8 +194,10 @@ export default function Jobs() {
 
   useEffect(() => {
     fetchLocations();
+    fetchAppliedJobs();
+    fetchPostedJobs();
     fetchJobs(currentPage);
-  }, [currentPage]);
+  }, [currentPage, isLoggedIn]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -102,6 +212,22 @@ export default function Jobs() {
     if (!location) return 'Location not specified';
     return `${location.city}, ${location.country}`;
   };
+
+  const isJobApplied = (jobId: number) => {
+    return appliedJobs[jobId] !== undefined;
+  };
+
+  const getApplicationStatus = (jobId: number) => {
+    const application = appliedJobs[jobId];
+    return application ? application.status : null;
+  };
+
+  const isJobPostedByUser = (jobId: number) => {
+    return postedJobs[jobId] !== undefined;
+  };
+
+  // Filter out jobs that are posted by the current user
+  const filteredJobs = jobs.filter(job => !isJobPostedByUser(job.id));
 
   return (
     <main className="min-h-screen bg-gray-50 py-12">
@@ -145,18 +271,25 @@ export default function Jobs() {
               <option value="senior">Senior Level</option>
             </select>
           </div>
+          {!isLoggedIn && (
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-blue-700 text-sm">
+                💡 <Link href="/login" className="underline font-medium">Log in</Link> to see your application status for jobs you&apos;ve applied to.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Job Listings */}
         {isLoading ? (
           <div className="text-center py-8">Loading...</div>
-        ) : jobs.length === 0 ? (
+        ) : filteredJobs.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-gray-500">No jobs found matching your criteria.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {jobs.map((job) => (
+            {filteredJobs.map((job) => (
               <div key={job.id} className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition duration-200">
                 <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
                   <div>
@@ -183,6 +316,11 @@ export default function Jobs() {
                 </div>
                 <div className="flex flex-wrap gap-2 mt-4">
                   <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">Posted {formatDate(job.createdAt)}</span>
+                  {isJobApplied(job.id) && (
+                    <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+                      Applied - {getApplicationStatus(job.id)}
+                    </span>
+                  )}
                 </div>
               </div>
             ))}
