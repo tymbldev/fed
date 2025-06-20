@@ -12,14 +12,14 @@ export default function Home() {
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center animate-fade-in">
             <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary-500 to-secondary-500 dark:from-primary-400 dark:to-secondary-400 text-transparent bg-clip-text">
-              Find Your Dream Job Today
+              Find Your Dream Opportunity Today
             </h1>
             <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
               Connect with top companies and opportunities that match your skills and aspirations
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/jobs" className="btn btn-primary">
-                Browse Jobs
+              <Link href="/referrals" className="btn btn-primary">
+                Browse Referrals
               </Link>
               <Link href="/register" className="btn btn-outline">
                 Create Profile
@@ -40,8 +40,8 @@ export default function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">Job Matching</h3>
-              <p className="text-gray-600 dark:text-gray-300">Smart algorithms match you with the perfect job opportunities</p>
+              <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">Referral Matching</h3>
+              <p className="text-gray-600 dark:text-gray-300">Smart algorithms match you with the perfect referral opportunities</p>
             </div>
 
             <div className="card p-6 animate-slide-up" style={{ animationDelay: '0.1s' }}>
@@ -72,14 +72,14 @@ export default function Home() {
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-8 text-white">Ready to Start Your Journey?</h2>
           <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
-            Join thousands of professionals who have found their dream jobs through TymblHub
+            Join thousands of professionals who have found their dream opportunities through TymblHub
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/register" className="btn bg-white text-primary-500 hover:bg-gray-100 dark:bg-gray-900 dark:text-primary-400 dark:hover:bg-gray-800">
               Get Started
             </Link>
-            <Link href="/jobs" className="btn border-2 border-white text-white hover:bg-white/10">
-              Browse Jobs
+            <Link href="/referrals" className="btn border-2 border-white text-white hover:bg-white/10">
+              Browse Referrals
             </Link>
           </div>
         </div>

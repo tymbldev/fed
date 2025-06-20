@@ -10,8 +10,8 @@ import { ThemeProvider } from './context/ThemeContext';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'TymblHub - Job Search & Referral Platform',
-  description: 'Find your dream job or refer talented professionals to top companies.',
+  title: 'TymblHub - Referral Platform',
+  description: 'Find your dream opportunity or refer talented professionals to top companies.',
 };
 
 export default function RootLayout({

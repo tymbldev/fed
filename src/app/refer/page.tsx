@@ -28,7 +28,7 @@ export default function Refer() {
         <div className="text-center mb-12">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">Refer a Friend</h1>
           <p className="text-lg text-gray-600">
-            Help your network find their dream job. We&apos;ll make sure they get the attention they deserve.
+            Help your network find their dream opportunity. We&apos;ll make sure they get the attention they deserve.
           </p>
         </div>
 
@@ -115,7 +115,7 @@ export default function Refer() {
 
             <div>
               <label htmlFor="jobTitle" className="block text-sm font-medium text-gray-700">
-                Job Title
+                Referral Title
               </label>
               <input
                 type="text"
@@ -156,4 +156,4 @@ export default function Refer() {
       </div>
     </div>
   );
-} 
+}

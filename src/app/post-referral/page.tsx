@@ -14,7 +14,7 @@ import Location from '../components/fields/Location';
 import Salary from '../components/fields/Salary';
 import Skills from '../components/fields/Skills';
 
-function PostJobForm() {
+function PostReferralForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { userProfile } = useAuth();
@@ -25,11 +25,11 @@ function PostJobForm() {
   const [isLoading, setIsLoading] = useState(false);
 
   const isEditMode = searchParams.get('edit') === 'true';
-  const jobId = searchParams.get('id');
+  const referralId = searchParams.get('id');
 
   useEffect(() => {
-    const fetchJobDetails = async () => {
-      if (isEditMode && jobId) {
+    const fetchReferralDetails = async () => {
+      if (isEditMode && referralId) {
         setIsLoading(true);
         try {
           const token = document.cookie
@@ -37,37 +37,37 @@ function PostJobForm() {
             .find(row => row.startsWith('auth_token='))
             ?.split('=')[1];
 
-          const response = await fetch(`${BASE_URL}/api/v1/jobsearch/${jobId}`, {
+          const response = await fetch(`${BASE_URL}/api/v1/jobsearch/${referralId}`, {
             headers: {
               'Authorization': `Bearer ${token}`,
             },
           });
 
           if (!response.ok) {
-            throw new Error('Failed to fetch job details');
+            throw new Error('Failed to fetch referral details');
           }
 
-          const job = await response.json();
+          const referral = await response.json();
           setFormData({
-            title: job.title || '',
-            description: job.description || '',
-            countryId: job.countryId?.toString() || '',
-            cityId: job.cityId?.toString() || '',
-            salary: job.salary?.toString() || '',
-            currencyId: job.currencyId?.toString() || '',
-            skillNames: job.skillNames?.join(', ') || '',
+            title: referral.title || '',
+            description: referral.description || '',
+            countryId: referral.countryId?.toString() || '',
+            cityId: referral.cityId?.toString() || '',
+            salary: referral.salary?.toString() || '',
+            currencyId: referral.currencyId?.toString() || '',
+            skillNames: referral.skillNames?.join(', ') || '',
           });
         } catch (error) {
-          console.error('Error fetching job details:', error);
-          toast.error('Failed to fetch job details');
+          console.error('Error fetching referral details:', error);
+          toast.error('Failed to fetch referral details');
         } finally {
           setIsLoading(false);
         }
       }
     };
 
-    fetchJobDetails();
-  }, [isEditMode, jobId, router]);
+    fetchReferralDetails();
+  }, [isEditMode, referralId, router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement> | string) => {
     let name: string;
@@ -154,7 +154,7 @@ function PostJobForm() {
     }
 
     try {
-      const jobData = {
+      const referralData = {
         title: formData.title,
         description: formData.description,
         countryId: formData.countryId ? parseInt(formData.countryId) : undefined,
@@ -172,8 +172,8 @@ function PostJobForm() {
         .find(row => row.startsWith('auth_token='))
         ?.split('=')[1];
 
-      const url = isEditMode && jobId
-        ? `${BASE_URL}/api/v1/jobmanagement/${jobId}`
+      const url = isEditMode && referralId
+        ? `${BASE_URL}/api/v1/jobmanagement/${referralId}`
         : `${BASE_URL}/api/v1/jobmanagement`;
 
       const response = await fetch(url, {
@@ -182,18 +182,18 @@ function PostJobForm() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify(jobData),
+        body: JSON.stringify(referralData),
       });
 
       if (!response.ok) {
-        throw new Error(isEditMode ? 'Failed to update job' : 'Failed to post job');
+        throw new Error(isEditMode ? 'Failed to update referral' : 'Failed to post referral');
       }
 
-      toast.success(isEditMode ? 'Job updated successfully!' : 'Job posted successfully!');
-      router.push('/my-jobs');
+      toast.success(isEditMode ? 'Referral updated successfully!' : 'Referral posted successfully!');
+      router.push('/my-referrals');
     } catch (error) {
-      console.error('Error saving job:', error);
-      toast.error(isEditMode ? 'Failed to update job. Please try again.' : 'Failed to post job. Please try again.');
+      console.error('Error saving referral:', error);
+      toast.error(isEditMode ? 'Failed to update referral. Please try again.' : 'Failed to post referral. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -209,7 +209,7 @@ function PostJobForm() {
 
   return (
     <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-8">{isEditMode ? 'Edit Job' : 'Post a Job'}</h1>
+      <h1 className="text-3xl font-bold mb-8">{isEditMode ? 'Edit Referral' : 'Post a Referral'}</h1>
       <form onSubmit={handleSubmit} className="space-y-6" noValidate>
         <Designation
           formData={formData}
@@ -218,7 +218,7 @@ function PostJobForm() {
           onInputChange={handleInputChange}
           onBlur={() => handleBlur('title')}
           required={true}
-          label="Job Title"
+          label="Referral Title"
           fieldName="title"
         />
 
@@ -229,7 +229,7 @@ function PostJobForm() {
           onInputChange={handleInputChange}
           onBlur={() => handleBlur('description')}
           required={true}
-          label="Job Description"
+          label="Referral Description"
         />
 
         <Location
@@ -240,8 +240,8 @@ function PostJobForm() {
           onBlur={() => handleBlur('location')}
           required={true}
           layout="horizontal"
-          countryLabel="Job Country"
-          cityLabel="Job City"
+          countryLabel="Referral Country"
+          cityLabel="Referral City"
         />
 
         <Salary
@@ -273,7 +273,7 @@ function PostJobForm() {
             disabled={isSubmitting}
             className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
           >
-            {isSubmitting ? (isEditMode ? 'Updating...' : 'Posting...') : (isEditMode ? 'Update Job' : 'Post Job')}
+            {isSubmitting ? (isEditMode ? 'Updating...' : 'Posting...') : (isEditMode ? 'Update Referral' : 'Post Referral')}
           </button>
         </div>
       </form>
@@ -298,10 +298,10 @@ function LoadingFallback() {
   );
 }
 
-export default function PostJob() {
+export default function PostReferral() {
   return (
     <Suspense fallback={<LoadingFallback />}>
-      <PostJobForm />
+      <PostReferralForm />
     </Suspense>
   );
 }

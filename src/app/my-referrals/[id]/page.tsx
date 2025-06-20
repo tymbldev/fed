@@ -6,23 +6,24 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 import { BASE_URL } from '../../services/api';
 
-interface JobApplication {
+interface ReferralApplication {
   id: number;
-  jobId: number;
-  jobTitle: string;
-  jobDescription: string;
-  jobCity: string;
-  jobCountry: string;
-  jobDesignationId: number;
-  jobDesignation: string | null;
-  jobSalary: number;
-  jobCurrencyId: number;
-  jobCompanyId: number;
-  jobCompany: string;
-  jobSkillIds: number[];
   applicantId: number;
   applicantName: string;
   applicantEmail: string;
+  applicantPhone: string;
+  referralId: number;
+  referralTitle: string;
+  referralDescription: string;
+  referralCity: string;
+  referralCountry: string;
+  referralDesignationId: number;
+  referralDesignation: string | null;
+  referralSalary: number;
+  referralCurrencyId: number;
+  referralCompanyId: number;
+  referralCompany: string;
+  referralSkillIds: number[];
   coverLetter: string;
   resumeUrl: string | null;
   status: 'PENDING' | 'SHORTLISTED' | 'REJECTED';
@@ -36,11 +37,11 @@ interface JobApplication {
   updatedAt: string;
 }
 
-export default function JobApplications() {
+export default function ReferralApplications() {
   const params = useParams();
-  const jobId = params.id as string;
+  const referralId = params.id as string;
 
-  const [applications, setApplications] = useState<JobApplication[]>([]);
+  const [applications, setApplications] = useState<ReferralApplication[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
 
@@ -52,7 +53,7 @@ export default function JobApplications() {
         .find(row => row.startsWith('auth_token='))
         ?.split('=')[1];
 
-      const response = await fetch(`${BASE_URL}/api/v1/job-applications/job/${jobId}`, {
+      const response = await fetch(`${BASE_URL}/api/v1/job-applications/job/${referralId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -62,7 +63,7 @@ export default function JobApplications() {
         throw new Error('Failed to fetch applications');
       }
 
-      const data: JobApplication[] = await response.json();
+      const data: ReferralApplication[] = await response.json();
       setApplications(data);
 
     } catch (error) {
@@ -105,7 +106,7 @@ export default function JobApplications() {
 
   useEffect(() => {
     fetchApplications();
-  }, [jobId]);
+  }, [referralId]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -115,15 +116,15 @@ export default function JobApplications() {
     });
   };
 
-  const formatLocation = (application: JobApplication) => {
-    const { jobCity, jobCountry } = application;
-    if (jobCity && jobCountry) return `${jobCity}, ${jobCountry}`;
-    if (jobCity) return jobCity;
-    if (jobCountry) return jobCountry;
-    return 'Not specified';
+  const formatLocation = (application: ReferralApplication) => {
+    const { referralCity, referralCountry } = application;
+    if (referralCity && referralCountry) return `${referralCity}, ${referralCountry}`;
+    if (referralCity) return referralCity;
+    if (referralCountry) return referralCountry;
+    return 'Location not specified';
   };
 
-  const getSkillNames = (application: JobApplication) => {
+  const getSkillNames = (application: ReferralApplication) => {
     if (!application.applicantSkills || application.applicantSkills.length === 0) return 'Not mentioned';
     return application.applicantSkills.join(', ');
   };
@@ -155,7 +156,7 @@ export default function JobApplications() {
     );
   }
 
-  const jobDetails = applications.length > 0 ? applications[0] : null;
+  const referralDetails = applications.length > 0 ? applications[0] : null;
 
   return (
     <div className="max-w-7xl mx-auto p-6 bg-gray-50 min-h-screen">
@@ -164,20 +165,20 @@ export default function JobApplications() {
         <div className="flex items-center justify-between">
           <div>
             <Link
-              href="/my-jobs"
+              href="/my-referral"
               className="inline-flex items-center text-sm text-indigo-600 hover:text-indigo-500 mb-4"
             >
               <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
               </svg>
-              Back to My Jobs
+              Back to My Referrals
             </Link>
-            <h1 className="text-3xl font-bold text-gray-900">Job Applications</h1>
-            {jobDetails && (
+            <h1 className="text-3xl font-bold text-gray-900">Referral Applications</h1>
+            {referralDetails && (
               <div className="mt-2">
-                <h2 className="text-xl font-semibold text-gray-700">{jobDetails.jobTitle}</h2>
+                <h2 className="text-xl font-semibold text-gray-700">{referralDetails.referralTitle}</h2>
                 <p className="text-gray-500">
-                  {jobDetails.jobCompany}
+                  {referralDetails.referralCompany}
                 </p>
               </div>
             )}
@@ -241,7 +242,7 @@ export default function JobApplications() {
       {/* Applications List */}
       {filteredApplications.length === 0 ? (
         <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-          <p className="text-gray-500">No applications found for this job.</p>
+          <p className="text-gray-500">No applications found for this referral.</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -257,12 +258,12 @@ export default function JobApplications() {
                         {application.experience && ` (${application.experience})`}
                       </h3>
                     </div>
-                    <p className="text-sm text-gray-600 ml-5 mb-4">{application.jobDesignation || 'Designation not specified'}</p>
+                    <p className="text-sm text-gray-600 ml-5 mb-4">{application.referralDesignation || 'Designation not specified'}</p>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-4 text-sm ml-5">
                       <div>
                         <p className="text-gray-500">Current Company</p>
-                        <p className="text-gray-800 font-semibold">{jobDetails?.jobCompany}</p>
+                        <p className="text-gray-800 font-semibold">{referralDetails?.referralCompany}</p>
                       </div>
                       <div>
                         <p className="text-gray-500">Location</p>
@@ -270,7 +271,7 @@ export default function JobApplications() {
                       </div>
                       <div>
                         <p className="text-gray-500">Monthly Salary</p>
-                        <p className="text-gray-800 font-semibold">{formatSalary(application.jobSalary)}</p>
+                        <p className="text-gray-800 font-semibold">{formatSalary(application.referralSalary)}</p>
                       </div>
                       <div>
                         <p className="text-gray-500">Key Skills</p>

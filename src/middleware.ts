@@ -4,8 +4,8 @@ import type { NextRequest } from 'next/server';
 // Define protected and public routes
 const protectedRoutes = [
   '/profile',
-  '/my-jobs',
-  '/post-job',
+  '/my-referrals',
+  '/post-referral',
   '/refer'
 ];
 
@@ -62,8 +62,8 @@ export const config = {
   matcher: [
     '/api/:path*',
     '/profile/:path*',
-    '/my-jobs/:path*',
-    '/post-job/:path*',
+    '/my-referrals/:path*',
+    '/post-referral/:path*',
     '/refer/:path*',
     '/login',
     '/register',

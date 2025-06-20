@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { BASE_URL } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 
-interface Job {
+interface Referral {
   id: number;
   title: string;
   description: string;
@@ -46,18 +46,18 @@ interface DesignationOption {
 
 interface Application {
   id: number;
-  jobId: number;
-  jobTitle: string;
+  referralId: number;
+  referralTitle: string;
   applicantId: number;
   applicantName: string;
   status: string;
   createdAt: string;
 }
 
-export default function JobDetails() {
+export default function ReferralDetails() {
   const params = useParams();
   const { userProfile, isLoggedIn } = useAuth();
-  const [job, setJob] = useState<Job | null>(null);
+  const [referral, setReferral] = useState<Referral | null>(null);
   const [currencies, setCurrencies] = useState<{ [key: number]: string }>({});
   const [locations, setLocations] = useState<{ [key: number]: LocationOption }>({});
   const [designations, setDesignations] = useState<{ [key: number]: string }>({});
@@ -147,7 +147,7 @@ export default function JobDetails() {
       }
 
       const data: Application[] = await response.json();
-      const application = data.find(app => app.jobId === Number(params.id));
+      const application = data.find(app => app.referralId === Number(params.id));
       setApplicationStatus(application ? application.status : null);
     } catch (error) {
       console.error('Error fetching application status:', error);
@@ -157,18 +157,18 @@ export default function JobDetails() {
     }
   };
 
-  const fetchJobDetails = async () => {
+  const fetchReferralDetails = async () => {
     try {
       setIsLoading(true);
       const response = await fetch(`${BASE_URL}/api/v1/jobsearch/${params.id}`);
       if (!response.ok) {
-        throw new Error('Failed to fetch job details');
+        throw new Error('Failed to fetch referral details');
       }
       const data = await response.json();
-      setJob(data);
+      setReferral(data);
     } catch (error) {
-      toast.error('Failed to fetch job details');
-      console.error('Error fetching job details:', error);
+      toast.error('Failed to fetch referral details');
+      console.error('Error fetching referral details:', error);
     } finally {
       setIsLoading(false);
     }
@@ -178,7 +178,7 @@ export default function JobDetails() {
     fetchCurrencies();
     fetchLocations();
     fetchDesignations();
-    fetchJobDetails();
+    fetchReferralDetails();
     fetchApplicationStatus();
   }, [params.id, isLoggedIn]);
 
@@ -199,12 +199,12 @@ export default function JobDetails() {
 
   const handleApply = async () => {
     if (!userProfile) {
-      toast.error('Please login to apply for jobs');
+      toast.error('Please login to apply for referrals');
       return;
     }
 
     if (applicationStatus) {
-      toast.error('You have already applied for this job');
+      toast.error('You have already applied for this referral');
       return;
     }
 
@@ -216,21 +216,21 @@ export default function JobDetails() {
           'Authorization': `Bearer ${document.cookie.split('; ').find(row => row.startsWith('auth_token='))?.split('=')[1]}`
         },
         body: JSON.stringify({
-          jobId: params.id,
+          referralId: params.id,
           coverLetter: 'test'
         })
       });
 
       if (!response.ok) {
-        throw new Error('Failed to apply for job');
+        throw new Error('Failed to apply for referral');
       }
 
-      toast.success('Successfully applied for the job!');
+      toast.success('Successfully applied for the referral!');
       // Refresh application status after successful application
       fetchApplicationStatus();
     } catch (error) {
-      console.error('Error applying for job:', error);
-      toast.error('Failed to apply for job');
+      console.error('Error applying for referral:', error);
+      toast.error('Failed to apply for referral');
     }
   };
 
@@ -244,11 +244,11 @@ export default function JobDetails() {
     );
   }
 
-  if (!job) {
+  if (!referral) {
     return (
       <div className="min-h-screen bg-gray-50 py-12">
         <div className="container mx-auto px-4">
-          <div className="text-center text-red-500">Job not found</div>
+          <div className="text-center text-red-500">Referral not found</div>
         </div>
       </div>
     );
@@ -259,12 +259,12 @@ export default function JobDetails() {
       <div className="container mx-auto px-4">
         <div className="bg-white rounded-lg shadow-sm p-8">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-4">{job.title}</h1>
+            <h1 className="text-3xl font-bold mb-4">{referral.title}</h1>
             <div className="flex items-center text-gray-600 mb-2">
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
               </svg>
-              <span className="text-xl">{job.company}</span>
+              <span className="text-xl">{referral.company}</span>
             </div>
             <div className="flex items-center text-gray-600 mb-4">
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -272,34 +272,34 @@ export default function JobDetails() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
               <span className="text-xl">
-                {locations[job.cityId]?.city}, {locations[job.cityId]?.country}
+                {locations[referral.cityId]?.city}, {locations[referral.cityId]?.country}
               </span>
             </div>
             <div className="flex items-center text-gray-600 mb-4">
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span className="text-xl">{formatSalary(job.salary, job.currencyId)}</span>
+              <span className="text-xl">{formatSalary(referral.salary, referral.currencyId)}</span>
             </div>
             <div className="flex items-center text-gray-500">
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              <span>Posted on {formatDate(job.createdAt)}</span>
+              <span>Posted on {formatDate(referral.createdAt)}</span>
             </div>
           </div>
 
           <div className="prose max-w-none">
             <div className="mb-6">
-              <h2 className="text-xl font-semibold mb-2">Job Details</h2>
+              <h2 className="text-xl font-semibold mb-2">Referral Details</h2>
               <div className="space-y-2">
-                <p><span className="font-medium">Designation:</span> {designations[job.designationId] || 'Not specified'}</p>
-                <p><span className="font-medium">Status:</span> {job.active ? 'Active' : 'Inactive'}</p>
+                <p><span className="font-medium">Designation:</span> {designations[referral.designationId] || 'Not specified'}</p>
+                <p><span className="font-medium">Status:</span> {referral.active ? 'Active' : 'Inactive'}</p>
               </div>
             </div>
 
-            <h2 className="text-2xl font-semibold mb-4">Job Description</h2>
-            <div className="whitespace-pre-wrap text-gray-700" dangerouslySetInnerHTML={{ __html: job.description }} />
+            <h2 className="text-2xl font-semibold mb-4">Referral Description</h2>
+            <div className="whitespace-pre-wrap text-gray-700" dangerouslySetInnerHTML={{ __html: referral.description }} />
           </div>
 
           <div className="mt-8">
@@ -310,7 +310,7 @@ export default function JobDetails() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   <span className="text-green-700 font-medium">
-                    You have already applied for this job - Status: {applicationStatus}
+                    You have already applied for this referral - Status: {applicationStatus}
                   </span>
                 </div>
               </div>
@@ -319,7 +319,7 @@ export default function JobDetails() {
             {!isLoggedIn && (
               <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="text-blue-700 text-sm">
-                  💡 Please <a href="/login" className="underline font-medium">log in</a> to apply for this job.
+                  💡 Please <a href="/login" className="underline font-medium">log in</a> to apply for this referral.
                 </p>
               </div>
             )}

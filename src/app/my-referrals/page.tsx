@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { BASE_URL } from '../services/api';
 
-interface Job {
+interface Referral {
   id: number;
   title: string;
   description: string;
@@ -24,47 +24,47 @@ interface Job {
   applicationCount?: number;
 }
 
-export default function MyJobs() {
-  const [jobs, setJobs] = useState<Job[]>([]);
+export default function MyReferrals() {
+  const [referrals, setReferrals] = useState<Referral[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchApplicationCounts = async (jobIds: number[]) => {
+  const fetchApplicationCounts = async (referralIds: number[]) => {
     try {
       const token = document.cookie
         .split('; ')
         .find(row => row.startsWith('auth_token='))
         ?.split('=')[1];
 
-      const promises = jobIds.map(async (jobId) => {
+      const promises = referralIds.map(async (referralId) => {
         try {
-          const response = await fetch(`${BASE_URL}/api/v1/job-applications/job/${jobId}`, {
+          const response = await fetch(`${BASE_URL}/api/v1/job-applications/job/${referralId}`, {
             headers: {
               'Authorization': `Bearer ${token}`,
             },
           });
           if (response.ok) {
             const data = await response.json();
-            return { jobId, count: data.length || 0 };
+            return { referralId, count: data.length || 0 };
           }
-          return { jobId, count: 0 };
+          return { referralId, count: 0 };
         } catch (error) {
-          console.error(`Error fetching application count for job ${jobId}:`, error);
-          return { jobId, count: 0 };
+          console.error(`Error fetching application count for referral ${referralId}:`, error);
+          return { referralId, count: 0 };
         }
       });
 
       const results = await Promise.all(promises);
-      const countMap = results.reduce((acc, { jobId, count }) => {
-        acc[jobId] = count;
+      const countMap = results.reduce((acc, { referralId, count }) => {
+        acc[referralId] = count;
         return acc;
       }, {} as { [key: number]: number });
 
-      setJobs(prevJobs =>
-        prevJobs.map(job => ({
-          ...job,
-          applicationCount: countMap[job.id] || 0
+      setReferrals(prevReferrals =>
+        prevReferrals.map(referral => ({
+          ...referral,
+          applicationCount: countMap[referral.id] || 0
         }))
       );
     } catch (error) {
@@ -72,7 +72,7 @@ export default function MyJobs() {
     }
   };
 
-  const fetchJobs = async (page: number) => {
+  const fetchReferrals = useCallback(async (page: number) => {
     try {
       setIsLoading(true);
       const token = document.cookie
@@ -85,28 +85,28 @@ export default function MyJobs() {
         },
       });
       if (!response.ok) {
-        throw new Error('Failed to fetch jobs');
+        throw new Error('Failed to fetch referrals');
       }
       const data = await response.json();
-      setJobs(data.content);
+      setReferrals(data.content);
       setTotalPages(data.totalPages);
 
-      // Fetch application counts for the jobs
+      // Fetch application counts for the referrals
       if (data.content.length > 0) {
-        const jobIds = data.content.map((job: Job) => job.id);
-        await fetchApplicationCounts(jobIds);
+        const referralIds = data.content.map((referral: Referral) => referral.id);
+        await fetchApplicationCounts(referralIds);
       }
     } catch (error) {
-      toast.error('Failed to fetch jobs');
-      console.error('Error fetching jobs:', error);
+      toast.error('Failed to fetch referrals');
+      console.error('Error fetching referrals:', error);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    fetchJobs(currentPage);
-  }, [currentPage]);
+    fetchReferrals(currentPage);
+  }, [currentPage, fetchReferrals]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -130,60 +130,60 @@ export default function MyJobs() {
   return (
     <div className="max-w-7xl mx-auto p-6">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">My Posted Jobs</h1>
+        <h1 className="text-3xl font-bold">My Posted Referrals</h1>
         <Link
-          href="/post-job"
+          href="/post-referral"
           className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
         >
-          Post a New Job
+          Post a New Referral
         </Link>
       </div>
 
       {isLoading ? (
         <div className="text-center py-8">Loading...</div>
-      ) : jobs.length === 0 ? (
+      ) : referrals.length === 0 ? (
         <div className="text-center py-8">
-          <p className="text-gray-500">You haven&apos;t posted any jobs yet.</p>
+          <p className="text-gray-500">You haven&apos;t posted any referrals yet.</p>
           <Link
-            href="/post-job"
+            href="/post-referral"
             className="mt-4 inline-flex items-center text-indigo-600 hover:text-indigo-500"
           >
-            Post your first job
+            Post your first referral
           </Link>
         </div>
       ) : (
         <>
           <div className="overflow-hidden">
             <ul>
-              {jobs.map((job) => (
-                <li key={job.id}>
+              {referrals.map((referral) => (
+                <li key={referral.id}>
                   <div className="p-4 border border-gray-200 rounded-lg mb-4 shadow-sm bg-white">
                     <div className="flex justify-between items-start">
                       <div className="flex-1 min-w-0">
                         <h2 className="text-lg font-bold text-gray-800 truncate">
-                          <Link href={`/my-jobs/${job.id}`} className="hover:underline">
-                            {job.title}
+                          <Link href={`/my-referral/${referral.id}`} className="hover:underline">
+                            {referral.title}
                           </Link>
                         </h2>
                         <div className="mt-1 text-sm text-gray-500">
-                          <span>Company: {job.company}</span>
+                          <span>Company: {referral.company}</span>
                           <span className="mx-2">|</span>
-                          <span>Posted by: me on {formatDate(job.createdAt)}</span>
+                          <span>Posted by: me on {formatDate(referral.createdAt)}</span>
                         </div>
                         <div className="mt-3 flex items-center">
-                          <Link href={`/my-jobs/${job.id}`} className="hover:underline">
+                          <Link href={`/my-referral/${referral.id}`} className="hover:underline">
                             <span className="text-sm font-semibold text-gray-700">
-                              {job.applicationCount || 0} Total Responses
+                              {referral.applicationCount || 0} Total Responses
                             </span>
                           </Link>
                         </div>
                       </div>
                       <div className="ml-4 flex-shrink-0">
                         <Link
-                          href={`/post-job?edit=true&id=${job.id}`}
+                          href={`/post-job?edit=true&id=${referral.id}`}
                           className="text-indigo-600 hover:text-indigo-500 font-medium"
                         >
-                          Edit Job
+                          Edit Referral
                         </Link>
                       </div>
                     </div>

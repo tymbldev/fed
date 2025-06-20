@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { BASE_URL } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
-interface Job {
+interface Referral {
   id: number;
   title: string;
   description: string;
@@ -26,15 +26,15 @@ interface Job {
 
 interface Application {
   id: number;
-  jobId: number;
-  jobTitle: string;
+  referralId: number;
+  referralTitle: string;
   applicantId: number;
   applicantName: string;
   status: string;
   createdAt: string;
 }
 
-interface PostedJob {
+interface PostedReferral {
   id: number;
   title: string;
   description: string;
@@ -67,12 +67,12 @@ interface LocationOption {
   zipCode: string;
 }
 
-export default function Jobs() {
+export default function Referrals() {
   const { isLoggedIn } = useAuth();
-  const [jobs, setJobs] = useState<Job[]>([]);
+  const [referrals, setReferrals] = useState<Referral[]>([]);
   const [locations, setLocations] = useState<{ [key: number]: LocationOption }>({});
-  const [appliedJobs, setAppliedJobs] = useState<{ [key: number]: Application }>({});
-  const [postedJobs, setPostedJobs] = useState<{ [key: number]: PostedJob }>({});
+  const [appliedReferrals, setAppliedReferrals] = useState<{ [key: number]: Application }>({});
+  const [postedReferrals, setPostedReferrals] = useState<{ [key: number]: PostedReferral }>({});
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -98,7 +98,7 @@ export default function Jobs() {
     }
   };
 
-  const fetchAppliedJobs = async () => {
+  const fetchAppliedReferrals = async () => {
     if (!isLoggedIn) {
       return; // Don't fetch if user is not logged in
     }
@@ -110,7 +110,7 @@ export default function Jobs() {
         ?.split('=')[1];
 
       if (!token) {
-        console.log('No auth token found for applied jobs fetch');
+        console.log('No auth token found for applied referrals fetch');
         return;
       }
 
@@ -121,22 +121,22 @@ export default function Jobs() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch applied jobs');
+        throw new Error('Failed to fetch applied referrals');
       }
 
       const data: Application[] = await response.json();
-      const appliedJobsMap = data.reduce((acc, application) => {
-        acc[application.jobId] = application;
+      const appliedReferralsMap = data.reduce((acc, application) => {
+        acc[application.referralId] = application;
         return acc;
       }, {} as { [key: number]: Application });
-      setAppliedJobs(appliedJobsMap);
+      setAppliedReferrals(appliedReferralsMap);
     } catch (error) {
-      console.error('Error fetching applied jobs:', error);
+      console.error('Error fetching applied referrals:', error);
       // Don't show error toast for this as it might be expected for non-logged in users
     }
   };
 
-  const fetchPostedJobs = async () => {
+  const fetchPostedReferrals = async () => {
     if (!isLoggedIn) {
       return; // Don't fetch if user is not logged in
     }
@@ -148,7 +148,7 @@ export default function Jobs() {
         ?.split('=')[1];
 
       if (!token) {
-        console.log('No auth token found for posted jobs fetch');
+        console.log('No auth token found for posted referrals fetch');
         return;
       }
 
@@ -159,34 +159,34 @@ export default function Jobs() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch posted jobs');
+        throw new Error('Failed to fetch posted referrals');
       }
 
       const data = await response.json();
-      const postedJobsMap = data.content.reduce((acc: { [key: number]: PostedJob }, job: PostedJob) => {
-        acc[job.id] = job;
+      const postedReferralsMap = data.content.reduce((acc: { [key: number]: PostedReferral }, referral: PostedReferral) => {
+        acc[referral.id] = referral;
         return acc;
-      }, {} as { [key: number]: PostedJob });
-      setPostedJobs(postedJobsMap);
+      }, {} as { [key: number]: PostedReferral });
+      setPostedReferrals(postedReferralsMap);
     } catch (error) {
-      console.error('Error fetching posted jobs:', error);
+      console.error('Error fetching posted referrals:', error);
       // Don't show error toast for this as it might be expected for non-logged in users
     }
   };
 
-  const fetchJobs = async (page: number) => {
+  const fetchReferrals = async (page: number) => {
     try {
       setIsLoading(true);
       const response = await fetch(`${BASE_URL}/api/v1/jobsearch?page=${page}&size=10`);
       if (!response.ok) {
-        throw new Error('Failed to fetch jobs');
+        throw new Error('Failed to fetch referrals');
       }
       const data = await response.json();
-      setJobs(data.content);
+      setReferrals(data.content);
       setTotalPages(data.totalPages);
     } catch (error) {
-      toast.error('Failed to fetch jobs');
-      console.error('Error fetching jobs:', error);
+      toast.error('Failed to fetch referrals');
+      console.error('Error fetching referrals:', error);
     } finally {
       setIsLoading(false);
     }
@@ -194,9 +194,9 @@ export default function Jobs() {
 
   useEffect(() => {
     fetchLocations();
-    fetchAppliedJobs();
-    fetchPostedJobs();
-    fetchJobs(currentPage);
+    fetchAppliedReferrals();
+    fetchPostedReferrals();
+    fetchReferrals(currentPage);
   }, [currentPage, isLoggedIn]);
 
   const formatDate = (dateString: string) => {
@@ -207,27 +207,27 @@ export default function Jobs() {
     });
   };
 
-  const getLocationDisplay = (job: Job) => {
-    const location = locations[job.cityId];
+  const getLocationDisplay = (referral: Referral) => {
+    const location = locations[referral.cityId];
     if (!location) return 'Location not specified';
     return `${location.city}, ${location.country}`;
   };
 
-  const isJobApplied = (jobId: number) => {
-    return appliedJobs[jobId] !== undefined;
+  const isReferralApplied = (referralId: number) => {
+    return appliedReferrals[referralId] !== undefined;
   };
 
-  const getApplicationStatus = (jobId: number) => {
-    const application = appliedJobs[jobId];
+  const getApplicationStatus = (referralId: number) => {
+    const application = appliedReferrals[referralId];
     return application ? application.status : null;
   };
 
-  const isJobPostedByUser = (jobId: number) => {
-    return postedJobs[jobId] !== undefined;
+  const isReferralPostedByUser = (referralId: number) => {
+    return postedReferrals[referralId] !== undefined;
   };
 
-  // Filter out jobs that are posted by the current user
-  const filteredJobs = jobs.filter(job => !isJobPostedByUser(job.id));
+  // Filter out referrals that are posted by the current user
+  const filteredReferrals = referrals.filter(referral => !isReferralPostedByUser(referral.id));
 
   return (
     <main className="min-h-screen bg-gray-50 py-12">
@@ -235,7 +235,7 @@ export default function Jobs() {
         {/* Header Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-[#1a73e8] to-[#34c759] text-transparent bg-clip-text">
-            Job Listings
+            Referral Listings
           </h1>
           <p className="text-gray-600">Find your next career opportunity</p>
         </div>
@@ -245,7 +245,7 @@ export default function Jobs() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <input
               type="text"
-              placeholder="Search jobs..."
+              placeholder="Search referrals..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a73e8]"
@@ -274,51 +274,51 @@ export default function Jobs() {
           {!isLoggedIn && (
             <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
               <p className="text-blue-700 text-sm">
-                💡 <Link href="/login" className="underline font-medium">Log in</Link> to see your application status for jobs you&apos;ve applied to.
+                💡 <Link href="/login" className="underline font-medium">Log in</Link> to see your application status for referrals you&apos;ve applied to.
               </p>
             </div>
           )}
         </div>
 
-        {/* Job Listings */}
+        {/* Referral Listings */}
         {isLoading ? (
           <div className="text-center py-8">Loading...</div>
-        ) : filteredJobs.length === 0 ? (
+        ) : filteredReferrals.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-gray-500">No jobs found matching your criteria.</p>
+            <p className="text-gray-500">No referrals found matching your criteria.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {filteredJobs.map((job) => (
-              <div key={job.id} className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition duration-200">
+            {filteredReferrals.map((referral) => (
+              <div key={referral.id} className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition duration-200">
                 <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
                   <div>
-                    <h3 className="text-xl font-semibold mb-2">{job.title}</h3>
+                    <h3 className="text-xl font-semibold mb-2">{referral.title}</h3>
                     <div className="flex items-center text-gray-600 mb-2">
                       <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                       </svg>
-                      <span>{job.company}</span>
+                      <span>{referral.company}</span>
                     </div>
                     <div className="flex items-center text-gray-600">
                       <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
-                      <span>{getLocationDisplay(job)}</span>
+                      <span>{getLocationDisplay(referral)}</span>
                     </div>
                   </div>
                   <div className="mt-4 md:mt-0">
-                    <Link href={`/jobs/${job.id}`} className="px-6 py-2 bg-[#1a73e8] text-white rounded-lg hover:bg-[#1a73e8]/90 transition duration-200">
+                    <Link href={`/referrals/${referral.id}`} className="px-6 py-2 bg-[#1a73e8] text-white rounded-lg hover:bg-[#1a73e8]/90 transition duration-200">
                       View Details
                     </Link>
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2 mt-4">
-                  <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">Posted {formatDate(job.createdAt)}</span>
-                  {isJobApplied(job.id) && (
+                  <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">Posted {formatDate(referral.createdAt)}</span>
+                  {isReferralApplied(referral.id) && (
                     <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
-                      Applied - {getApplicationStatus(job.id)}
+                      Applied - {getApplicationStatus(referral.id)}
                     </span>
                   )}
                 </div>

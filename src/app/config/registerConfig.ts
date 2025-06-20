@@ -11,7 +11,7 @@ export const registerConfig = {
 
   options: {
     role: [
-      { value: 'job-seeker', label: 'Job Seeker' },
+      { value: 'referral-seeker', label: 'Referral Seeker' },
       { value: 'employer', label: 'Employer' },
       { value: 'recruiter', label: 'Recruiter' },
     ],
