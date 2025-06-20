@@ -181,7 +181,7 @@ export default function Register() {
     switch (currentStep) {
       case 1:
         return (
-          <div className="space-y-6">
+          <div className="space-y-6 animate-fade-in">
             <Email
               formData={formData}
               errors={errors}
@@ -200,7 +200,7 @@ export default function Register() {
         );
       case 2:
         return (
-          <div className="space-y-6">
+          <div className="space-y-6 animate-fade-in">
             <FirstName
               formData={formData}
               errors={errors}
@@ -237,7 +237,7 @@ export default function Register() {
         );
       case 3:
         return (
-          <div className="space-y-6">
+          <div className="space-y-6 animate-fade-in">
             <TotalWorkExperience
               formData={formData}
               errors={errors}
@@ -270,7 +270,7 @@ export default function Register() {
         );
       case 4:
         return (
-          <div className="space-y-6">
+          <div className="space-y-6 animate-fade-in">
             <div className="w-full">
               <Skills
                 formData={formData}
@@ -304,57 +304,64 @@ export default function Register() {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6">
-      <h1 className="text-4xl font-bold text-center mb-2 bg-gradient-to-r from-blue-500 to-teal-500 bg-clip-text text-transparent">
-        Create Account
-      </h1>
-      <p className="text-center text-gray-600 mb-8">
-        Step {currentStep} of 4
-      </p>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 animate-fade-in">
+        <div>
+          <h1 className="text-4xl font-bold text-center mb-2 bg-gradient-to-r from-primary-500 to-secondary-500 dark:from-primary-400 dark:to-secondary-400 text-transparent bg-clip-text">
+            Create Account
+          </h1>
+          <p className="text-center text-gray-600 dark:text-gray-400 mb-8">
+            Step {currentStep} of 4
+          </p>
 
-      <div className="h-1 w-full bg-gray-200 rounded-full mb-8">
-        <div
-          className="h-1 bg-gradient-to-r from-blue-500 to-teal-500 rounded-full transition-all duration-300"
-          style={{ width: `${(currentStep / 4) * 100}%` }}
-        />
-      </div>
+          <div className="h-1 w-full bg-gray-200 dark:bg-gray-700 rounded-full mb-8">
+            <div
+              className="h-1 bg-gradient-to-r from-primary-500 to-secondary-500 dark:from-primary-400 dark:to-secondary-400 rounded-full transition-all duration-300"
+              style={{ width: `${(currentStep / 4) * 100}%` }}
+            />
+          </div>
 
-      <form onSubmit={handleStepSubmit} className="space-y-8" noValidate>
-        {renderStepContent()}
+          <form onSubmit={handleStepSubmit} className="space-y-8" noValidate>
+            {renderStepContent()}
 
-        <div className="flex justify-between">
-          {currentStep > 1 && (
-            <button
-              type="button"
-              onClick={handlePrevStep}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-            >
-              Previous
-            </button>
-          )}
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="ml-auto px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
-          >
-            {isSubmitting
-              ? currentStep === 4
-                ? 'Completing Setup...'
-                : 'Saving...'
-              : currentStep === 4
-                ? 'Complete Setup'
-                : 'Save & Continue'
-            }
-          </button>
+            <div className="flex justify-between">
+              {currentStep > 1 && (
+                <button
+                  type="button"
+                  onClick={handlePrevStep}
+                  className="btn btn-outline"
+                >
+                  Previous
+                </button>
+              )}
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="btn btn-primary ml-auto"
+              >
+                {isSubmitting ? (
+                  <div className="flex items-center">
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    {currentStep === 4 ? 'Completing Setup...' : 'Saving...'}
+                  </div>
+                ) : (
+                  currentStep === 4 ? 'Complete Setup' : 'Save & Continue'
+                )}
+              </button>
+            </div>
+          </form>
+
+          <p className="text-center mt-8 text-gray-600 dark:text-gray-400">
+            Already have an account?{' '}
+            <Link href="/login" className="text-primary-500 dark:text-primary-400 hover:text-primary-600 dark:hover:text-primary-300">
+              Sign in
+            </Link>
+          </p>
         </div>
-      </form>
-
-      <p className="text-center mt-8 text-gray-600">
-        Already have an account?{' '}
-        <Link href="/login" className="text-blue-600 hover:text-blue-800">
-          Sign in
-        </Link>
-      </p>
+      </div>
     </div>
   );
 }
