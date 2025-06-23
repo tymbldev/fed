@@ -175,6 +175,10 @@ html {
     @apply bg-primary-500 text-white hover:bg-primary-600 dark:bg-primary-400 dark:hover:bg-primary-300;
   }
 
+  .btn-primary:hover {
+    @apply text-white !important;
+  }
+
   .btn-secondary {
     @apply bg-secondary-500 text-white hover:bg-secondary-600 dark:bg-secondary-400 dark:hover:bg-secondary-300;
   }

@@ -1,18 +1,22 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
 import { toast } from 'sonner';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
   const pathname = usePathname();
   const router = useRouter();
   const { isLoggedIn, setIsLoggedIn } = useAuth();
-  const { theme, toggleTheme } = useTheme();
+
+  // Check if we're on the register page
+  const isRegisterPage = pathname === '/register';
 
   useEffect(() => {
     // Debug logging
@@ -23,6 +27,27 @@ export default function Header() {
     console.log('Auth Token:', token);
     console.log('isLoggedIn state:', isLoggedIn);
   }, [isLoggedIn]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      // Show header when scrolling up or at the top
+      if (currentScrollY < lastScrollY || currentScrollY < 100) {
+        setIsVisible(true);
+      } else {
+        setIsVisible(false);
+      }
+
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [lastScrollY]);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -52,15 +77,24 @@ export default function Header() {
   const navItems = isLoggedIn ? loggedInNavItems : loggedOutNavItems;
 
   return (
-    <header className="bg-white dark:bg-gray-800 shadow-sm">
+    <header className={`sticky top-0 z-50 bg-white dark:bg-gray-800 shadow-sm transition-transform duration-300 ${
+      isVisible ? 'translate-y-0' : '-translate-y-full'
+    }`}>
       <nav className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <Link href="/" className="text-2xl font-bold text-primary-500 dark:text-primary-400">
-            TymblHub
+          <Image
+            src="/logo.svg"
+            alt="TymblHub"
+            width={180}
+            height={50}
+            className="h-12 w-auto"
+            priority
+          />
           </Link>
 
-          {/* Theme Toggle Button */}
-          <button
+          {/* Theme Toggle Button - Hidden for now */}
+          {/* <button
             onClick={toggleTheme}
             className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             aria-label="Toggle theme"
@@ -74,49 +108,53 @@ export default function Header() {
                 <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
               </svg>
             )}
-          </button>
+          </button> */}
 
-          {/* Mobile menu button */}
-          <button
-            onClick={toggleMenu}
-            className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-            aria-label="Toggle menu"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              {isMenuOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          {/* Mobile menu button - Hidden on register page */}
+          {!isRegisterPage && (
+            <button
+              onClick={toggleMenu}
+              className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              aria-label="Toggle menu"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {isMenuOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
+          )}
+
+          {/* Desktop Navigation - Hidden on register page */}
+          {!isRegisterPage && (
+            <div className="hidden md:flex items-center space-x-6">
+              {navItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`text-gray-600 dark:text-gray-300 hover:text-primary-500 dark:hover:text-primary-400 transition-colors ${
+                    pathname === item.href ? 'text-primary-500 dark:text-primary-400' : ''
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+              {isLoggedIn && (
+                <button
+                  onClick={handleLogout}
+                  className="text-gray-600 dark:text-gray-300 hover:text-primary-500 dark:hover:text-primary-400 transition-colors"
+                >
+                  Logout
+                </button>
               )}
-            </svg>
-          </button>
-
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-6">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`text-gray-600 dark:text-gray-300 hover:text-primary-500 dark:hover:text-primary-400 transition-colors ${
-                  pathname === item.href ? 'text-primary-500 dark:text-primary-400' : ''
-                }`}
-              >
-                {item.label}
-              </Link>
-            ))}
-            {isLoggedIn && (
-              <button
-                onClick={handleLogout}
-                className="text-gray-600 dark:text-gray-300 hover:text-primary-500 dark:hover:text-primary-400 transition-colors"
-              >
-                Logout
-              </button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
-        {/* Mobile Navigation */}
-        {isMenuOpen && (
+        {/* Mobile Navigation - Hidden on register page */}
+        {!isRegisterPage && isMenuOpen && (
           <div className="md:hidden mt-4 space-y-4 animate-fade-in">
             {navItems.map((item) => (
               <Link

@@ -6,7 +6,7 @@ import Image from 'next/image';
 export default function Footer() {
   const footerLinks = {
     company: [
-      { href: '/home', label: 'Home' },
+      { href: '/', label: 'Home' },
       { href: '/about-us', label: 'About Us' },
       { href: '/contact-us', label: 'Contact Us' },
       { href: '/feedback', label: 'Feedback' },
@@ -25,13 +25,13 @@ export default function Footer() {
     ],
   };
 
-  const socialLinks = [
-    { href: 'https://facebook.com', icon: '/icons/facebook.svg', label: 'Facebook' },
-    { href: 'https://linkedin.com', icon: '/icons/linkedin.svg', label: 'LinkedIn' },
-    { href: 'https://instagram.com', icon: '/icons/instagram.svg', label: 'Instagram' },
-    { href: 'https://youtube.com', icon: '/icons/youtube.svg', label: 'YouTube' },
-    { href: 'https://twitter.com', icon: '/icons/twitter.svg', label: 'Twitter' },
-  ];
+  // const socialLinks = [
+  //   { href: 'https://facebook.com', icon: '/icons/facebook.svg', label: 'Facebook' },
+  //   { href: 'https://linkedin.com', icon: '/icons/linkedin.svg', label: 'LinkedIn' },
+  //   { href: 'https://instagram.com', icon: '/icons/instagram.svg', label: 'Instagram' },
+  //   { href: 'https://youtube.com', icon: '/icons/youtube.svg', label: 'YouTube' },
+  //   { href: 'https://twitter.com', icon: '/icons/twitter.svg', label: 'Twitter' },
+  // ];
 
   return (
     <footer className="bg-white border-t">
@@ -41,14 +41,15 @@ export default function Footer() {
           <div className="space-y-6">
             <Link href="/" className="flex items-center">
               <Image
-                src="/logo.png"
+                src="/logo.svg"
                 alt="TymblHub"
                 width={180}
                 height={50}
                 className="h-12 w-auto"
+                priority
               />
             </Link>
-            <div>
+            {/* <div>
               <h3 className="text-sm font-semibold text-gray-600 mb-3">Social Links</h3>
               <div className="flex space-x-4">
                 {socialLinks.map((social) => (
@@ -70,7 +71,7 @@ export default function Footer() {
                   </a>
                 ))}
               </div>
-            </div>
+            </div> */}
           </div>
 
           {/* Company Links */}
@@ -128,12 +129,12 @@ export default function Footer() {
         {/* Bottom Section */}
         <div className="mt-12 pt-8 border-t border-gray-200">
           <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="mb-4 md:mb-0">
-              <p className="text-sm text-gray-400">
+            <div className="mb-4 md:mb-0 w-full">
+              <p className="text-sm text-gray-400 text-center">
                 © {new Date().getFullYear()} TymblHub. All rights reserved.
               </p>
             </div>
-            <div className="flex items-center space-x-4">
+            {/* <div className="flex items-center space-x-4">
               <Link href="/app-store" className="block">
                 <Image
                   src="/app-store.png"
@@ -152,7 +153,7 @@ export default function Footer() {
                   className="h-10 w-auto"
                 />
               </Link>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

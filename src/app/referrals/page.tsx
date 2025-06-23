@@ -26,7 +26,7 @@ interface Referral {
 
 interface Application {
   id: number;
-  referralId: number;
+  jobId: number;
   referralTitle: string;
   applicantId: number;
   applicantName: string;
@@ -110,7 +110,6 @@ export default function Referrals() {
         ?.split('=')[1];
 
       if (!token) {
-        console.log('No auth token found for applied referrals fetch');
         return;
       }
 
@@ -124,11 +123,26 @@ export default function Referrals() {
         throw new Error('Failed to fetch applied referrals');
       }
 
-      const data: Application[] = await response.json();
-      const appliedReferralsMap = data.reduce((acc, application) => {
-        acc[application.referralId] = application;
+      const data = await response.json();
+      console.log('Raw API response:', data);
+      console.log('Response type:', typeof data);
+      console.log('Is array?', Array.isArray(data));
+      console.log('Has content property?', data && typeof data === 'object' && 'content' in data);
+
+      // Handle both array and object with content property
+      const applicationsArray: Application[] = Array.isArray(data) ? data : (data.content || []);
+      console.log('Applications array:', applicationsArray);
+      console.log('Array length:', applicationsArray.length);
+
+      const appliedReferralsMap = applicationsArray.reduce((acc: { [key: number]: Application }, application: Application) => {
+        console.log('Processing application:', application);
+        console.log('Application jobId:', application.jobId, 'Type:', typeof application.jobId);
+        acc[application.jobId] = application;
         return acc;
       }, {} as { [key: number]: Application });
+
+      console.log('Final appliedReferralsMap:', appliedReferralsMap);
+      console.log('Map keys:', Object.keys(appliedReferralsMap));
       setAppliedReferrals(appliedReferralsMap);
     } catch (error) {
       console.error('Error fetching applied referrals:', error);
@@ -194,9 +208,16 @@ export default function Referrals() {
 
   useEffect(() => {
     fetchLocations();
-    fetchAppliedReferrals();
-    fetchPostedReferrals();
     fetchReferrals(currentPage);
+
+    if (isLoggedIn) {
+      fetchAppliedReferrals();
+      fetchPostedReferrals();
+    } else {
+      // Clear the state when user is not logged in
+      setAppliedReferrals({});
+      setPostedReferrals({});
+    }
   }, [currentPage, isLoggedIn]);
 
   const formatDate = (dateString: string) => {
@@ -213,17 +234,23 @@ export default function Referrals() {
     return `${location.city}, ${location.country}`;
   };
 
-  const isReferralApplied = (referralId: number) => {
-    return appliedReferrals[referralId] !== undefined;
+  const isReferralApplied = (jobId: number) => {
+    const isApplied = appliedReferrals[jobId] !== undefined;
+    console.log(`Checking referral ${jobId}:`, {
+      isApplied,
+      appliedReferralsKeys: Object.keys(appliedReferrals),
+      appliedReferralsValue: appliedReferrals[jobId]
+    });
+    return isApplied;
   };
 
-  const getApplicationStatus = (referralId: number) => {
-    const application = appliedReferrals[referralId];
+  const getApplicationStatus = (jobId: number) => {
+    const application = appliedReferrals[jobId];
     return application ? application.status : null;
   };
 
-  const isReferralPostedByUser = (referralId: number) => {
-    return postedReferrals[referralId] !== undefined;
+  const isReferralPostedByUser = (jobId: number) => {
+    return postedReferrals[jobId] !== undefined;
   };
 
   // Filter out referrals that are posted by the current user
@@ -308,8 +335,8 @@ export default function Referrals() {
                       <span>{getLocationDisplay(referral)}</span>
                     </div>
                   </div>
-                  <div className="mt-4 md:mt-0">
-                    <Link href={`/referrals/${referral.id}`} className="px-6 py-2 bg-[#1a73e8] text-white rounded-lg hover:bg-[#1a73e8]/90 transition duration-200">
+                  <div className="mt-4 md:mt-0 flex flex-col items-end gap-2">
+                    <Link href={`/referrals/${referral.id}`} className="px-6 py-2 rounded-lg transition duration-200 bg-[#1a73e8] text-white hover:text-white hover:bg-[#1a73e8]/90">
                       View Details
                     </Link>
                   </div>

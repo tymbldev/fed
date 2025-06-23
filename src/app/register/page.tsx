@@ -41,15 +41,18 @@ type ProfileData = {
 function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { fetchUserProfile, isLoggedIn } = useAuth();
+  const { fetchUserProfile, isLoggedIn, checkAuthState } = useAuth();
+  const [hasJustRegistered, setHasJustRegistered] = useState(false);
+  const isInitialLoad = React.useRef(true);
 
-  // Redirect if user is already logged in
+  // Redirect if user is already logged in (but not if they just registered or on initial load)
   React.useEffect(() => {
-    if (isLoggedIn) {
+    if (isLoggedIn && !hasJustRegistered && !isInitialLoad.current) {
       toast.info('You are already logged in');
       router.push('/profile');
     }
-  }, [isLoggedIn, router]);
+    isInitialLoad.current = false;
+  }, [isLoggedIn, router, hasJustRegistered]);
 
   // Initialize step from URL parameters
   const [currentStep, setCurrentStep] = useState(() => {
@@ -61,6 +64,16 @@ function RegisterForm() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [touched, setTouched] = useState<FormTouched>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Scroll to top with smooth animation when step changes
+  React.useEffect(() => {
+    if (!isInitialLoad.current) {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
+  }, [currentStep]);
 
   // Update URL with only step number
   const updateStepInUrl = (step: number) => {
@@ -130,7 +143,10 @@ function RegisterForm() {
 
       if (currentStep === 1) {
         const { email, password } = formData;
+        setHasJustRegistered(true); // Set this before registration to prevent the toast
         await registerUser(email, password);
+        // Check and update auth state after successful registration
+        await checkAuthState();
         toast.success('Account created successfully!');
         const nextStep = 2;
         setCurrentStep(nextStep);

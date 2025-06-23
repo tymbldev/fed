@@ -51,6 +51,17 @@ const Salary: React.FC<SalaryProps> = ({
     loadCurrencies();
   }, []);
 
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Allow only numeric keys, backspace, delete, tab, escape, enter
+    const allowedKeys = ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
+    const isNumeric = /[0-9]/.test(e.key);
+    const isAllowedKey = allowedKeys.includes(e.key);
+
+    if (!isNumeric && !isAllowedKey) {
+      e.preventDefault();
+    }
+  };
+
   return (
     <div className="grid grid-cols-2 gap-4">
       <SelectField
@@ -69,14 +80,16 @@ const Salary: React.FC<SalaryProps> = ({
       <InputField
         label={salaryLabel}
         name={salaryFieldName}
-        type="number"
+        type="text"
         value={formData[salaryFieldName] || ''}
         onChange={onInputChange}
         onBlur={() => onBlur(salaryFieldName)}
         error={touched[salaryFieldName] ? errors[salaryFieldName] : undefined}
         required={required}
         placeholder="Enter your salary"
-        min="0"
+        maxLength={9}
+        pattern="[0-9]*"
+        onKeyDown={handleKeyPress}
       />
     </div>
   );

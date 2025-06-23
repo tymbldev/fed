@@ -32,12 +32,14 @@ const SingleTypeAheadField: React.FC<SingleTypeAheadFieldProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [filteredSuggestions, setFilteredSuggestions] = useState<Suggestion[]>([]);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
         setIsOpen(false);
+        setSelectedIndex(-1);
       }
     };
 
@@ -55,9 +57,11 @@ const SingleTypeAheadField: React.FC<SingleTypeAheadFieldProps> = ({
       );
       setFilteredSuggestions(filtered);
       setIsOpen(true);
+      setSelectedIndex(-1);
     } else {
       setFilteredSuggestions([]);
       setIsOpen(false);
+      setSelectedIndex(-1);
     }
   };
 
@@ -70,6 +74,36 @@ const SingleTypeAheadField: React.FC<SingleTypeAheadFieldProps> = ({
     } as React.ChangeEvent<HTMLInputElement>;
     onChange(event);
     setIsOpen(false);
+    setSelectedIndex(-1);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!isOpen || filteredSuggestions.length === 0) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedIndex(prev =>
+          prev < filteredSuggestions.length - 1 ? prev + 1 : 0
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedIndex(prev =>
+          prev > 0 ? prev - 1 : filteredSuggestions.length - 1
+        );
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (selectedIndex >= 0 && selectedIndex < filteredSuggestions.length) {
+          handleSuggestionClick(filteredSuggestions[selectedIndex]);
+        }
+        break;
+      case 'Escape':
+        setIsOpen(false);
+        setSelectedIndex(-1);
+        break;
+    }
   };
 
   return (
@@ -84,6 +118,7 @@ const SingleTypeAheadField: React.FC<SingleTypeAheadFieldProps> = ({
           name={name}
           value={value}
           onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
           onBlur={onBlur}
           placeholder={placeholder}
           required={required}
@@ -94,7 +129,11 @@ const SingleTypeAheadField: React.FC<SingleTypeAheadFieldProps> = ({
             {filteredSuggestions.map((suggestion, index) => (
               <li
                 key={`${suggestion.value}-${index}`}
-                className="relative cursor-pointer select-none py-2 pl-3 pr-9 hover:bg-blue-50"
+                className={`relative cursor-pointer select-none py-2 pl-3 pr-9 ${
+                  index === selectedIndex
+                    ? 'bg-blue-600 text-white'
+                    : 'hover:bg-blue-50'
+                }`}
                 onClick={() => handleSuggestionClick(suggestion)}
               >
                 {suggestion.label}

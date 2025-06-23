@@ -46,7 +46,7 @@ interface DesignationOption {
 
 interface Application {
   id: number;
-  referralId: number;
+  jobId: number;
   referralTitle: string;
   applicantId: number;
   applicantName: string;
@@ -147,7 +147,7 @@ export default function ReferralDetails() {
       }
 
       const data: Application[] = await response.json();
-      const application = data.find(app => app.referralId === Number(params.id));
+      const application = data.find(app => app.jobId === Number(params.id));
       setApplicationStatus(application ? application.status : null);
     } catch (error) {
       console.error('Error fetching application status:', error);
@@ -216,7 +216,7 @@ export default function ReferralDetails() {
           'Authorization': `Bearer ${document.cookie.split('; ').find(row => row.startsWith('auth_token='))?.split('=')[1]}`
         },
         body: JSON.stringify({
-          referralId: params.id,
+          jobId: params.id,
           coverLetter: 'test'
         })
       });
@@ -303,7 +303,7 @@ export default function ReferralDetails() {
           </div>
 
           <div className="mt-8">
-            {isLoggedIn && applicationStatus && (
+            {/* {isLoggedIn && applicationStatus && (
               <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
                 <div className="flex items-center">
                   <svg className="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -314,7 +314,7 @@ export default function ReferralDetails() {
                   </span>
                 </div>
               </div>
-            )}
+            )} */}
 
             {!isLoggedIn && (
               <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
@@ -333,7 +333,7 @@ export default function ReferralDetails() {
                   : 'bg-[#1a73e8] text-white hover:bg-[#1a73e8]/90'
               }`}
             >
-              {isCheckingApplication ? 'Checking...' : applicationStatus ? 'Already Applied' : 'Apply Now'}
+              {isCheckingApplication ? 'Checking...' : applicationStatus ? 'Applied' : 'Apply Now'}
             </button>
           </div>
         </div>

@@ -66,6 +66,7 @@ interface AuthContextType {
   userProfile: UserProfile | null;
   setUserProfile: (profile: UserProfile | null) => void;
   fetchUserProfile: () => Promise<void>;
+  checkAuthState: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -103,23 +104,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const checkAuthState = async () => {
+    const token = document.cookie
+      .split('; ')
+      .find(row => row.startsWith('auth_token='))
+      ?.split('=')[1];
+
+    const loggedIn = !!token;
+    setIsLoggedIn(loggedIn);
+
+    if (loggedIn) {
+      await fetchUserProfile();
+    }
+  };
+
   useEffect(() => {
     // Check for auth_token cookie on initial load
-    const checkAuth = async () => {
-      const token = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('auth_token='))
-        ?.split('=')[1];
-
-      const loggedIn = !!token;
-      setIsLoggedIn(loggedIn);
-
-      if (loggedIn) {
-        await fetchUserProfile();
-      }
-    };
-
-    checkAuth();
+    checkAuthState();
   }, []);
 
   return (
@@ -128,7 +129,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoggedIn,
       userProfile,
       setUserProfile,
-      fetchUserProfile
+      fetchUserProfile,
+      checkAuthState
     }}>
       {children}
     </AuthContext.Provider>

@@ -1,5 +1,4 @@
 import React from 'react';
-import InputField from '../common/InputField';
 
 interface EmailProps {
   formData: { [key: string]: string };
@@ -21,17 +20,27 @@ const Email: React.FC<EmailProps> = ({
   disabled
 }) => {
   return (
-    <InputField
-      label="Email"
-      name="email"
-      type="email"
-      value={formData['email'] || ''}
-      onChange={onInputChange}
-      onBlur={() => onBlur('email')}
-      error={touched['email'] ? errors['email'] : undefined}
-      required={required}
-      disabled={disabled}
-    />
+    <div>
+      <label htmlFor="email" className="label">
+        Email address
+      </label>
+      <input
+        id="email"
+        name="email"
+        type="email"
+        autoComplete="email"
+        required={required}
+        disabled={disabled}
+        value={formData['email'] || ''}
+        onChange={onInputChange}
+        onBlur={() => onBlur('email')}
+        className={`input ${touched['email'] && errors['email'] ? 'border-red-500' : ''}`}
+        placeholder="Enter your email"
+      />
+      {touched['email'] && errors['email'] && (
+        <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors['email']}</p>
+      )}
+    </div>
   );
 };
 

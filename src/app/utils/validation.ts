@@ -12,7 +12,11 @@ export const validateField = (name: string, value: string, required: boolean): s
         }
         break;
       case 'phone':
-        if (!/^\+?[\d\s-]{10,}$/.test(value)) {
+        if (!/^\d+-\d{7,10}$/.test(value)) {
+          return validationMessages.phone;
+        }
+        const [isd, phone] = value.split('-');
+        if (isd.length < 2 || isd.length > 3 || phone.length < 7 || phone.length > 10) {
           return validationMessages.phone;
         }
         break;
