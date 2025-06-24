@@ -71,7 +71,7 @@ export default function SecurityAdvice() {
                 <span className="text-red-600 mr-3 mt-1">✗</span>
                 <div>
                   <h3 className="font-medium text-gray-900">Avoid Common Mistakes</h3>
-                  <p className="text-gray-600 text-sm">Don't use personal information like birthdays, names, or common words in your passwords.</p>
+                  <p className="text-gray-600 text-sm">Don&apos;t use personal information like birthdays, names, or common words in your passwords.</p>
                 </div>
               </div>
             </div>
@@ -89,7 +89,7 @@ export default function SecurityAdvice() {
               <ol className="list-decimal list-inside text-blue-800 space-y-1 text-sm">
                 <li>Go to your Account Settings</li>
                 <li>Navigate to Security & Privacy</li>
-                <li>Click on "Enable Two-Factor Authentication"</li>
+                <li>Click on &quot;Enable Two-Factor Authentication&quot;</li>
                 <li>Follow the setup instructions</li>
                 <li>Save your backup codes in a secure location</li>
               </ol>
@@ -117,7 +117,7 @@ export default function SecurityAdvice() {
               <div className="bg-green-50 p-4 rounded-lg">
                 <h3 className="font-medium text-green-900 mb-2">What to Do:</h3>
                 <ul className="text-green-800 text-sm space-y-1">
-                  <li>• Verify the sender's email address</li>
+                  <li>• Verify the sender&apos;s email address</li>
                   <li>• Check for HTTPS in website URLs</li>
                   <li>• Don&apos;t click on suspicious links</li>
                   <li>• Report suspicious emails to security@tymblhub.com</li>

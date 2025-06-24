@@ -78,15 +78,15 @@ export const fetchDropdownOptions = async (type: string): Promise<{ value: strin
       return data;
     }
 
-    // Special handling for companies
-    if (type === 'companies') {
-      const response = await fetch(`${BASE_URL}/api/v1/companies`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch companies');
-      }
-      const data = await response.json();
-      return data;
-    }
+    // // Special handling for companies
+    // if (type === 'companies') {
+    //   const response = await fetch(`${BASE_URL}/api/v1/companies`);
+    //   if (!response.ok) {
+    //     throw new Error('Failed to fetch companies');
+    //   }
+    //   const data = await response.json();
+    //   return data;
+    // }
 
     // For other dropdowns, use the dropdowns endpoint
     const response = await fetch(`${BASE_URL}/api/v1/dropdowns/${type}`);

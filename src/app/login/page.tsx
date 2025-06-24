@@ -32,6 +32,11 @@ export default function Login() {
       const data = await response.json();
 
       if (response.ok) {
+        if (data.token) {
+          document.cookie = `auth_token=${data.token}; path=/; ${
+            process.env.NODE_ENV === 'production' ? 'secure;' : ''
+          } samesite=strict; max-age=${60 * 60 * 24 * 7}`;
+        }
         await checkAuthState();
         toast.success('Login successful!');
         router.push('/profile');
