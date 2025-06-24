@@ -3,8 +3,11 @@
 import React from 'react';
 import Link from 'next/link';
 import Companies from './components/Companies';
+import { useAuth } from './context/AuthContext';
 
 export default function Home() {
+  const { isLoggedIn } = useAuth();
+
   return (
     <main className="min-h-screen bg-white dark:bg-gray-900">
       {/* Hero Section */}
@@ -33,14 +36,16 @@ export default function Home() {
                     Explore Opportunities
                   </span>
                 </Link>
-                <Link href="/register" className="btn btn-outline text-lg px-8 py-[14px] transform hover:scale-105 transition-all duration-300 border-2">
-                  <span className="flex items-center gap-2">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                    </svg>
-                    Join Our Network
-                  </span>
-                </Link>
+                {!isLoggedIn && (
+                  <Link href="/register" className="btn btn-outline text-lg px-8 py-[14px] transform hover:scale-105 transition-all duration-300 border-2">
+                    <span className="flex items-center gap-2">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                      </svg>
+                      Join Our Network
+                    </span>
+                  </Link>
+                )}
               </div>
             </div>
           </div>
@@ -145,14 +150,16 @@ export default function Home() {
             </span>
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-            <Link href="/register" className="btn bg-gradient-to-r from-primary-500 to-secondary-500 hover:from-primary-600 hover:to-secondary-600 text-white text-lg px-10 py-5 transform hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-primary-500/25">
-              <span className="flex items-center gap-3">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-                Start Your Journey
-              </span>
-            </Link>
+            {!isLoggedIn && (
+              <Link href="/register" className="btn bg-gradient-to-r from-primary-500 to-secondary-500 hover:from-primary-600 hover:to-secondary-600 text-white text-lg px-10 py-5 transform hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-primary-500/25">
+                <span className="flex items-center gap-3">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  Start Your Journey
+                </span>
+              </Link>
+            )}
             <Link href="/referrals" className="btn border-2 border-white text-white hover:bg-white hover:text-gray-900 text-lg px-10 py-5 transform hover:scale-105 transition-all duration-300">
               <span className="flex items-center gap-3">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

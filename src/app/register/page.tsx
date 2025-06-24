@@ -179,8 +179,11 @@ function RegisterForm() {
           updateStepInUrl(nextStep);
         }
       }
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Operation failed:', err);
+      if (err instanceof Error) {
+        toast.error(err.message);
+      }
       toast.error(currentStep === 1 ? 'Registration failed. Please try again.' : 'Failed to update profile. Please try again.');
     } finally {
       setIsSubmitting(false);

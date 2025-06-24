@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { BASE_URL } from '../services/api';
 
 interface Company {
   id: number;
@@ -16,10 +17,10 @@ const Companies = () => {
   useEffect(() => {
     const fetchCompanies = async () => {
       try {
-        const res = await fetch('/api/v1/companies');
+        const res = await fetch(`${BASE_URL}/api/v1/companies`);
         if (res.ok) {
           const data = await res.json();
-          setCompanies(data);
+          setCompanies(data.content);
         } else {
           console.error('Failed to fetch companies');
         }
@@ -38,7 +39,7 @@ const Companies = () => {
           <h2 className="mb-4 text-4xl tracking-tight font-extrabold text-gray-900 dark:text-white">
             Get referred by employees from 1000+ companies
           </h2>
-          <div className="inline-block bg-green-100 text-green-800 text-sm font-medium mr-2 px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300">
+          {/* <div className="inline-block bg-green-100 text-green-800 text-sm font-medium mr-2 px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300">
             <svg
               className="w-4 h-4 inline-block mr-1"
               fill="currentColor"
@@ -52,7 +53,7 @@ const Companies = () => {
               ></path>
             </svg>
             433 successful referrals last month
-          </div>
+          </div> */}
           <p className="font-light text-gray-500 sm:text-xl dark:text-gray-400 mt-4">
             Employees get paid to refer top talent like you. Our network is thousands strong and growing.
           </p>
@@ -60,7 +61,7 @@ const Companies = () => {
         <div className="grid grid-cols-2 gap-8 text-gray-500 sm:gap-12 md:grid-cols-3 lg:grid-cols-6 dark:text-gray-400">
           {companies.map((company) => (
             <Link key={company.id} href={`/companies/${company.id}`}>
-              <div className="flex items-center justify-center flex-col hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors cursor-pointer">
+              <div className="flex items-center justify-center flex-col hover:scale-105 rounded-lg transition-colors cursor-pointer">
                 <div className="w-24 h-24 mb-2 p-4 rounded-lg shadow-md bg-white flex items-center justify-center">
                   <Image
                     src={company.logoUrl}

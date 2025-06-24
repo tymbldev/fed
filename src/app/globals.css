@@ -168,15 +168,11 @@ html {
 /* Component styles */
 @layer components {
   .btn {
-    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200;
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:text-white;
   }
 
   .btn-primary {
     @apply bg-primary-500 text-white hover:bg-primary-600 dark:bg-primary-400 dark:hover:bg-primary-300;
-  }
-
-  .btn-primary:hover {
-    @apply text-white !important;
   }
 
   .btn-secondary {
