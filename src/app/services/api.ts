@@ -85,7 +85,16 @@ export const updateProfile = async (profileData: {
     throw new Error(error.error || 'Profile update failed');
   }
 
-  return response.json();
+  const data = await response.json();
+
+  // Check if a new token is provided in the response and update the cookie
+  if (data.token) {
+    document.cookie = `auth_token=${data.token}; path=/; ${
+      process.env.NODE_ENV === 'production' ? 'secure;' : ''
+    } samesite=strict; max-age=${60 * 60 * 24 * 7}`;
+  }
+
+  return data;
 };
 
 export const fetchDropdownOptions = async (type: string): Promise<{ value: string; label: string }[]> => {

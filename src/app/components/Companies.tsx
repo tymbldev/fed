@@ -63,6 +63,7 @@ const Companies = () => {
             <Link key={company.id} href={`/companies/${company.id}`}>
               <div className="flex items-center justify-center flex-col hover:scale-105 rounded-lg transition-colors cursor-pointer">
                 <div className="w-24 h-24 mb-2 p-4 rounded-lg shadow-md bg-white flex items-center justify-center">
+                  {company.logoUrl ? (
                   <Image
                     src={company.logoUrl}
                     alt={`${company.name} logo`}
@@ -70,6 +71,11 @@ const Companies = () => {
                     height={64}
                     className="object-contain"
                   />
+                  ) : (
+                    <div className="w-24 h-24 mb-2 p-4 rounded-lg shadow-md bg-white flex items-center justify-center">
+                      <span className="text-sm font-semibold">{company.name}</span>
+                    </div>
+                  )}
                 </div>
                 <span className="text-sm font-semibold">{company.name}</span>
               </div>

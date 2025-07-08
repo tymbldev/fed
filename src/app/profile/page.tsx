@@ -21,6 +21,7 @@ import TotalWorkExperience from '../components/fields/TotalWorkExperience';
 import Salary from '../components/fields/Salary';
 import PersonalWebsite from '../components/fields/PersonalWebsite';
 import LinkedIn from '../components/fields/LinkedIn';
+import GitHub from '../components/fields/GitHub';
 import Resume from '../components/fields/Resume';
 
 export default function Profile() {
@@ -50,8 +51,9 @@ export default function Profile() {
         company: userProfile.company || '',
         currentSalaryCurrencyId: userProfile.currentSalaryCurrencyId?.toString() || '',
         currentSalary: userProfile.currentSalary?.toString() || '',
-        personalWebsite: userProfile.personalWebsite || '',
+        portfolioWebsite: userProfile.portfolioWebsite || '',
         linkedInProfile: userProfile.linkedInProfile || '',
+        githubProfile: userProfile.githubProfile || '',
       });
     }
   }, [userProfile]);
@@ -158,7 +160,7 @@ export default function Profile() {
     const fieldsToValidate = Object.keys(formData).map(field => ({
       name: field,
       value: formData[field] || '',
-      required: !['personalWebsite', 'linkedInProfile'].includes(field) // Only required if not these fields
+      required: !['portfolioWebsite', 'linkedInProfile'].includes(field) // Only required if not these fields
     }));
 
     const newErrors = validateFields(fieldsToValidate);
@@ -195,8 +197,9 @@ export default function Profile() {
         companyId: formData.companyId ? parseInt(formData.companyId) : undefined,
         currentSalaryCurrencyId: formData.currentSalaryCurrencyId ? parseInt(formData.currentSalaryCurrencyId) : undefined,
         currentSalary: formData.currentSalary ? parseFloat(formData.currentSalary) : undefined,
-        personalWebsite: formData.personalWebsite,
+        portfolioWebsite: formData.portfolioWebsite,
         linkedInProfile: formData.linkedInProfile,
+        githubProfile: formData.githubProfile,
       };
 
       await updateProfile(profileData);
@@ -355,6 +358,21 @@ export default function Profile() {
                   });
                 }}
                 onBlur={() => setTouched(prev => ({ ...prev, linkedInProfile: true }))}
+              />
+            </div>
+            <div className="w-full">
+              <GitHub
+                formData={{ ...formData, github: formData.githubProfile }}
+                errors={{ ...errors, github: errors.githubProfile }}
+                touched={{ ...touched, github: touched.githubProfile }}
+                onInputChange={e => {
+                  const { value } = e.target;
+                  handleInputChange({
+                    ...e,
+                    target: { ...e.target, name: 'githubProfile', value }
+                  });
+                }}
+                onBlur={() => setTouched(prev => ({ ...prev, githubProfile: true }))}
               />
             </div>
             <div className="w-full">

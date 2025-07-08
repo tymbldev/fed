@@ -67,6 +67,15 @@ interface LocationOption {
   zipCode: string;
 }
 
+interface Referrer {
+  userId: number;
+  userName: string;
+  designation: string;
+  numApplicationsAccepted: number;
+  feedbackScore: number;
+  overallScore: number;
+}
+
 export default function Referrals() {
   const { isLoggedIn } = useAuth();
   const [referrals, setReferrals] = useState<Referral[]>([]);
@@ -79,6 +88,7 @@ export default function Referrals() {
   const [searchQuery, setSearchQuery] = useState('');
   const [locationFilter, setLocationFilter] = useState('');
   const [experienceFilter, setExperienceFilter] = useState('');
+  const [referrerCounts, setReferrerCounts] = useState<{ [key: number]: number }>({});
 
   const fetchLocations = async () => {
     try {
@@ -98,115 +108,151 @@ export default function Referrals() {
     }
   };
 
-  const fetchAppliedReferrals = async () => {
-    if (!isLoggedIn) {
-      return; // Don't fetch if user is not logged in
-    }
 
+
+  const fetchReferrerCounts = async (referralIds: number[]) => {
     try {
-      const token = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('auth_token='))
-        ?.split('=')[1];
-
-      if (!token) {
-        return;
-      }
-
-      const response = await fetch(`${BASE_URL}/api/v1/my-applications`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+      const promises = referralIds.map(async (referralId) => {
+        try {
+          const response = await fetch(`${BASE_URL}/api/v1/jobsearch/${referralId}/referrers`);
+          if (response.ok) {
+            const data: Referrer[] = await response.json();
+            return { referralId, count: data.length };
+          }
+          return { referralId, count: 0 };
+        } catch (error) {
+          console.error(`Error fetching referrer count for referral ${referralId}:`, error);
+          return { referralId, count: 0 };
+        }
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch applied referrals');
-      }
-
-      const data = await response.json();
-      console.log('Raw API response:', data);
-      console.log('Response type:', typeof data);
-      console.log('Is array?', Array.isArray(data));
-      console.log('Has content property?', data && typeof data === 'object' && 'content' in data);
-
-      // Handle both array and object with content property
-      const applicationsArray: Application[] = Array.isArray(data) ? data : (data.content || []);
-      console.log('Applications array:', applicationsArray);
-      console.log('Array length:', applicationsArray.length);
-
-      const appliedReferralsMap = applicationsArray.reduce((acc: { [key: number]: Application }, application: Application) => {
-        console.log('Processing application:', application);
-        console.log('Application jobId:', application.jobId, 'Type:', typeof application.jobId);
-        acc[application.jobId] = application;
+      const results = await Promise.all(promises);
+      const countMap = results.reduce((acc, { referralId, count }) => {
+        acc[referralId] = count;
         return acc;
-      }, {} as { [key: number]: Application });
+      }, {} as { [key: number]: number });
 
-      console.log('Final appliedReferralsMap:', appliedReferralsMap);
-      console.log('Map keys:', Object.keys(appliedReferralsMap));
-      setAppliedReferrals(appliedReferralsMap);
+      setReferrerCounts(countMap);
     } catch (error) {
-      console.error('Error fetching applied referrals:', error);
-      // Don't show error toast for this as it might be expected for non-logged in users
-    }
-  };
-
-  const fetchPostedReferrals = async () => {
-    if (!isLoggedIn) {
-      return; // Don't fetch if user is not logged in
-    }
-
-    try {
-      const token = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('auth_token='))
-        ?.split('=')[1];
-
-      if (!token) {
-        console.log('No auth token found for posted referrals fetch');
-        return;
-      }
-
-      const response = await fetch(`${BASE_URL}/api/v1/jobmanagement/my-posts`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch posted referrals');
-      }
-
-      const data = await response.json();
-      const postedReferralsMap = data.content.reduce((acc: { [key: number]: PostedReferral }, referral: PostedReferral) => {
-        acc[referral.id] = referral;
-        return acc;
-      }, {} as { [key: number]: PostedReferral });
-      setPostedReferrals(postedReferralsMap);
-    } catch (error) {
-      console.error('Error fetching posted referrals:', error);
-      // Don't show error toast for this as it might be expected for non-logged in users
-    }
-  };
-
-  const fetchReferrals = async (page: number) => {
-    try {
-      setIsLoading(true);
-      const response = await fetch(`${BASE_URL}/api/v1/jobsearch?page=${page}&size=10`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch referrals');
-      }
-      const data = await response.json();
-      setReferrals(data.content);
-      setTotalPages(data.totalPages);
-    } catch (error) {
-      toast.error('Failed to fetch referrals');
-      console.error('Error fetching referrals:', error);
-    } finally {
-      setIsLoading(false);
+      console.error('Error fetching referrer counts:', error);
     }
   };
 
   useEffect(() => {
+    const fetchReferrals = async (page: number) => {
+      try {
+        setIsLoading(true);
+        const response = await fetch(`${BASE_URL}/api/v1/jobsearch?page=${page}&size=10`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch referrals');
+        }
+        const data = await response.json();
+        setReferrals(data.content);
+        setTotalPages(data.totalPages);
+
+        // Fetch referrer counts for the referrals
+        if (data.content.length > 0) {
+          const referralIds = data.content.map((referral: Referral) => referral.id);
+          await fetchReferrerCounts(referralIds);
+        }
+      } catch (error) {
+        toast.error('Failed to fetch referrals');
+        console.error('Error fetching referrals:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    const fetchAppliedReferrals = async () => {
+      if (!isLoggedIn) {
+        return; // Don't fetch if user is not logged in
+      }
+
+      try {
+        const token = document.cookie
+          .split('; ')
+          .find(row => row.startsWith('auth_token='))
+          ?.split('=')[1];
+
+        if (!token) {
+          return;
+        }
+
+        const response = await fetch(`${BASE_URL}/api/v1/my-applications`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch applied referrals');
+        }
+
+        const data = await response.json();
+        console.log('Raw API response:', data);
+        console.log('Response type:', typeof data);
+        console.log('Is array?', Array.isArray(data));
+        console.log('Has content property?', data && typeof data === 'object' && 'content' in data);
+
+        // Handle both array and object with content property
+        const applicationsArray: Application[] = Array.isArray(data) ? data : (data.content || []);
+        console.log('Applications array:', applicationsArray);
+        console.log('Array length:', applicationsArray.length);
+
+        const appliedReferralsMap = applicationsArray.reduce((acc: { [key: number]: Application }, application: Application) => {
+          console.log('Processing application:', application);
+          console.log('Application jobId:', application.jobId, 'Type:', typeof application.jobId);
+          acc[application.jobId] = application;
+          return acc;
+        }, {} as { [key: number]: Application });
+
+        console.log('Final appliedReferralsMap:', appliedReferralsMap);
+        console.log('Map keys:', Object.keys(appliedReferralsMap));
+        setAppliedReferrals(appliedReferralsMap);
+      } catch (error) {
+        console.error('Error fetching applied referrals:', error);
+        // Don't show error toast for this as it might be expected for non-logged in users
+      }
+    };
+
+    const fetchPostedReferrals = async () => {
+      if (!isLoggedIn) {
+        return; // Don't fetch if user is not logged in
+      }
+
+      try {
+        const token = document.cookie
+          .split('; ')
+          .find(row => row.startsWith('auth_token='))
+          ?.split('=')[1];
+
+        if (!token) {
+          console.log('No auth token found for posted referrals fetch');
+          return;
+        }
+
+        const response = await fetch(`${BASE_URL}/api/v1/jobmanagement/my-posts`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch posted referrals');
+        }
+
+        const data = await response.json();
+        const postedReferralsMap = data.content.reduce((acc: { [key: number]: PostedReferral }, referral: PostedReferral) => {
+          acc[referral.id] = referral;
+          return acc;
+        }, {} as { [key: number]: PostedReferral });
+        setPostedReferrals(postedReferralsMap);
+      } catch (error) {
+        console.error('Error fetching posted referrals:', error);
+        // Don't show error toast for this as it might be expected for non-logged in users
+      }
+    };
+
     fetchLocations();
     fetchReferrals(currentPage);
 
@@ -343,6 +389,11 @@ export default function Referrals() {
                 </div>
                 <div className="flex flex-wrap gap-2 mt-4">
                   <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">Posted {formatDate(referral.createdAt)}</span>
+                  {referrerCounts[referral.id] > 0 && (
+                    <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                      {referrerCounts[referral.id]} Referrer{referrerCounts[referral.id] > 1 ? 's' : ''} Available
+                    </span>
+                  )}
                   {isReferralApplied(referral.id) && (
                     <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
                       Applied - {getApplicationStatus(referral.id)}

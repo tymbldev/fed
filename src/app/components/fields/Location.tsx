@@ -49,7 +49,6 @@ const Location: React.FC<LocationProps> = ({
 
   // Load initial countries data
   useEffect(() => {
-    // console.log('loadCountries', formData.countryId, formData.cityId);
     const loadCountries = async () => {
       try {
         const data = await fetchDropdownOptions('locations') as unknown as LocationOption[];
@@ -137,7 +136,7 @@ const Location: React.FC<LocationProps> = ({
     };
 
     updateCities();
-  }, [formData.countryId]);
+  }, [formData.countryId, formData.cityId, isInitialLoad, onInputChange, previousCountryId]);
 
   // Custom handler for country field to update countryId
   const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -151,10 +150,10 @@ const Location: React.FC<LocationProps> = ({
     onInputChange(e);
   };
 
-  const containerClass = layout === 'horizontal' ? 'grid grid-cols-2 gap-4' : 'space-y-4';
+  const containerClass = layout === 'horizontal' ? 'grid grid-cols-1 md:grid-cols-2 gap-4' : 'space-y-4';
 
   return (
-    <div className={containerClass}>
+    <div className={`w-full ${containerClass}`}>
       <SelectField
         label={countryLabel}
         name="countryId"

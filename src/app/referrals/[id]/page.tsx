@@ -54,6 +54,15 @@ interface Application {
   createdAt: string;
 }
 
+interface Referrer {
+  userId: number;
+  userName: string;
+  designation: string;
+  numApplicationsAccepted: number;
+  feedbackScore: number;
+  overallScore: number;
+}
+
 export default function ReferralDetails() {
   const params = useParams();
   const { userProfile, isLoggedIn } = useAuth();
@@ -64,6 +73,9 @@ export default function ReferralDetails() {
   const [isLoading, setIsLoading] = useState(true);
   const [applicationStatus, setApplicationStatus] = useState<string | null>(null);
   const [isCheckingApplication, setIsCheckingApplication] = useState(false);
+  const [referrers, setReferrers] = useState<Referrer[]>([]);
+  const [selectedReferrerId, setSelectedReferrerId] = useState<number | null>(null);
+  const [showReferrerModal, setShowReferrerModal] = useState(false);
 
   const fetchCurrencies = async () => {
     try {
@@ -119,67 +131,87 @@ export default function ReferralDetails() {
     }
   };
 
-  const fetchApplicationStatus = async () => {
-    if (!isLoggedIn) {
-      return; // Don't fetch if user is not logged in
-    }
-
-    try {
-      setIsCheckingApplication(true);
-      const token = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('auth_token='))
-        ?.split('=')[1];
-
-      if (!token) {
-        console.log('No auth token found for application status fetch');
-        return;
-      }
-
-      const response = await fetch(`${BASE_URL}/api/v1/my-applications`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch application status');
-      }
-
-      const data: Application[] = await response.json();
-      const application = data.find(app => app.jobId === Number(params.id));
-      setApplicationStatus(application ? application.status : null);
-    } catch (error) {
-      console.error('Error fetching application status:', error);
-      // Don't show error toast for this as it might be expected for non-logged in users
-    } finally {
-      setIsCheckingApplication(false);
-    }
-  };
-
-  const fetchReferralDetails = async () => {
-    try {
-      setIsLoading(true);
-      const response = await fetch(`${BASE_URL}/api/v1/jobsearch/${params.id}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch referral details');
-      }
-      const data = await response.json();
-      setReferral(data);
-    } catch (error) {
-      toast.error('Failed to fetch referral details');
-      console.error('Error fetching referral details:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchApplicationStatus = async () => {
+      if (!isLoggedIn) {
+        return; // Don't fetch if user is not logged in
+      }
+
+      try {
+        setIsCheckingApplication(true);
+        const token = document.cookie
+          .split('; ')
+          .find(row => row.startsWith('auth_token='))
+          ?.split('=')[1];
+
+        if (!token) {
+          console.log('No auth token found for application status fetch');
+          return;
+        }
+
+        const response = await fetch(`${BASE_URL}/api/v1/my-applications`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch application status');
+        }
+
+        const data: Application[] = await response.json();
+        const application = data.find(app => app.jobId === Number(params.id));
+        setApplicationStatus(application ? application.status : null);
+      } catch (error) {
+        console.error('Error fetching application status:', error);
+        // Don't show error toast for this as it might be expected for non-logged in users
+      } finally {
+        setIsCheckingApplication(false);
+      }
+    };
+
+    const fetchReferralDetails = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch(`${BASE_URL}/api/v1/jobsearch/${params.id}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch referral details');
+        }
+        const data = await response.json();
+        setReferral(data);
+      } catch (error) {
+        toast.error('Failed to fetch referral details');
+        console.error('Error fetching referral details:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    const fetchReferrers = async () => {
+      try {
+        const response = await fetch(`${BASE_URL}/api/v1/jobsearch/${params.id}/referrers`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch referrers');
+        }
+        const data: Referrer[] = await response.json();
+        setReferrers(data);
+
+        // If there's only one referrer, auto-select it
+        if (data.length === 1) {
+          setSelectedReferrerId(data[0].userId);
+        }
+      } catch (error) {
+        console.error('Error fetching referrers:', error);
+        // Don't show error toast as this might be expected for some jobs
+      }
+    };
+
     fetchCurrencies();
     fetchLocations();
     fetchDesignations();
     fetchReferralDetails();
     fetchApplicationStatus();
+    fetchReferrers();
   }, [params.id, isLoggedIn]);
 
   const formatDate = (dateString: string) => {
@@ -208,6 +240,12 @@ export default function ReferralDetails() {
       return;
     }
 
+    // If there are multiple referrers and none is selected, show the modal
+    if (referrers.length > 1 && !selectedReferrerId) {
+      setShowReferrerModal(true);
+      return;
+    }
+
     try {
       const response = await fetch(`${BASE_URL}/api/v1/my-applications`, {
         method: 'POST',
@@ -217,7 +255,8 @@ export default function ReferralDetails() {
         },
         body: JSON.stringify({
           jobId: params.id,
-          coverLetter: 'test'
+          coverLetter: 'test',
+          jobReferrerId: selectedReferrerId
         })
       });
 
@@ -227,11 +266,21 @@ export default function ReferralDetails() {
 
       toast.success('Successfully applied for the referral!');
       // Refresh application status after successful application
-      fetchApplicationStatus();
+      setApplicationStatus('Applied');
+      setShowReferrerModal(false);
     } catch (error) {
       console.error('Error applying for referral:', error);
       toast.error('Failed to apply for referral');
     }
+  };
+
+  const handleReferrerSelect = (referrerId: number) => {
+    setSelectedReferrerId(referrerId);
+    setShowReferrerModal(false);
+    // Automatically apply after selecting referrer
+    setTimeout(() => {
+      handleApply();
+    }, 100);
   };
 
   if (isLoading) {
@@ -335,9 +384,97 @@ export default function ReferralDetails() {
             >
               {isCheckingApplication ? 'Checking...' : applicationStatus ? 'Applied' : 'Apply Now'}
             </button>
+
+            {/* Referrer Information */}
+            {referrers.length > 0 && (
+              <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <h3 className="text-lg font-semibold text-blue-900 mb-3">
+                  Available Referrers ({referrers.length})
+                </h3>
+                <div className="space-y-3">
+                  {referrers.map((referrer) => (
+                    <div key={referrer.userId} className="flex items-center justify-between p-3 bg-white rounded-lg border">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                            <span className="text-blue-600 font-semibold text-sm">
+                              {referrer.userName.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-900">{referrer.userName}</p>
+                            <p className="text-sm text-gray-600">{referrer.designation}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <span>Score: {referrer.overallScore.toFixed(1)}</span>
+                          <span>•</span>
+                          <span>{referrer.numApplicationsAccepted} accepted</span>
+                        </div>
+                        {selectedReferrerId === referrer.userId && (
+                          <span className="text-green-600 text-sm font-medium">Selected</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {referrers.length > 1 && (
+                  <p className="text-sm text-blue-700 mt-3">
+                    💡 Multiple referrers available. You&apos;ll be able to choose one when applying.
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Referrer Selection Modal */}
+      {showReferrerModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-xl font-semibold mb-4">Choose a Referrer</h3>
+            <p className="text-gray-600 mb-4">
+              Select a referrer who will help you with this application:
+            </p>
+            <div className="space-y-3 max-h-60 overflow-y-auto">
+              {referrers.map((referrer) => (
+                <button
+                  key={referrer.userId}
+                  onClick={() => handleReferrerSelect(referrer.userId)}
+                  className="w-full p-3 text-left border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                      <span className="text-blue-600 font-semibold text-xs">
+                        {referrer.userName.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium text-gray-900">{referrer.userName}</p>
+                      <p className="text-sm text-gray-600">{referrer.designation}</p>
+                    </div>
+                    <div className="text-right text-sm text-gray-500">
+                      <div>Score: {referrer.overallScore.toFixed(1)}</div>
+                      <div>{referrer.numApplicationsAccepted} accepted</div>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+            <div className="mt-6 flex gap-3">
+              <button
+                onClick={() => setShowReferrerModal(false)}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { BASE_URL } from '../services/api';
 
 interface Education {
@@ -32,6 +32,7 @@ interface UserProfile {
   skillIds?: string[];
   skillNames?: string[];
   company?: string;
+  companyId?: number;
   role?: string;
   profileCompletionPercentage?: number;
   profilePicture?: string | null;
@@ -76,7 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
-  const fetchUserProfile = async () => {
+  const fetchUserProfile = useCallback(async () => {
     try {
       const token = document.cookie
         .split('; ')
@@ -103,9 +104,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error('Error fetching user profile:', error);
       setUserProfile(null);
     }
-  };
+  }, []);
 
-  const checkAuthState = async () => {
+  const checkAuthState = useCallback(async () => {
     const token = document.cookie
       .split('; ')
       .find(row => row.startsWith('auth_token='))
@@ -117,12 +118,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (loggedIn) {
       await fetchUserProfile();
     }
-  };
+  }, [fetchUserProfile]);
 
   useEffect(() => {
     // Check for auth_token cookie on initial load
     checkAuthState();
-  }, []);
+  }, [checkAuthState]);
 
   return (
     <AuthContext.Provider value={{

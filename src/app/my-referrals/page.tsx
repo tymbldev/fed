@@ -22,6 +22,7 @@ interface Referral {
   createdAt: string;
   updatedAt: string;
   applicationCount?: number;
+  userRole: string;
 }
 
 export default function MyReferrals() {
@@ -161,7 +162,7 @@ export default function MyReferrals() {
                     <div className="flex justify-between items-start">
                       <div className="flex-1 min-w-0">
                         <h2 className="text-lg font-bold text-gray-800 truncate">
-                          <Link href={`/my-referral/${referral.id}`} className="hover:underline">
+                          <Link href={`/my-referrals/${referral.id}`} className="hover:underline">
                             {referral.title}
                           </Link>
                         </h2>
@@ -171,7 +172,7 @@ export default function MyReferrals() {
                           <span>Posted by: me on {formatDate(referral.createdAt)}</span>
                         </div>
                         <div className="mt-3 flex items-center">
-                          <Link href={`/my-referral/${referral.id}`} className="hover:underline">
+                          <Link href={`/my-referrals/${referral.id}`} className="hover:underline">
                             <span className="text-sm font-semibold text-gray-700">
                               {referral.applicationCount || 0} Total Responses
                             </span>
@@ -179,12 +180,14 @@ export default function MyReferrals() {
                         </div>
                       </div>
                       <div className="ml-4 flex-shrink-0">
-                        <Link
-                          href={`/post-job?edit=true&id=${referral.id}`}
-                          className="text-indigo-600 hover:text-indigo-500 font-medium"
-                        >
-                          Edit Referral
-                        </Link>
+                        {referral.userRole === 'POSTER' && (
+                          <Link
+                            href={`/post-referral?edit=true&id=${referral.id}`}
+                            className="text-indigo-600 hover:text-indigo-500 font-medium"
+                          >
+                            Edit Referral
+                          </Link>
+                        )}
                       </div>
                     </div>
                   </div>
