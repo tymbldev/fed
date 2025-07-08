@@ -126,6 +126,10 @@ function PostReferralForm() {
     const allFields = [
       'title',
       'description',
+      'designation',
+      'designationId',
+      'company',
+      'companyId',
       'countryId',
       'cityId',
       'salary',
@@ -162,9 +166,11 @@ function PostReferralForm() {
         salary: formData.salary ? parseFloat(formData.salary) : undefined,
         currencyId: formData.currencyId ? parseInt(formData.currencyId) : undefined,
         skillNames: formData.skillNames ? formData.skillNames.split(',').map(skill => skill.trim()) : [],
-        company: userProfile?.company,
-        companyId: 1000,
-        designationId: 1000
+        skillIds: formData.skillIds ? formData.skillIds.split(',').map(id => id.trim()) : [],
+        company: formData.company || userProfile?.company,
+        companyId: formData.companyId ? parseInt(formData.companyId) : undefined,
+        designation: formData.designation,
+        designationId: formData.designationId ? parseInt(formData.designationId) : undefined
       };
 
       const token = document.cookie
@@ -211,15 +217,35 @@ function PostReferralForm() {
     <div className="max-w-2xl mx-auto p-6">
       <h1 className="text-3xl font-bold mb-8">{isEditMode ? 'Edit Referral' : 'Post a Referral'}</h1>
       <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+        <div>
+          <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+            Referral Title <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            id="title"
+            name="title"
+            value={formData.title || ''}
+            onChange={handleInputChange}
+            onBlur={() => handleBlur('title')}
+            required={true}
+            placeholder="Enter referral title"
+            className={`block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${touched.title && errors.title ? 'border-red-500' : ''}`}
+          />
+          {touched.title && errors.title && (
+            <p className="mt-1 text-sm text-red-600">{errors.title}</p>
+          )}
+        </div>
+
         <Designation
           formData={formData}
           errors={errors}
           touched={touched}
           onInputChange={handleInputChange}
-          onBlur={() => handleBlur('title')}
+          onBlur={() => handleBlur('designationId')}
           required={true}
-          label="Referral Title"
-          fieldName="title"
+          label="Designation"
+          fieldName="designationId"
         />
 
         <Description

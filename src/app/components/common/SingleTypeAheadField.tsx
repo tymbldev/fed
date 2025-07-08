@@ -16,6 +16,7 @@ interface SingleTypeAheadFieldProps {
   error?: string;
   suggestions: Suggestion[];
   className?: string;
+  onSuggestionSelect?: (suggestion: Suggestion) => void;
 }
 
 const SingleTypeAheadField: React.FC<SingleTypeAheadFieldProps> = ({
@@ -28,7 +29,8 @@ const SingleTypeAheadField: React.FC<SingleTypeAheadFieldProps> = ({
   onBlur,
   error,
   suggestions,
-  className = ''
+  className = '',
+  onSuggestionSelect
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [filteredSuggestions, setFilteredSuggestions] = useState<Suggestion[]>([]);
@@ -66,13 +68,17 @@ const SingleTypeAheadField: React.FC<SingleTypeAheadFieldProps> = ({
   };
 
   const handleSuggestionClick = (suggestion: Suggestion) => {
-    const event = {
-      target: {
-        name,
-        value: suggestion.label
-      }
-    } as React.ChangeEvent<HTMLInputElement>;
-    onChange(event);
+    if (onSuggestionSelect) {
+      onSuggestionSelect(suggestion);
+    } else {
+      const event = {
+        target: {
+          name,
+          value: suggestion.label
+        }
+      } as React.ChangeEvent<HTMLInputElement>;
+      onChange(event);
+    }
     setIsOpen(false);
     setSelectedIndex(-1);
   };

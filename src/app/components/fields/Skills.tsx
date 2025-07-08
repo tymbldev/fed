@@ -14,6 +14,7 @@ import { toast } from 'sonner';
  * @property {boolean} [required] - Whether the field is required
  * @property {Array<{value: string, label: string}>} [options] - Predefined skill options
  * @property {string} [label] - Field label text
+ * @property {string} [fieldName] - Field name for the ID field
  */
 interface SkillsProps {
   formData: { [key: string]: string };
@@ -24,6 +25,12 @@ interface SkillsProps {
   required?: boolean;
   options?: { value: string; label: string }[];
   label?: string;
+  fieldName?: string;
+}
+
+interface SkillOption {
+  id: string;
+  name: string;
 }
 
 /**
@@ -39,27 +46,66 @@ const Skills: React.FC<SkillsProps> = ({
   onBlur,
   required = false,
   options: propOptions,
-  label = "Skills"
+  label = "Skills",
+  fieldName = "skillIds"
 }) => {
-  const [skills, setSkills] = useState<{ value: string; label: string }[]>([]);
+  const [skills, setSkills] = useState<SkillOption[]>([]);
 
   useEffect(() => {
     const loadSkills = async () => {
       if (!propOptions || propOptions.length === 0) {
         try {
           const fetchedSkills = await fetchSkills('');
-          setSkills(fetchedSkills);
+          console.log(fetchedSkills);
+          // Convert the fetched skills to the expected format
+          const convertedSkills = fetchedSkills.map((skill: { value: string; label: string }) => ({
+            id: skill.value,
+            name: skill.label
+          }));
+          setSkills(convertedSkills);
         } catch (error) {
           console.error('Failed to fetch skills:', error);
           toast.error('Failed to load skills. Please try again.');
         }
       } else {
-        setSkills(propOptions);
+        // Convert prop options to the expected format
+        const convertedSkills = propOptions.map((skill: { value: string; label: string }) => ({
+          id: skill.value,
+          name: skill.label
+        }));
+        setSkills(convertedSkills);
       }
     };
 
     loadSkills();
   }, [propOptions]);
+
+  const handleSkillChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const skillNames = e.target.value.split(',').map((name: string) => name.trim()).filter((name: string) => name);
+
+    // Update skillNames
+    const skillNamesEvent = {
+      target: {
+        name: 'skillNames',
+        value: skillNames.join(', ')
+      }
+    } as React.ChangeEvent<HTMLInputElement>;
+    onInputChange(skillNamesEvent);
+
+    // Update skillIds based on the selected names
+    const selectedSkillIds = skillNames.map((name: string) => {
+      const skill = skills.find((s: SkillOption) => s.name.toLowerCase() === name.toLowerCase());
+      return skill ? skill.id : '';
+    }).filter((id: string) => id);
+
+    const skillIdsEvent = {
+      target: {
+        name: fieldName,
+        value: selectedSkillIds.join(',')
+      }
+    } as React.ChangeEvent<HTMLInputElement>;
+    onInputChange(skillIdsEvent);
+  };
 
   return (
     <div className="skills-field w-full mb-4">
@@ -67,10 +113,13 @@ const Skills: React.FC<SkillsProps> = ({
         label={label}
         name="skillNames"
         value={formData['skillNames'] || ''}
-        onChange={onInputChange}
+        onChange={handleSkillChange}
         onBlur={() => onBlur('skillNames')}
         error={touched['skillNames'] ? errors['skillNames'] : undefined}
-        suggestions={skills}
+        suggestions={skills.map(skill => ({
+          value: skill.name,
+          label: skill.name
+        }))}
         required={required}
         placeholder="Type to search skills..."
         className="skills-typeahead w-full"

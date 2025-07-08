@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { registerConfig } from '../config/registerConfig';
-import { updateProfile } from '../services/api';
+import { updateProfile, uploadResume, downloadResume, deleteResume } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
 import { validateFields } from '../utils/validation';
@@ -19,6 +19,9 @@ import Skills from '../components/fields/Skills';
 import Location from '../components/fields/Location';
 import TotalWorkExperience from '../components/fields/TotalWorkExperience';
 import Salary from '../components/fields/Salary';
+import PersonalWebsite from '../components/fields/PersonalWebsite';
+import LinkedIn from '../components/fields/LinkedIn';
+import Resume from '../components/fields/Resume';
 
 export default function Profile() {
   const { userProfile, fetchUserProfile } = useAuth();
@@ -36,15 +39,19 @@ export default function Profile() {
         email: userProfile.email || '',
         phone: userProfile.phoneNumber || '',
         designation: userProfile.designation || '',
+        designationId: userProfile.designationId?.toString() || '',
         departmentId: userProfile.departmentId?.toString() || '',
         cityId: userProfile.cityId?.toString() || '',
         countryId: userProfile.countryId?.toString() || '',
         yearsOfExperience: userProfile.yearsOfExperience?.toString() || '',
         monthsOfExperience: userProfile.monthsOfExperience?.toString() || '',
         skillNames: userProfile.skillNames?.join(', ') || '',
+        skillIds: userProfile.skillIds?.join(',') || '',
         company: userProfile.company || '',
         currentSalaryCurrencyId: userProfile.currentSalaryCurrencyId?.toString() || '',
         currentSalary: userProfile.currentSalary?.toString() || '',
+        personalWebsite: userProfile.personalWebsite || '',
+        linkedInProfile: userProfile.linkedInProfile || '',
       });
     }
   }, [userProfile]);
@@ -71,6 +78,78 @@ export default function Profile() {
     }));
   };
 
+  const handleFileUpload = async (file: File) => {
+    if (!userProfile?.id) {
+      toast.error('User profile not found');
+      return;
+    }
+
+    try {
+      const userName = `${userProfile.firstName || ''} ${userProfile.lastName || ''}`.trim();
+      await uploadResume(file, userProfile.id, userName || undefined);
+      await fetchUserProfile();
+      toast.success('Resume uploaded successfully');
+    } catch (error) {
+      console.error('Error uploading resume:', error);
+      toast.error('Failed to upload resume');
+    }
+  };
+
+    const handleDownloadResume = async () => {
+    if (!userProfile?.resume) {
+      toast.error('No resume found to download');
+      return;
+    }
+
+    try {
+      // Extract UUID from the full URL
+      const resumeUrl = userProfile.resume;
+      const uuidMatch = resumeUrl.match(/\/download\/([^\/]+)$/);
+      if (!uuidMatch) {
+        toast.error('Invalid resume URL format');
+        return;
+      }
+      const resumeUuid = uuidMatch[1];
+
+      // Create formatted filename
+      const userName = `${userProfile.firstName || ''}`.trim();
+      const urlMatch = resumeUrl.match(/\.([^\/\?]+)(?:\?|$)/);
+      const fileExtension = urlMatch ? urlMatch[1] : 'pdf';
+      const fileName = userName ? `${userName}.${fileExtension}` : undefined;
+
+      await downloadResume(resumeUuid, fileName);
+      toast.success('Resume downloaded successfully');
+    } catch (error) {
+      console.error('Error downloading resume:', error);
+      toast.error('Failed to download resume');
+    }
+  };
+
+  const handleDeleteResume = async () => {
+    if (!userProfile?.resume) {
+      toast.error('No resume found to delete');
+      return;
+    }
+
+    try {
+      // Extract UUID from the full URL
+      const resumeUrl = userProfile.resume;
+      const uuidMatch = resumeUrl.match(/\/download\/([^\/]+)$/);
+      if (!uuidMatch) {
+        toast.error('Invalid resume URL format');
+        return;
+      }
+      const resumeUuid = uuidMatch[1];
+
+      await deleteResume(resumeUuid);
+      await fetchUserProfile();
+      toast.success('Resume deleted successfully');
+    } catch (error) {
+      console.error('Error deleting resume:', error);
+      toast.error('Failed to delete resume');
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -79,7 +158,7 @@ export default function Profile() {
     const fieldsToValidate = Object.keys(formData).map(field => ({
       name: field,
       value: formData[field] || '',
-      required: true // You can customize this based on your needs
+      required: !['personalWebsite', 'linkedInProfile'].includes(field) // Only required if not these fields
     }));
 
     const newErrors = validateFields(fieldsToValidate);
@@ -103,6 +182,7 @@ export default function Profile() {
         lastName: formData.lastName,
         phoneNumber: formData.phone,
         designation: formData.designation,
+        designationId: formData.designationId ? parseInt(formData.designationId) : undefined,
         departmentId: formData.departmentId ? parseInt(formData.departmentId) : undefined,
         countryId: formData.countryId ? parseInt(formData.countryId) : undefined,
         stateId: formData.stateId ? parseInt(formData.stateId) : undefined,
@@ -110,9 +190,13 @@ export default function Profile() {
         yearsOfExperience: parseInt(formData.yearsOfExperience) || 0,
         monthsOfExperience: parseInt(formData.monthsOfExperience) || 0,
         skillNames: formData.skillNames ? formData.skillNames.split(',').map(skill => skill.trim()) : [],
+        skillIds: formData.skillIds ? formData.skillIds.split(',').map(id => id.trim()) : [],
         company: formData.company,
+        companyId: formData.companyId ? parseInt(formData.companyId) : undefined,
         currentSalaryCurrencyId: formData.currentSalaryCurrencyId ? parseInt(formData.currentSalaryCurrencyId) : undefined,
         currentSalary: formData.currentSalary ? parseFloat(formData.currentSalary) : undefined,
+        personalWebsite: formData.personalWebsite,
+        linkedInProfile: formData.linkedInProfile,
       };
 
       await updateProfile(profileData);
@@ -246,6 +330,42 @@ export default function Profile() {
                 currencyFieldName="currentSalaryCurrencyId"
                 currencyLabel="Current Salary Currency"
                 salaryLabel="Current Annual Salary"
+              />
+            </div>
+
+            <div className="w-full">
+              <PersonalWebsite
+                formData={formData}
+                errors={errors}
+                touched={touched}
+                onInputChange={handleInputChange}
+                onBlur={(field) => setTouched(prev => ({ ...prev, [field]: true }))}
+              />
+            </div>
+            <div className="w-full">
+              <LinkedIn
+                formData={{ ...formData, linkedin: formData.linkedInProfile }}
+                errors={{ ...errors, linkedin: errors.linkedInProfile }}
+                touched={{ ...touched, linkedin: touched.linkedInProfile }}
+                onInputChange={e => {
+                  const { value } = e.target;
+                  handleInputChange({
+                    ...e,
+                    target: { ...e.target, name: 'linkedInProfile', value }
+                  });
+                }}
+                onBlur={() => setTouched(prev => ({ ...prev, linkedInProfile: true }))}
+              />
+            </div>
+            <div className="w-full">
+              <Resume
+                errors={errors}
+                touched={touched}
+                onFileUpload={handleFileUpload}
+                onDownloadResume={handleDownloadResume}
+                onDeleteResume={handleDeleteResume}
+                currentResume={userProfile?.resume}
+                userName={`${userProfile?.firstName || ''}`.trim()}
               />
             </div>
 

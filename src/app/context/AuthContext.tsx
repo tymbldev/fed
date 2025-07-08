@@ -58,6 +58,7 @@ interface UserProfile {
   credentialsNonExpired?: boolean;
   authorities?: { authority: string }[];
   updatedAt?: string;
+  personalWebsite?: string | null;
 }
 
 interface AuthContextType {

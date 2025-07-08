@@ -16,6 +16,8 @@ export const validationMessages = {
   location: 'Please select a location',
   skills: 'Please enter at least one skill',
   description: 'Description must be at least 10 characters long',
+  url: 'Please enter a valid URL',
+  linkedin: 'Please enter a valid LinkedIn profile URL',
 } as const;
 
 export type ValidationMessageKey = keyof typeof validationMessages;
