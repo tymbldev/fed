@@ -160,7 +160,7 @@ export default function Profile() {
     const fieldsToValidate = Object.keys(formData).map(field => ({
       name: field,
       value: formData[field] || '',
-      required: !['portfolioWebsite', 'linkedInProfile'].includes(field) // Only required if not these fields
+      required: !['portfolioWebsite', 'linkedInProfile', 'githubProfile'].includes(field) // Only required if not these fields
     }));
 
     const newErrors = validateFields(fieldsToValidate);

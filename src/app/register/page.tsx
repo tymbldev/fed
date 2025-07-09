@@ -166,6 +166,12 @@ function RegisterForm() {
         if (apiData.skillNames && typeof apiData.skillNames === 'string') {
           apiData.skillNames = apiData.skillNames.split(',').map((skill: string) => skill.trim());
         }
+
+        // Convert skillNames string to array for API
+        if (apiData.skillIds && typeof apiData.skillIds === 'string') {
+          apiData.skillIds = apiData.skillIds.split(',').map((skill: string) => skill.trim());
+        }
+
         await updateProfile(apiData);
         await fetchUserProfile(); // Fetch fresh profile data
 

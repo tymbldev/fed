@@ -63,7 +63,7 @@ interface UserProfile {
 }
 
 interface AuthContextType {
-  isLoggedIn: boolean;
+  isLoggedIn: boolean | undefined;
   setIsLoggedIn: (value: boolean) => void;
   userProfile: UserProfile | null;
   setUserProfile: (profile: UserProfile | null) => void;
@@ -74,7 +74,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState<undefined | boolean>(undefined);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   const fetchUserProfile = useCallback(async () => {

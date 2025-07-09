@@ -102,13 +102,21 @@ export const validateField = (name: string, value: string, required: boolean): s
         }
         break;
       case 'personalWebsite':
+      case 'portfolioWebsite':
         if (value && !/^https?:\/\/.+\..+/.test(value)) {
           return validationMessages.url;
         }
         break;
       case 'linkedin':
+      case 'linkedInProfile':
         if (value && !/^https?:\/\/(www\.)?linkedin\.com\/in\/[A-Za-z0-9_-]+\/?$/.test(value)) {
           return validationMessages.linkedin;
+        }
+        break;
+      case 'github':
+      case 'githubProfile':
+        if (value && !/^https?:\/\/(www\.)?github\.com\/[A-Za-z0-9_-]+\/?$/.test(value)) {
+          return validationMessages.github;
         }
         break;
     }

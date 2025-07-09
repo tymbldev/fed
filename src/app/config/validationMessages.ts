@@ -18,6 +18,7 @@ export const validationMessages = {
   description: 'Description must be at least 10 characters long',
   url: 'Please enter a valid URL',
   linkedin: 'Please enter a valid LinkedIn profile URL',
+  github: 'Please enter a valid GitHub profile URL',
 } as const;
 
 export type ValidationMessageKey = keyof typeof validationMessages;

@@ -77,6 +77,7 @@ interface Referrer {
 }
 
 export default function Referrals() {
+  console.log('Referrals page loaded');
   const { isLoggedIn } = useAuth();
   const [referrals, setReferrals] = useState<Referral[]>([]);
   const [locations, setLocations] = useState<{ [key: number]: LocationOption }>({});
