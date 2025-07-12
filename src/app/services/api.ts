@@ -260,7 +260,7 @@ export const downloadResume = async (resumeUuid: string, fileName?: string) => {
   }
 };
 
-export const deleteResume = async (resumeUuid: string) => {
+export const deleteResume = async () => {
   // Get the token from cookies
   const token = document.cookie
     .split('; ')
@@ -271,7 +271,7 @@ export const deleteResume = async (resumeUuid: string) => {
     throw new Error('Authentication token not found');
   }
 
-  const response = await fetch(`${BASE_URL}/api/v1/resumes/uuid/${resumeUuid}`, {
+  const response = await fetch(`${BASE_URL}/api/v1/resumes`, {
     method: 'DELETE',
     headers: {
       'Authorization': `Bearer ${token}`

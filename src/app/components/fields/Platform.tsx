@@ -1,4 +1,5 @@
 import React from 'react';
+import SelectField from '../common/SelectField';
 
 interface PlatformProps {
   formData: { [key: string]: string };
@@ -24,7 +25,6 @@ const Platform: React.FC<PlatformProps> = ({
   fieldName = "platform"
 }) => {
   const platforms = [
-    { value: '', label: 'Select a platform' },
     { value: 'LinkedIn', label: 'LinkedIn' },
     { value: 'Indeed', label: 'Indeed' },
     { value: 'Glassdoor', label: 'Glassdoor' },
@@ -37,28 +37,17 @@ const Platform: React.FC<PlatformProps> = ({
 
   return (
     <div className="w-full md:w-1/2">
-      <label htmlFor={fieldName} className="block text-sm font-medium text-gray-700 mb-1">
-        {label} {required && <span className="text-red-500">*</span>}
-      </label>
-      <select
-        id={fieldName}
+      <SelectField
+        label={label}
         name={fieldName}
+        options={platforms}
         required={required}
-        disabled={disabled}
         value={formData[fieldName] || ''}
         onChange={onInputChange}
         onBlur={() => onBlur(fieldName)}
-        className={`block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${touched[fieldName] && errors[fieldName] ? 'border-red-500' : ''}`}
-      >
-        {platforms.map((platform) => (
-          <option key={platform.value} value={platform.value}>
-            {platform.label}
-          </option>
-        ))}
-      </select>
-      {touched[fieldName] && errors[fieldName] && (
-        <p className="mt-1 text-sm text-red-600">{errors[fieldName]}</p>
-      )}
+        error={touched[fieldName] && errors[fieldName] ? errors[fieldName] : undefined}
+        disabled={disabled}
+      />
     </div>
   );
 };

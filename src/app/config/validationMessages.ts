@@ -17,8 +17,12 @@ export const validationMessages = {
   skills: 'Please enter at least one skill',
   description: 'Description must be at least 10 characters long',
   url: 'Please enter a valid URL',
+  uniqueUrl: 'Job posting URL is required when a platform is selected',
   linkedin: 'Please enter a valid LinkedIn profile URL',
   github: 'Please enter a valid GitHub profile URL',
+  salary: 'Salary must be a positive number',
+  experience: 'Experience must be a positive number',
+  jobType: 'Please select a job type',
 } as const;
 
 export type ValidationMessageKey = keyof typeof validationMessages;

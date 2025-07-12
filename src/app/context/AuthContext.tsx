@@ -37,6 +37,7 @@ interface UserProfile {
   profileCompletionPercentage?: number;
   profilePicture?: string | null;
   resume?: string | null;
+  resumeContentType?: string | null;
   education?: Education[];
   currentSalary?: number | null;
   currentSalaryCurrencyId?: number | null;
@@ -63,7 +64,7 @@ interface UserProfile {
 }
 
 interface AuthContextType {
-  isLoggedIn: boolean | undefined;
+  isLoggedIn: boolean;
   setIsLoggedIn: (value: boolean) => void;
   userProfile: UserProfile | null;
   setUserProfile: (profile: UserProfile | null) => void;
@@ -74,7 +75,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [isLoggedIn, setIsLoggedIn] = useState<undefined | boolean>(undefined);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   const fetchUserProfile = useCallback(async () => {
@@ -121,7 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [fetchUserProfile]);
 
   useEffect(() => {
-    // Check for auth_token cookie on initial load
+    // Check for auth_token cookie after component mounts to avoid hydration mismatch
     checkAuthState();
   }, [checkAuthState]);
 

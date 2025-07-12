@@ -18,15 +18,15 @@ export default function Header() {
   // Check if we're on the register page
   const isRegisterPage = pathname === '/register';
 
-  useEffect(() => {
-    // Debug logging
-    const token = document.cookie
-      .split('; ')
-      .find(row => row.startsWith('auth_token='))
-      ?.split('=')[1];
-    console.log('Auth Token:', token);
-    console.log('isLoggedIn state:', isLoggedIn);
-  }, [isLoggedIn]);
+  // useEffect(() => {
+  //   // Debug logging
+  //   const token = document.cookie
+  //     .split('; ')
+  //     .find(row => row.startsWith('auth_token='))
+  //     ?.split('=')[1];
+  //   console.log('Auth Token:', token);
+  //   console.log('isLoggedIn state:', isLoggedIn);
+  // }, [isLoggedIn]);
 
   useEffect(() => {
     const handleScroll = () => {

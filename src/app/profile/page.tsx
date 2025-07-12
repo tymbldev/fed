@@ -30,6 +30,7 @@ export default function Profile() {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [localResumeUrl, setLocalResumeUrl] = useState<string | null>(null);
   const { styles } = registerConfig;
 
   useEffect(() => {
@@ -55,6 +56,7 @@ export default function Profile() {
         linkedInProfile: userProfile.linkedInProfile || '',
         githubProfile: userProfile.githubProfile || '',
       });
+      setLocalResumeUrl(userProfile.resume || null);
     }
   }, [userProfile]);
 
@@ -87,9 +89,16 @@ export default function Profile() {
     }
 
     try {
-      const userName = `${userProfile.firstName || ''} ${userProfile.lastName || ''}`.trim();
-      await uploadResume(file, userProfile.id, userName || undefined);
-      await fetchUserProfile();
+      const userName = `${userProfile.firstName || ''}`.trim();
+      const response = await uploadResume(file, userProfile.id, userName || undefined);
+
+      console.log('Upload response:', response); // Debug log
+
+      // Update local state with the new resume URL
+      if (response && response.downloadUrl) {
+        setLocalResumeUrl(response.downloadUrl);
+      }
+
       toast.success('Resume uploaded successfully');
     } catch (error) {
       console.error('Error uploading resume:', error);
@@ -98,14 +107,14 @@ export default function Profile() {
   };
 
     const handleDownloadResume = async () => {
-    if (!userProfile?.resume) {
+    if (!localResumeUrl) {
       toast.error('No resume found to download');
       return;
     }
 
     try {
       // Extract UUID from the full URL
-      const resumeUrl = userProfile.resume;
+      const resumeUrl = localResumeUrl;
       const uuidMatch = resumeUrl.match(/\/download\/([^\/]+)$/);
       if (!uuidMatch) {
         toast.error('Invalid resume URL format');
@@ -114,9 +123,37 @@ export default function Profile() {
       const resumeUuid = uuidMatch[1];
 
       // Create formatted filename
-      const userName = `${userProfile.firstName || ''}`.trim();
-      const urlMatch = resumeUrl.match(/\.([^\/\?]+)(?:\?|$)/);
-      const fileExtension = urlMatch ? urlMatch[1] : 'pdf';
+      const userName = `${userProfile?.firstName || ''}`.trim();
+
+      // Determine file extension from content type or fallback to URL extraction
+      let fileExtension = 'pdf'; // Default fallback
+
+      if (userProfile?.resumeContentType) {
+        switch (userProfile.resumeContentType) {
+          case 'application/pdf':
+            fileExtension = 'pdf';
+            break;
+          case 'application/msword':
+            fileExtension = 'doc';
+            break;
+          case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+            fileExtension = 'docx';
+            break;
+          case 'application/rtf':
+          case 'text/rtf':
+            fileExtension = 'rtf';
+            break;
+          default:
+            // Fallback to URL extraction if content type is not recognized
+            const urlMatch = resumeUrl.match(/\.([^\/\?]+)(?:\?|$)/);
+            fileExtension = urlMatch ? urlMatch[1] : 'pdf';
+        }
+      } else {
+        // Fallback to URL extraction if no content type is provided
+        const urlMatch = resumeUrl.match(/\.([^\/\?]+)(?:\?|$)/);
+        fileExtension = urlMatch ? urlMatch[1] : 'pdf';
+      }
+
       const fileName = userName ? `${userName}.${fileExtension}` : undefined;
 
       await downloadResume(resumeUuid, fileName);
@@ -128,23 +165,15 @@ export default function Profile() {
   };
 
   const handleDeleteResume = async () => {
-    if (!userProfile?.resume) {
+    if (!localResumeUrl) {
       toast.error('No resume found to delete');
       return;
     }
 
     try {
-      // Extract UUID from the full URL
-      const resumeUrl = userProfile.resume;
-      const uuidMatch = resumeUrl.match(/\/download\/([^\/]+)$/);
-      if (!uuidMatch) {
-        toast.error('Invalid resume URL format');
-        return;
-      }
-      const resumeUuid = uuidMatch[1];
-
-      await deleteResume(resumeUuid);
-      await fetchUserProfile();
+      await deleteResume();
+      // Update local state to remove the resume URL
+      setLocalResumeUrl(null);
       toast.success('Resume deleted successfully');
     } catch (error) {
       console.error('Error deleting resume:', error);
@@ -382,8 +411,9 @@ export default function Profile() {
                 onFileUpload={handleFileUpload}
                 onDownloadResume={handleDownloadResume}
                 onDeleteResume={handleDeleteResume}
-                currentResume={userProfile?.resume}
+                currentResume={localResumeUrl}
                 userName={`${userProfile?.firstName || ''}`.trim()}
+                resumeContentType={userProfile?.resumeContentType || undefined}
               />
             </div>
 

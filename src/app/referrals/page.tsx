@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 import { BASE_URL } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import ReferralSearch from '../components/ReferralSearch';
 
 interface Referral {
   id: number;
@@ -22,6 +23,7 @@ interface Referral {
   postedBy: number;
   createdAt: string;
   updatedAt: string;
+  referrerCount?: number;
 }
 
 interface Application {
@@ -67,17 +69,9 @@ interface LocationOption {
   zipCode: string;
 }
 
-interface Referrer {
-  userId: number;
-  userName: string;
-  designation: string;
-  numApplicationsAccepted: number;
-  feedbackScore: number;
-  overallScore: number;
-}
+
 
 export default function Referrals() {
-  console.log('Referrals page loaded');
   const { isLoggedIn } = useAuth();
   const [referrals, setReferrals] = useState<Referral[]>([]);
   const [locations, setLocations] = useState<{ [key: number]: LocationOption }>({});
@@ -86,11 +80,13 @@ export default function Referrals() {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [locationFilter, setLocationFilter] = useState('');
-  const [experienceFilter, setExperienceFilter] = useState('');
-  const [referrerCounts, setReferrerCounts] = useState<{ [key: number]: number }>({});
-
+  const [searchFilters, setSearchFilters] = useState({
+    keyword: '',
+    keywordId: '',
+    countryId: '',
+    cityId: '',
+    experience: ''
+  });
   const fetchLocations = async () => {
     try {
       const response = await fetch(`${BASE_URL}/api/v1/dropdowns/locations`);
@@ -111,51 +107,34 @@ export default function Referrals() {
 
 
 
-  const fetchReferrerCounts = async (referralIds: number[]) => {
-    try {
-      const promises = referralIds.map(async (referralId) => {
-        try {
-          const response = await fetch(`${BASE_URL}/api/v1/jobsearch/${referralId}/referrers`);
-          if (response.ok) {
-            const data: Referrer[] = await response.json();
-            return { referralId, count: data.length };
-          }
-          return { referralId, count: 0 };
-        } catch (error) {
-          console.error(`Error fetching referrer count for referral ${referralId}:`, error);
-          return { referralId, count: 0 };
-        }
-      });
 
-      const results = await Promise.all(promises);
-      const countMap = results.reduce((acc, { referralId, count }) => {
-        acc[referralId] = count;
-        return acc;
-      }, {} as { [key: number]: number });
-
-      setReferrerCounts(countMap);
-    } catch (error) {
-      console.error('Error fetching referrer counts:', error);
-    }
-  };
 
   useEffect(() => {
+    console.log('isLoggedIn', isLoggedIn);
     const fetchReferrals = async (page: number) => {
       try {
         setIsLoading(true);
-        const response = await fetch(`${BASE_URL}/api/v1/jobsearch?page=${page}&size=10`);
+
+        // Build query parameters
+        const params = new URLSearchParams({
+          page: page.toString(),
+          size: '10'
+        });
+
+        // Add search filters if they exist
+        if (searchFilters.keywordId) params.append('keywordId', searchFilters.keywordId);
+        if (searchFilters.keyword) params.append('keyword', searchFilters.keyword);
+        if (searchFilters.countryId) params.append('countryId', searchFilters.countryId);
+        if (searchFilters.cityId) params.append('cityId', searchFilters.cityId);
+        if (searchFilters.experience) params.append('experience', searchFilters.experience);
+
+        const response = await fetch(`${BASE_URL}/api/v1/jobsearch?${params.toString()}`);
         if (!response.ok) {
           throw new Error('Failed to fetch referrals');
         }
         const data = await response.json();
         setReferrals(data.content);
         setTotalPages(data.totalPages);
-
-        // Fetch referrer counts for the referrals
-        if (data.content.length > 0) {
-          const referralIds = data.content.map((referral: Referral) => referral.id);
-          await fetchReferrerCounts(referralIds);
-        }
       } catch (error) {
         toast.error('Failed to fetch referrals');
         console.error('Error fetching referrals:', error);
@@ -265,7 +244,7 @@ export default function Referrals() {
       setAppliedReferrals({});
       setPostedReferrals({});
     }
-  }, [currentPage, isLoggedIn]);
+  }, [currentPage, isLoggedIn, searchFilters]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -300,6 +279,17 @@ export default function Referrals() {
     return postedReferrals[jobId] !== undefined;
   };
 
+  const handleSearch = (searchData: {
+    keyword: string;
+    keywordId: string;
+    countryId: string;
+    cityId: string;
+    experience: string;
+  }) => {
+    setSearchFilters(searchData);
+    setCurrentPage(0); // Reset to first page when searching
+  };
+
   // Filter out referrals that are posted by the current user
   const filteredReferrals = referrals.filter(referral => !isReferralPostedByUser(referral.id));
 
@@ -315,36 +305,8 @@ export default function Referrals() {
         </div>
 
         {/* Search and Filter Section */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <input
-              type="text"
-              placeholder="Search referrals..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a73e8]"
-            />
-            <select
-              value={locationFilter}
-              onChange={(e) => setLocationFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a73e8]"
-            >
-              <option value="">All Locations</option>
-              <option value="remote">Remote</option>
-              <option value="onsite">On-site</option>
-              <option value="hybrid">Hybrid</option>
-            </select>
-            <select
-              value={experienceFilter}
-              onChange={(e) => setExperienceFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a73e8]"
-            >
-              <option value="">All Experience Levels</option>
-              <option value="entry">Entry Level</option>
-              <option value="mid">Mid Level</option>
-              <option value="senior">Senior Level</option>
-            </select>
-          </div>
+        <div className="mb-8">
+          <ReferralSearch onSearch={handleSearch} />
           {!isLoggedIn && (
             <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
               <p className="text-blue-700 text-sm">
@@ -364,44 +326,43 @@ export default function Referrals() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {filteredReferrals.map((referral) => (
-              <div key={referral.id} className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition duration-200">
-                <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
-                  <div>
-                    <h3 className="text-xl font-semibold mb-2">{referral.title}</h3>
-                    <div className="flex items-center text-gray-600 mb-2">
-                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                      </svg>
-                      <span>{referral.company}</span>
+              <Link key={referral.id} href={`/referrals/${referral.id}`} className="block">
+                <div className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition duration-200 cursor-pointer">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-xl font-semibold mb-2">{referral.title}</h3>
+                      <div className="flex items-center text-gray-600 mb-2">
+                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                        <span>{referral.company}</span>
+                      </div>
+                      <div className="flex items-center text-gray-600">
+                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <span>{getLocationDisplay(referral)}</span>
+                      </div>
                     </div>
-                    <div className="flex items-center text-gray-600">
-                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                      <span>{getLocationDisplay(referral)}</span>
-                    </div>
+
                   </div>
-                  <div className="mt-4 md:mt-0 flex flex-col items-end gap-2">
-                    <Link href={`/referrals/${referral.id}`} className="px-6 py-2 rounded-lg transition duration-200 bg-[#1a73e8] text-white hover:text-white hover:bg-[#1a73e8]/90">
-                      View Details
-                    </Link>
+                  <div className="flex flex-wrap gap-2 mt-4">
+                    <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">{formatDate(referral.createdAt)}</span>
+                    {referral.referrerCount && referral.referrerCount > 0 && (
+                      <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                        {referral.referrerCount} Referrer{referral.referrerCount > 1 ? 's' : ''} Available
+                      </span>
+                    )}
+                    {isReferralApplied(referral.id) && (
+                      <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+                        Applied - {getApplicationStatus(referral.id)}
+                      </span>
+                    )}
                   </div>
+
                 </div>
-                <div className="flex flex-wrap gap-2 mt-4">
-                  <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">Posted {formatDate(referral.createdAt)}</span>
-                  {referrerCounts[referral.id] > 0 && (
-                    <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
-                      {referrerCounts[referral.id]} Referrer{referrerCounts[referral.id] > 1 ? 's' : ''} Available
-                    </span>
-                  )}
-                  {isReferralApplied(referral.id) && (
-                    <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
-                      Applied - {getApplicationStatus(referral.id)}
-                    </span>
-                  )}
-                </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}

@@ -114,7 +114,7 @@ const SingleTypeAheadField: React.FC<SingleTypeAheadFieldProps> = ({
 
   return (
     <div className="space-y-1" ref={wrapperRef}>
-      <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1">
+      <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-2">
         {label} {required && <span className="text-red-500">*</span>}
       </label>
       <div className="relative">
@@ -128,7 +128,7 @@ const SingleTypeAheadField: React.FC<SingleTypeAheadFieldProps> = ({
           onBlur={onBlur}
           placeholder={placeholder}
           required={required}
-          className={`block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${error ? 'border-red-500' : ''} ${className}`}
+          className={`block h-12 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${error ? 'border-red-500' : ''} ${className}`}
         />
         {isOpen && filteredSuggestions.length > 0 && (
           <ul className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">

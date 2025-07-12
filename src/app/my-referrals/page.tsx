@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { BASE_URL } from '../services/api';
+import ReferralSearch from '../components/ReferralSearch';
 
 interface Referral {
   id: number;
@@ -30,6 +31,13 @@ export default function MyReferrals() {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchFilters, setSearchFilters] = useState({
+    keyword: '',
+    keywordId: '',
+    countryId: '',
+    cityId: '',
+    experience: ''
+  });
 
   const fetchApplicationCounts = async (referralIds: number[]) => {
     try {
@@ -73,6 +81,17 @@ export default function MyReferrals() {
     }
   };
 
+  const handleSearch = (searchData: {
+    keyword: string;
+    keywordId: string;
+    countryId: string;
+    cityId: string;
+    experience: string;
+  }) => {
+    setSearchFilters(searchData);
+    setCurrentPage(0); // Reset to first page when searching
+  };
+
   const fetchReferrals = useCallback(async (page: number) => {
     try {
       setIsLoading(true);
@@ -80,7 +99,20 @@ export default function MyReferrals() {
         .split('; ')
         .find(row => row.startsWith('auth_token='))
         ?.split('=')[1];
-      const response = await fetch(`${BASE_URL}/api/v1/jobmanagement/my-posts?page=${page}&size=10`, {
+
+      // Build query parameters
+      const params = new URLSearchParams({
+        page: page.toString(),
+        size: '10'
+      });
+
+      // Add search filters if they exist
+      if (searchFilters.keywordId) params.append('designationId', searchFilters.keywordId);
+      if (searchFilters.countryId) params.append('countryId', searchFilters.countryId);
+      if (searchFilters.cityId) params.append('cityId', searchFilters.cityId);
+      if (searchFilters.experience) params.append('experience', searchFilters.experience);
+
+      const response = await fetch(`${BASE_URL}/api/v1/jobmanagement/my-posts?${params.toString()}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -103,7 +135,7 @@ export default function MyReferrals() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [searchFilters]);
 
   useEffect(() => {
     fetchReferrals(currentPage);
@@ -138,6 +170,11 @@ export default function MyReferrals() {
         >
           Post a New Referral
         </Link>
+      </div>
+
+      {/* Search Section */}
+      <div className="mb-8">
+        <ReferralSearch onSearch={handleSearch} />
       </div>
 
       {isLoading ? (

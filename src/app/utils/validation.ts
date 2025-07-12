@@ -2,6 +2,9 @@ import { validationMessages } from '../config/validationMessages';
 
 export const validateField = (name: string, value: string, required: boolean): string | undefined => {
   if (required && !value) {
+    if (name === 'uniqueUrl') {
+      return validationMessages.uniqueUrl;
+    }
     return validationMessages.required;
   }
   if (value) {  // Only validate format if there is a value
@@ -55,6 +58,23 @@ export const validateField = (name: string, value: string, required: boolean): s
           return validationMessages.currentSalary;
         }
         break;
+      case 'minSalary':
+      case 'maxSalary':
+        if (isNaN(Number(value)) || Number(value) < 0) {
+          return validationMessages.salary;
+        }
+        break;
+      case 'minExperience':
+      case 'maxExperience':
+        if (isNaN(Number(value)) || Number(value) < 0) {
+          return validationMessages.experience;
+        }
+        break;
+      case 'jobType':
+        if (!value) {
+          return validationMessages.jobType;
+        }
+        break;
       case 'currentSalaryCurrencyId':
         if (!value) {
           return validationMessages.required;
@@ -87,6 +107,7 @@ export const validateField = (name: string, value: string, required: boolean): s
         }
         break;
       case 'skillNames':
+      case 'tags':
         if (!value) {
           return validationMessages.skills;
         }
@@ -103,6 +124,7 @@ export const validateField = (name: string, value: string, required: boolean): s
         break;
       case 'personalWebsite':
       case 'portfolioWebsite':
+      case 'uniqueUrl':
         if (value && !/^https?:\/\/.+\..+/.test(value)) {
           return validationMessages.url;
         }

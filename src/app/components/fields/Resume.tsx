@@ -9,6 +9,7 @@ interface ResumeProps {
   lastUpdated?: string;
   onDeleteResume?: () => void;
   userName?: string;
+  resumeContentType?: string;
 }
 
 const Resume: React.FC<ResumeProps> = ({
@@ -19,11 +20,13 @@ const Resume: React.FC<ResumeProps> = ({
   onDownloadResume,
   lastUpdated = 'Today',
   onDeleteResume,
-  userName
+  userName,
+  resumeContentType
 }) => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = async (file: File) => {
@@ -43,12 +46,20 @@ const Resume: React.FC<ResumeProps> = ({
       alert('File size must be less than 2MB');
       return;
     }
+
+    // Set the selected file to show preview with correct extension
+    setSelectedFile(file);
+
     if (onFileUpload) {
       setUploading(true);
       try {
         await onFileUpload(file);
+        // Clear selected file after successful upload
+        setSelectedFile(null);
       } catch (error) {
         console.error('Upload failed:', error);
+        // Clear selected file on error
+        setSelectedFile(null);
       } finally {
         setUploading(false);
       }
@@ -83,11 +94,88 @@ const Resume: React.FC<ResumeProps> = ({
 
   // Function to format resume display name
   const getResumeDisplayName = () => {
-    if (!currentResume || !userName) return currentResume;
+    if (!currentResume) return '';
 
-    // Extract file extension from the URL
-    const urlMatch = currentResume.match(/\.([^\/\?]+)(?:\?|$)/);
-    const fileExtension = urlMatch ? urlMatch[1] : 'pdf';
+    // If no userName is provided, return the original filename from URL
+    if (!userName) {
+      // Extract filename from URL
+      const urlMatch = currentResume.match(/\/([^\/\?]+)(?:\?|$)/);
+      return urlMatch ? urlMatch[1] : 'resume';
+    }
+
+    // Determine file extension from content type or fallback to URL extraction
+    let fileExtension = 'pdf'; // Default fallback
+
+    // If a file is selected for upload, use its type to determine extension
+    if (selectedFile) {
+      switch (selectedFile.type) {
+        case 'application/pdf':
+          fileExtension = 'pdf';
+          break;
+        case 'application/msword':
+          fileExtension = 'doc';
+          break;
+        case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+          fileExtension = 'docx';
+          break;
+        case 'application/rtf':
+        case 'text/rtf':
+          fileExtension = 'rtf';
+          break;
+        default:
+          // Fallback to existing content type or URL extraction
+          if (resumeContentType) {
+            switch (resumeContentType) {
+              case 'application/pdf':
+                fileExtension = 'pdf';
+                break;
+              case 'application/msword':
+                fileExtension = 'doc';
+                break;
+              case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+                fileExtension = 'docx';
+                break;
+              case 'application/rtf':
+              case 'text/rtf':
+                fileExtension = 'rtf';
+                break;
+              default:
+                // Fallback to URL extraction if content type is not recognized
+                const urlMatch = currentResume.match(/\.([^\/\?]+)(?:\?|$)/);
+                fileExtension = urlMatch ? urlMatch[1] : 'pdf';
+            }
+          } else {
+            // Fallback to URL extraction if no content type is provided
+            const urlMatch = currentResume.match(/\.([^\/\?]+)(?:\?|$)/);
+            fileExtension = urlMatch ? urlMatch[1] : 'pdf';
+          }
+      }
+    } else if (resumeContentType) {
+      // Use existing content type if no file is selected
+      switch (resumeContentType) {
+        case 'application/pdf':
+          fileExtension = 'pdf';
+          break;
+        case 'application/msword':
+          fileExtension = 'doc';
+          break;
+        case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+          fileExtension = 'docx';
+          break;
+        case 'application/rtf':
+        case 'text/rtf':
+          fileExtension = 'rtf';
+          break;
+        default:
+          // Fallback to URL extraction if content type is not recognized
+          const urlMatch = currentResume.match(/\.([^\/\?]+)(?:\?|$)/);
+          fileExtension = urlMatch ? urlMatch[1] : 'pdf';
+      }
+    } else {
+      // Fallback to URL extraction if no content type is provided
+      const urlMatch = currentResume.match(/\.([^\/\?]+)(?:\?|$)/);
+      fileExtension = urlMatch ? urlMatch[1] : 'pdf';
+    }
 
     return `${userName}.${fileExtension}`;
   };

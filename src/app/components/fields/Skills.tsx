@@ -83,10 +83,10 @@ const Skills: React.FC<SkillsProps> = ({
   const handleSkillChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const skillNames = e.target.value.split(',').map((name: string) => name.trim()).filter((name: string) => name);
 
-    // Update skillNames
+    // Update skillNames or tags based on fieldName prop
     const skillNamesEvent = {
       target: {
-        name: 'skillNames',
+        name: fieldName === 'skillIds' ? 'skillNames' : fieldName,
         value: skillNames.join(', ')
       }
     } as React.ChangeEvent<HTMLInputElement>;
@@ -111,11 +111,11 @@ const Skills: React.FC<SkillsProps> = ({
     <div className="skills-field w-full mb-4">
       <TypeAheadField
         label={label}
-        name="skillNames"
-        value={formData['skillNames'] || ''}
+        name={fieldName === 'skillIds' ? 'skillNames' : fieldName}
+        value={formData[fieldName === 'skillIds' ? 'skillNames' : fieldName] || ''}
         onChange={handleSkillChange}
-        onBlur={() => onBlur('skillNames')}
-        error={touched['skillNames'] ? errors['skillNames'] : undefined}
+        onBlur={() => onBlur(fieldName === 'skillIds' ? 'skillNames' : fieldName)}
+        error={touched[fieldName === 'skillIds' ? 'skillNames' : fieldName] ? errors[fieldName === 'skillIds' ? 'skillNames' : fieldName] : undefined}
         suggestions={skills.map(skill => ({
           value: skill.name,
           label: skill.name

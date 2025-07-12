@@ -128,7 +128,7 @@ export default function Description({
           </button>
         </div>
         <div className="p-4 [&_.is-editor-empty]:before:content-[attr(data-placeholder)] [&_.is-editor-empty]:before:text-gray-400 [&_.is-editor-empty]:before:float-left [&_.is-editor-empty]:before:h-0 [&_.is-editor-empty]:before:pointer-events-none [&_*:focus]:outline-none">
-          <EditorContent editor={editor} />
+          <EditorContent editor={editor} id="description" />
         </div>
       </div>
       {errors.description && touched.description && (

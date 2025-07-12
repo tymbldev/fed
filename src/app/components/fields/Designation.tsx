@@ -12,6 +12,8 @@ interface DesignationProps {
   required?: boolean;
   label?: string;
   fieldName?: string;
+  placeholder?: string;
+  updateFieldName?: string;
 }
 
 interface Option {
@@ -27,7 +29,9 @@ const Designation: React.FC<DesignationProps> = ({
   onBlur,
   required = false,
   label = "Designation",
-  fieldName = "designationId"
+  fieldName = "designationId",
+  placeholder,
+  updateFieldName = "designation"
 }) => {
   const [options, setOptions] = useState<Option[]>([]);
 
@@ -48,110 +52,111 @@ const Designation: React.FC<DesignationProps> = ({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
 
-    // Update both designation and designationId
-    const designationEvent = {
+    // Update both the specified field and fieldName
+    const updateEvent = {
       target: {
-        name: 'designation',
+        name: updateFieldName,
         value: inputValue
       }
     } as React.ChangeEvent<HTMLInputElement>;
-    onInputChange(designationEvent);
+    onInputChange(updateEvent);
 
-    // Clear designationId when user types
+    // Clear fieldName when user types
     if (inputValue === '') {
-      const designationIdEvent = {
+      const fieldNameEvent = {
         target: {
           name: fieldName,
           value: ''
         }
       } as React.ChangeEvent<HTMLInputElement>;
-      onInputChange(designationIdEvent);
+      onInputChange(fieldNameEvent);
     }
   };
 
   const handleBlur = () => {
-    const designationName = formData['designation'] || '';
+    const fieldValue = formData[updateFieldName] || '';
 
-    if (designationName) {
-      // Check if the designation name maps to an existing designation
+    if (fieldValue) {
+      // Check if the field value maps to an existing designation
       const foundDesignation = options.find(opt =>
-        opt.name.toLowerCase() === designationName.toLowerCase()
+        opt.name.toLowerCase() === fieldValue.toLowerCase()
       );
 
       if (foundDesignation) {
-        // Update designationId with the found designation's ID
-        const designationIdEvent = {
+        // Update fieldName with the found designation's ID
+        const fieldNameEvent = {
           target: {
             name: fieldName,
             value: foundDesignation.id
           }
         } as React.ChangeEvent<HTMLInputElement>;
-        onInputChange(designationIdEvent);
+        onInputChange(fieldNameEvent);
       } else {
-        // No mapping found, set designationId to 1000
-        const designationIdEvent = {
+        // No mapping found, set fieldName to 1000
+        const fieldNameEvent = {
           target: {
             name: fieldName,
             value: '1000'
           }
         } as React.ChangeEvent<HTMLInputElement>;
-        onInputChange(designationIdEvent);
+        onInputChange(fieldNameEvent);
       }
     }
 
     // Call the original onBlur
-    onBlur('designation');
+    onBlur(updateFieldName);
   };
 
   const handleSuggestionSelect = (suggestion: { value: string; label: string }) => {
     const selectedOption = options.find(opt => opt.name === suggestion.label);
     if (selectedOption) {
-      // Update designationId
-      const designationIdEvent = {
+      // Update fieldName
+      const fieldNameEvent = {
         target: {
           name: fieldName,
           value: selectedOption.id
         }
       } as React.ChangeEvent<HTMLInputElement>;
-      onInputChange(designationIdEvent);
+      onInputChange(fieldNameEvent);
 
-      // Update designation name
-      const designationEvent = {
+      // Update the specified field name
+      const updateEvent = {
         target: {
-          name: 'designation',
+          name: updateFieldName,
           value: selectedOption.name
         }
       } as React.ChangeEvent<HTMLInputElement>;
-      onInputChange(designationEvent);
+      onInputChange(updateEvent);
     } else {
       // No mapping found, set ID to 1000
-      const designationIdEvent = {
+      const fieldNameEvent = {
         target: {
           name: fieldName,
           value: '1000'
         }
       } as React.ChangeEvent<HTMLInputElement>;
-      onInputChange(designationIdEvent);
+      onInputChange(fieldNameEvent);
 
-      // Update designation name with the input value
-      const designationEvent = {
+      // Update the specified field name with the input value
+      const updateEvent = {
         target: {
-          name: 'designation',
+          name: updateFieldName,
           value: suggestion.label
         }
       } as React.ChangeEvent<HTMLInputElement>;
-      onInputChange(designationEvent);
+      onInputChange(updateEvent);
     }
   };
 
   return (
     <SingleTypeAheadField
       label={label}
-      name="designation"
-      value={formData['designation'] || ''}
+      name={updateFieldName}
+      placeholder={placeholder}
+      value={formData[updateFieldName] || ''}
       onChange={handleInputChange}
       onBlur={handleBlur}
-      error={touched['designation'] ? errors['designation'] : undefined}
+      error={touched[updateFieldName] ? errors[updateFieldName] : undefined}
       suggestions={options.map(opt => ({
         value: opt.id,
         label: opt.name

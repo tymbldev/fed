@@ -16,6 +16,7 @@ interface SelectFieldProps {
   error?: string;
   className?: string;
   disabled?: boolean;
+  placeholder?: string;
 }
 
 const SelectField: React.FC<SelectFieldProps> = ({
@@ -27,35 +28,37 @@ const SelectField: React.FC<SelectFieldProps> = ({
   onChange,
   onBlur,
   error,
-  className = '',
-  disabled = false
+  placeholder,
+  ...rest
 }) => {
   // if(name === "cityId") {
   //   console.log("SelectField", name, value, options);
   // }
   return (
     <div className="w-full">
-      <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-2">
-        {label} {required && <span className="text-red-500">*</span>}
-      </label>
+      {label && (
+        <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-2">
+          {label} {required && <span className="text-red-500">*</span>}
+        </label>
+      )}
       <select
         id={name}
         name={name}
         value={value}
         onChange={onChange}
         onBlur={onBlur}
+        className={`block w-full h-12 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${error ? 'border-red-500' : ''}`}
         required={required}
-        disabled={disabled}
-        className={`block w-full h-10 px-3 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base sm:text-sm ${error ? 'border-red-500' : ''} ${className} ${disabled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+        {...rest}
       >
-        <option value="">Select {label}</option>
+        <option value="">{placeholder || `Select ${label}`}</option>
         {options.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
           </option>
         ))}
       </select>
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
     </div>
   );
 };

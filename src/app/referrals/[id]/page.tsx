@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { BASE_URL } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import LoginForm from '../../components/auth/LoginForm';
 
 interface Referral {
   id: number;
@@ -69,8 +70,8 @@ interface Referrer {
 export default function ReferralDetails() {
   // console.log('ReferralDetails page loaded');
   const params = useParams();
-  const { userProfile, isLoggedIn } = useAuth();
-  console.log('ReferralDetails isLoggedIn:', isLoggedIn);
+  const { isLoggedIn } = useAuth();
+  // console.log('ReferralDetails isLoggedIn:', isLoggedIn);
   const [referral, setReferral] = useState<Referral | null>(null);
   const [currencies, setCurrencies] = useState<{ [key: number]: string }>({});
   const [locations, setLocations] = useState<{ [key: number]: LocationOption }>({});
@@ -85,6 +86,10 @@ export default function ReferralDetails() {
   const [applicationId, setApplicationId] = useState<number | null>(null);
   const [showSwitchReferrerModal, setShowSwitchReferrerModal] = useState(false);
   const [isSwitchingReferrer, setIsSwitchingReferrer] = useState(false);
+
+  // Login modal states
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [pendingApplication, setPendingApplication] = useState(false);
 
   const fetchCurrencies = async () => {
     try {
@@ -142,7 +147,8 @@ export default function ReferralDetails() {
 
   const fetchApplicationStatus = async () => {
     if (!isLoggedIn) {
-      return; // Don't fetch if user is not logged in
+      console.log('User not logged in, skipping application status fetch');
+      return null; // Don't fetch if user is not logged in
     }
 
     try {
@@ -154,9 +160,10 @@ export default function ReferralDetails() {
 
       if (!token) {
         console.log('No auth token found for application status fetch');
-        return;
+        return null;
       }
 
+      console.log('Fetching application status for job ID:', params.id);
       const response = await fetch(`${BASE_URL}/api/v1/my-applications`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -168,12 +175,21 @@ export default function ReferralDetails() {
       }
 
       const data: Application[] = await response.json();
-      const application = data.find(app => app.jobId === Number(params.id));
-      setApplicationStatus(application ? application.status : null);
+      console.log('All applications:', data);
+      console.log('Looking for job ID:', Number(params.id));
+
+            const application = data.find(app => app.jobId === Number(params.id));
+      console.log('Found application:', application);
+      console.log('Application status:', application?.status);
+
+            const status = application ? application.status : null;
+      setApplicationStatus(status);
       setApplicationId(application ? application.id : null);
 
+            console.log('Setting applicationStatus to:', status);
+
       // If user has applied and we have referrer information, set the applied referrer
-      if (application && application.jobReferrerId) {
+      if (application?.jobReferrerId) {
         // Find the referrer details from the referrers list
         const referrer = referrers.find(ref => ref.userId === application.jobReferrerId);
         if (referrer) {
@@ -182,8 +198,13 @@ export default function ReferralDetails() {
             name: referrer.userName,
             designation: referrer.designation
           });
+        } else {
+          console.log('Referrer not found in list yet, will set later when referrers are loaded');
         }
       }
+
+      return status;
+
     } catch (error) {
       console.error('Error fetching application status:', error);
       // Don't show error toast for this as it might be expected for non-logged in users
@@ -238,10 +259,45 @@ export default function ReferralDetails() {
 
   // Separate useEffect for fetchApplicationStatus to run after referrers are loaded
   useEffect(() => {
-    if (referrers.length > 0) {
+    if (isLoggedIn) {
       fetchApplicationStatus();
     }
-  }, [referrers, params.id, isLoggedIn]);
+  }, [params.id, isLoggedIn]);
+
+  // Set applied referrer once referrers are loaded and we have application data
+  useEffect(() => {
+    if (referrers.length > 0 && applicationId && !appliedReferrer) {
+      // Re-fetch application status to get the latest data and set applied referrer
+      fetchApplicationStatus();
+    }
+  }, [referrers, applicationId]);
+
+  // Debug: Monitor applicationStatus changes
+  useEffect(() => {
+    console.log('applicationStatus changed to:', applicationStatus);
+  }, [applicationStatus]);
+
+  // Handle pending application after successful login
+  useEffect(() => {
+    if (isLoggedIn && pendingApplication) {
+      console.log('Auth state updated, proceeding with application');
+      // Small delay to ensure all auth state is properly set
+      const timer = setTimeout(async () => {
+        // Check application status again before proceeding
+        const status = await fetchApplicationStatus();
+        console.log('Fetched status before applying:', status);
+
+        // Only proceed if user hasn't already applied
+        if (!status) {
+          handleApply();
+        } else {
+          console.log('User already applied, not proceeding with application');
+          setPendingApplication(false);
+        }
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoggedIn, pendingApplication]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -258,25 +314,34 @@ export default function ReferralDetails() {
     }).format(salary);
   };
 
-  const handleApply = async () => {
-    if (!userProfile) {
-      toast.error('Please login to apply for referrals');
+  const handleApply = async (forceApply: boolean = false, referrerId?: number) => {
+    console.log('handleApply called, applicationStatus:', applicationStatus, 'forceApply:', forceApply, 'referrerId:', referrerId);
+    // Don't proceed if already applied, unless forceApply is true
+    if (applicationStatus && !forceApply) {
+      console.log('Already applied, returning early');
       return;
     }
 
-    if (applicationStatus) {
-      toast.error('You have already applied for this referral');
+    if (!isLoggedIn) {
+      setPendingApplication(true);
+      setShowLoginModal(true);
       return;
     }
+
+    // Reset pending application state since we're now proceeding with the application
+    setPendingApplication(false);
+
+    // Use the passed referrerId or fall back to selectedReferrerId
+    const targetReferrerId = referrerId || selectedReferrerId;
 
     // If there are multiple referrers and none is selected, show the modal
-    if (referrers.length > 1 && !selectedReferrerId) {
+    if (referrers.length > 1 && !targetReferrerId) {
       setShowReferrerModal(true);
       return;
     }
 
-    try {
-      const response = await fetch(`${BASE_URL}/api/v1/my-applications`, {
+          try {
+        const response = await fetch(`${BASE_URL}/api/v1/my-applications`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -285,7 +350,7 @@ export default function ReferralDetails() {
         body: JSON.stringify({
           jobId: params.id,
           coverLetter: 'test',
-          jobReferrerId: selectedReferrerId
+          jobReferrerId: targetReferrerId
         })
       });
 
@@ -298,8 +363,8 @@ export default function ReferralDetails() {
       setApplicationStatus('Applied');
 
       // Set the applied referrer
-      if (selectedReferrerId) {
-        const referrer = referrers.find(ref => ref.userId === selectedReferrerId);
+      if (targetReferrerId) {
+        const referrer = referrers.find(ref => ref.userId === targetReferrerId);
         if (referrer) {
           setAppliedReferrer({
             id: referrer.userId,
@@ -316,13 +381,24 @@ export default function ReferralDetails() {
     }
   };
 
+  const handleLoginSuccess = () => {
+    console.log('Login successful');
+    setShowLoginModal(false);
+    // Don't set pendingApplication = false here
+    // Let the useEffect handle it after the application is triggered
+  };
+
+  const handleLoginCancel = () => {
+    setShowLoginModal(false);
+    setPendingApplication(false);
+  };
+
   const handleReferrerSelect = (referrerId: number) => {
     setSelectedReferrerId(referrerId);
     setShowReferrerModal(false);
     // Automatically apply after selecting referrer
-    setTimeout(() => {
-      handleApply();
-    }, 100);
+    // Pass the referrerId directly to avoid state timing issues
+    handleApply(true, referrerId);
   };
 
   const handleSwitchReferrer = async (newReferrerId: number) => {
@@ -418,7 +494,8 @@ export default function ReferralDetails() {
             </div>
             <div className="flex items-center text-gray-600 mb-4">
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2h14a2 2 0 002-2v-5z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 16h.01" />
               </svg>
               <span className="text-xl">{formatSalary(referral.salary, referral.currencyId)}</span>
             </div>
@@ -483,19 +560,13 @@ export default function ReferralDetails() {
               </div>
             )}
 
-            {!isLoggedIn && (
-              <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-blue-700 text-sm">
-                  💡 Please <a href="/login" className="underline font-medium">log in</a> to apply for this referral.
-                </p>
-              </div>
-            )}
+
 
             <button
-              onClick={handleApply}
-              disabled={!isLoggedIn || !!applicationStatus || isCheckingApplication}
+              onClick={() => handleApply()}
+              disabled={!!applicationStatus || isCheckingApplication}
               className={`px-6 py-3 rounded-lg transition duration-200 ${
-                !isLoggedIn || !!applicationStatus
+                !!applicationStatus
                   ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
                   : 'bg-[#1a73e8] text-white hover:bg-[#1a73e8]/90'
               }`}
@@ -531,9 +602,6 @@ export default function ReferralDetails() {
                           <span>•</span>
                           <span>{referrer.numApplicationsAccepted} accepted</span>
                         </div>
-                        {selectedReferrerId === referrer.userId && !applicationStatus && (
-                          <span className="text-blue-600 text-sm font-medium">Selected</span>
-                        )}
                         {appliedReferrer && appliedReferrer.id === referrer.userId && (
                           <span className="text-green-600 text-sm font-medium">Applied with</span>
                         )}
@@ -541,7 +609,7 @@ export default function ReferralDetails() {
                     </div>
                   ))}
                 </div>
-                {referrers.length > 1 && (
+                {referrers.length > 1 && !applicationStatus && (
                   <p className="text-sm text-blue-700 mt-3">
                     💡 Multiple referrers available. You&apos;ll be able to choose one when applying.
                   </p>
@@ -648,6 +716,20 @@ export default function ReferralDetails() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Login Modal */}
+      {showLoginModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <LoginForm
+            isModal={true}
+            title="Login to Apply"
+            subtitle="Please log in to apply for this referral opportunity."
+            onSuccess={handleLoginSuccess}
+            onCancel={handleLoginCancel}
+            showLinks={true}
+          />
         </div>
       )}
     </main>

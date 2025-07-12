@@ -11,7 +11,9 @@ import { BASE_URL } from '../services/api';
 import Designation from '../components/fields/Designation';
 import Description from '../components/fields/Description';
 import Location from '../components/fields/Location';
-import Salary from '../components/fields/Salary';
+import MinMaxSalary from '../components/fields/MinMaxSalary';
+import MinMaxExperience from '../components/fields/MinMaxExperience';
+import JobType from '../components/fields/JobType';
 import Skills from '../components/fields/Skills';
 import OpeningCount from '../components/fields/OpeningCount';
 import UniqueUrl from '../components/fields/UniqueUrl';
@@ -31,6 +33,23 @@ function PostReferralForm() {
 
   const isEditMode = searchParams.get('edit') === 'true';
   const referralId = searchParams.get('id');
+
+  // Re-validate uniqueUrl when platform changes
+  useEffect(() => {
+    if (touched.uniqueUrl) {
+      const fieldToValidate = {
+        name: 'uniqueUrl',
+        value: formData.uniqueUrl || '',
+        required: Boolean(formData.platform && formData.platform !== 'Other')
+      };
+
+      const newErrors = validateFields([fieldToValidate]);
+      setErrors(prev => ({
+        ...prev,
+        ...newErrors
+      }));
+    }
+  }, [formData.platform, formData.uniqueUrl, touched.uniqueUrl]);
 
   useEffect(() => {
     const fetchReferralDetails = async () => {
@@ -60,9 +79,13 @@ function PostReferralForm() {
             designationId: referral.designationId?.toString() || '',
             countryId: referral.countryId?.toString() || '',
             cityId: referral.cityId?.toString() || '',
-            salary: referral.salary?.toString() || '',
+            minSalary: referral.minSalary?.toString() || '',
+            maxSalary: referral.maxSalary?.toString() || '',
+            minExperience: referral.minExperience?.toString() || '',
+            maxExperience: referral.maxExperience?.toString() || '',
+            jobType: referral.jobType || '',
             currencyId: referral.currencyId?.toString() || '',
-            skillNames: referral.skillNames?.join(', ') || '',
+            tags: referral.tags?.join(', ') || '',
             openingCount: referral.openingCount?.toString() || '1',
             uniqueUrl: referral.uniqueUrl || '',
             platform: referral.platform || '',
@@ -75,12 +98,13 @@ function PostReferralForm() {
         } finally {
           setIsLoading(false);
         }
-      } else if (!isEditMode && userProfile) {
-        // Initialize form with user's company for new referrals
+      } else if (!isEditMode) {
+        // Initialize form with default values for new referrals
         setFormData(prev => ({
           ...prev,
-          company: userProfile.company || '',
-          companyId: userProfile.companyId?.toString() || '',
+          company: userProfile?.company || '',
+          companyId: userProfile?.companyId?.toString() || '',
+          openingCount: '1', // Initialize with default value
         }));
       }
     };
@@ -127,7 +151,8 @@ function PostReferralForm() {
     const fieldToValidate = {
       name: field,
       value: formData[field] || '',
-      required: true
+      required: field === 'uniqueUrl' ? Boolean(formData.platform && formData.platform !== 'Other') :
+              field === 'minSalary' || field === 'maxSalary' || field === 'minExperience' || field === 'maxExperience' || field === 'jobType' ? true : true
     };
 
     const newErrors = validateFields([fieldToValidate]);
@@ -194,11 +219,16 @@ function PostReferralForm() {
       'companyId',
       'countryId',
       'cityId',
-      'salary',
+      'minSalary',
+      'maxSalary',
+      'minExperience',
+      'maxExperience',
+      'jobType',
       'currencyId',
-      'skillNames',
+      'tags',
       'openingCount',
-      'platform'
+      'platform',
+      'uniqueUrl'
     ];
     const touchedFields = allFields.reduce((acc, field) => ({
       ...acc,
@@ -206,18 +236,89 @@ function PostReferralForm() {
     }), {});
     setTouched(prev => ({ ...prev, ...touchedFields }));
 
+    // Also mark uniqueUrl as touched if platform is selected and not "Other"
+    if (formData.platform && formData.platform !== 'Other') {
+      setTouched(prev => ({ ...prev, uniqueUrl: true }));
+    }
+
     const fieldsToValidate = allFields.map(field => ({
       name: field,
       value: formData[field] || '',
-      required: true
+      required: field === 'uniqueUrl' ? Boolean(formData.platform && formData.platform !== 'Other') :
+              field === 'minSalary' || field === 'maxSalary' || field === 'minExperience' || field === 'maxExperience' || field === 'jobType' ? true : true
     }));
 
     const newErrors = validateFields(fieldsToValidate);
+
+    // Add custom validation for min/max fields
+    if (formData.minSalary && formData.maxSalary) {
+      const minSalary = parseFloat(formData.minSalary);
+      const maxSalary = parseFloat(formData.maxSalary);
+      if (minSalary > maxSalary) {
+        newErrors.minSalary = 'Minimum salary cannot be greater than maximum salary';
+      }
+    }
+
+    if (formData.minExperience && formData.maxExperience) {
+      const minExperience = parseFloat(formData.minExperience);
+      const maxExperience = parseFloat(formData.maxExperience);
+      if (minExperience > maxExperience) {
+        newErrors.minExperience = 'Minimum experience cannot be greater than maximum experience';
+      }
+    }
+
     const hasErrors = Object.keys(newErrors).length > 0;
 
     if (hasErrors) {
       setErrors(newErrors);
-      console.log(newErrors);
+      console.log('Validation errors:', newErrors);
+      console.log('Form data:', formData);
+
+                  // Scroll to the first field with an error
+      const firstErrorField = Object.keys(newErrors)[0];
+      if (firstErrorField) {
+        // Use setTimeout to ensure DOM is updated
+        setTimeout(() => {
+          // Try to find the element by ID first
+          let errorElement = document.getElementById(firstErrorField);
+
+          // If not found by ID, try to find by name attribute
+          if (!errorElement) {
+            errorElement = document.querySelector(`[name="${firstErrorField}"]`);
+          }
+
+          // If still not found, try to find by data attribute or class
+          if (!errorElement) {
+            errorElement = document.querySelector(`[data-field="${firstErrorField}"]`);
+          }
+
+          if (errorElement) {
+            errorElement.scrollIntoView({
+              behavior: 'smooth',
+              block: 'center'
+            });
+
+            // Try to focus the element if it's focusable
+            if (errorElement instanceof HTMLElement &&
+                (errorElement.tagName === 'INPUT' ||
+                 errorElement.tagName === 'SELECT' ||
+                 errorElement.tagName === 'TEXTAREA' ||
+                 errorElement.contentEditable === 'true')) {
+              errorElement.focus();
+            }
+          } else {
+            // Fallback: scroll to the top of the form
+            const formElement = document.querySelector('form');
+            if (formElement) {
+              formElement.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+              });
+            }
+          }
+        }, 100);
+      }
+
       setIsSubmitting(false);
       return;
     }
@@ -228,9 +329,13 @@ function PostReferralForm() {
         description: formData.description,
         countryId: formData.countryId ? parseInt(formData.countryId) : undefined,
         cityId: formData.cityId ? parseInt(formData.cityId) : undefined,
-        salary: formData.salary ? parseFloat(formData.salary) : undefined,
+        minSalary: formData.minSalary ? parseFloat(formData.minSalary) : undefined,
+        maxSalary: formData.maxSalary ? parseFloat(formData.maxSalary) : undefined,
+        minExperience: formData.minExperience ? parseInt(formData.minExperience) : undefined,
+        maxExperience: formData.maxExperience ? parseInt(formData.maxExperience) : undefined,
+        jobType: formData.jobType || undefined,
         currencyId: formData.currencyId ? parseInt(formData.currencyId) : undefined,
-        skillNames: formData.skillNames ? formData.skillNames.split(',').map(skill => skill.trim()) : [],
+        tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()) : [],
         skillIds: formData.skillIds ? formData.skillIds.split(',').map(id => id.trim()) : [],
         company: formData.company || userProfile?.company || '',
         companyId: formData.companyId ? parseInt(formData.companyId) : (userProfile?.companyId || undefined),
@@ -292,24 +397,39 @@ function PostReferralForm() {
     <div className="max-w-2xl mx-auto p-6">
       <h1 className="text-3xl font-bold mb-8">{isEditMode ? 'Edit Referral' : 'Post a Referral'}</h1>
       <form onSubmit={handleSubmit} className="space-y-6" noValidate>
-        <div>
-          <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-            Referral Title <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            id="title"
-            name="title"
-            value={formData.title || ''}
-            onChange={handleInputChange}
-            onBlur={() => handleBlur('title')}
-            required={true}
-            placeholder="Enter referral title"
-            className={`block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${touched.title && errors.title ? 'border-red-500' : ''}`}
-          />
-          {touched.title && errors.title && (
-            <p className="mt-1 text-sm text-red-600">{errors.title}</p>
-          )}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="md:col-span-2">
+            <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+              Referral Title <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="title"
+              name="title"
+              value={formData.title || ''}
+              onChange={handleInputChange}
+              onBlur={() => handleBlur('title')}
+              required={true}
+              placeholder="Enter referral title"
+              className={`block h-12 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${touched.title && errors.title ? 'border-red-500' : ''}`}
+            />
+            {touched.title && errors.title && (
+              <p className="mt-1 text-sm text-red-600">{errors.title}</p>
+            )}
+          </div>
+
+          <div className="md:col-span-1">
+            <JobType
+              formData={formData}
+              errors={errors}
+              touched={touched}
+              onInputChange={handleInputChange}
+              onBlur={() => handleBlur('jobType')}
+              required={true}
+              label="Job Type"
+              fieldName="jobType"
+            />
+          </div>
         </div>
 
         <Designation
@@ -321,6 +441,7 @@ function PostReferralForm() {
           required={true}
           label="Designation"
           fieldName="designationId"
+          placeholder="Enter designation"
         />
 
         <Description
@@ -345,17 +466,30 @@ function PostReferralForm() {
           cityLabel="Referral City"
         />
 
-        <Salary
+        <MinMaxSalary
           formData={formData}
           errors={errors}
           touched={touched}
           onInputChange={handleInputChange}
           onBlur={handleBlur}
           required={true}
-          currencyLabel="Select Currency"
-          salaryLabel="Annual Salary"
-          salaryFieldName="salary"
+          currencyLabel="Monthly Salary"
+          minSalaryLabel="Minimum Salary Label"
+          maxSalaryLabel="Maximum Salary Label"
+          minSalaryFieldName="minSalary"
+          maxSalaryFieldName="maxSalary"
           currencyFieldName="currencyId"
+        />
+
+        <MinMaxExperience
+          formData={formData}
+          errors={errors}
+          touched={touched}
+          onInputChange={handleInputChange}
+          onBlur={handleBlur}
+          required={true}
+          minExperienceFieldName="minExperience"
+          maxExperienceFieldName="maxExperience"
         />
 
         <Skills
@@ -363,32 +497,31 @@ function PostReferralForm() {
           errors={errors}
           touched={touched}
           onInputChange={handleInputChange}
-          onBlur={() => handleBlur('skillNames')}
+          onBlur={() => handleBlur('tags')}
           required={true}
           label="Required Skills"
+          fieldName="tags"
         />
 
-        <div className="flex flex-col md:flex-row md:gap-4">
-          <OpeningCount
-            formData={formData}
-            errors={errors}
-            touched={touched}
-            onInputChange={handleInputChange}
-            onBlur={() => handleBlur('openingCount')}
-            required={true}
-            label="Number of Openings"
-          />
+        <OpeningCount
+          formData={formData}
+          errors={errors}
+          touched={touched}
+          onInputChange={handleInputChange}
+          onBlur={() => handleBlur('openingCount')}
+          required={true}
+          label="Number of Openings"
+        />
 
-          <Platform
-            formData={formData}
-            errors={errors}
-            touched={touched}
-            onInputChange={handleInputChange}
-            onBlur={() => handleBlur('platform')}
-            required={true}
-            label="Platform"
-          />
-        </div>
+        <Platform
+          formData={formData}
+          errors={errors}
+          touched={touched}
+          onInputChange={handleInputChange}
+          onBlur={() => handleBlur('platform')}
+          required={true}
+          label="Platform"
+        />
 
         <UniqueUrl
           formData={formData}
@@ -396,7 +529,7 @@ function PostReferralForm() {
           touched={touched}
           onInputChange={handleInputChange}
           onBlur={() => handleBlur('uniqueUrl')}
-          required={false}
+          required={Boolean(formData.platform && formData.platform !== 'Other')}
           label="Job Posting URL"
         />
 

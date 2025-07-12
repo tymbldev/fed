@@ -37,7 +37,7 @@ const UniqueUrl: React.FC<UniqueUrlProps> = ({
         value={formData[fieldName] || ''}
         onChange={onInputChange}
         onBlur={() => onBlur(fieldName)}
-        className={`block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${touched[fieldName] && errors[fieldName] ? 'border-red-500' : ''}`}
+        className={`block w-full h-12 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${touched[fieldName] && errors[fieldName] ? 'border-red-500' : ''}`}
         placeholder="https://example.com/job/1"
       />
       {touched[fieldName] && errors[fieldName] && (
