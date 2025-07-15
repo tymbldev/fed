@@ -1,5 +1,6 @@
 #!/bin/bash
 
+git pull
 set -e  # Exit immediately if a command fails
 npm install next react react-dom
 DOCKER_HUB_USERNAME="tymblhubdev"
