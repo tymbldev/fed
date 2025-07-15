@@ -336,7 +336,7 @@ function PostReferralForm() {
         jobType: formData.jobType || undefined,
         currencyId: formData.currencyId ? parseInt(formData.currencyId) : undefined,
         tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()) : [],
-        skillIds: formData.skillIds ? formData.skillIds.split(',').map(id => id.trim()) : [],
+        // skillIds: formData.skillIds ? formData.skillIds.split(',').map(id => id.trim()) : [],
         company: formData.company || userProfile?.company || '',
         companyId: formData.companyId ? parseInt(formData.companyId) : (userProfile?.companyId || undefined),
         designation: formData.designation,

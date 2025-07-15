@@ -18,7 +18,21 @@ interface Referral {
   currencyId: number;
   designation: string | null;
   designationId: number;
-  salary: number;
+  minSalary: number;
+  maxSalary: number;
+  minExperience: number | null;
+  maxExperience: number | null;
+  openingCount: number;
+  jobType: string | null;
+  platform: string;
+  tags: string[];
+  uniqueUrl: string;
+  approvalStatus: string;
+  approved: number;
+  actualPostedBy: number | null;
+  superAdminPosted: boolean;
+  userRole: string | null;
+  referrerCount: number;
   active: boolean;
   postedBy: number;
   createdAt: string;
@@ -38,11 +52,6 @@ interface LocationOption {
   cityId: number;
   city: string;
   country: string;
-}
-
-interface DesignationOption {
-  id: number;
-  name: string;
 }
 
 interface Application {
@@ -75,7 +84,6 @@ export default function ReferralDetails() {
   const [referral, setReferral] = useState<Referral | null>(null);
   const [currencies, setCurrencies] = useState<{ [key: number]: string }>({});
   const [locations, setLocations] = useState<{ [key: number]: LocationOption }>({});
-  const [designations, setDesignations] = useState<{ [key: number]: string }>({});
   const [isLoading, setIsLoading] = useState(true);
   const [applicationStatus, setApplicationStatus] = useState<string | null>(null);
   const [isCheckingApplication, setIsCheckingApplication] = useState(false);
@@ -127,25 +135,7 @@ export default function ReferralDetails() {
     }
   };
 
-  const fetchDesignations = async () => {
-    try {
-      const response = await fetch(`${BASE_URL}/api/v1/dropdowns/designations`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch designations');
-      }
-      const data: DesignationOption[] = await response.json();
-      const designationMap = data.reduce((acc, designation) => {
-        acc[designation.id] = designation.name;
-        return acc;
-      }, {} as { [key: number]: string });
-      setDesignations(designationMap);
-    } catch (error) {
-      console.error('Error fetching designations:', error);
-      toast.error('Failed to fetch designations');
-    }
-  };
-
-  const fetchApplicationStatus = async () => {
+  const fetchApplicationStatus = useCallback(async () => {
     if (!isLoggedIn) {
       console.log('User not logged in, skipping application status fetch');
       return null; // Don't fetch if user is not logged in
@@ -211,7 +201,7 @@ export default function ReferralDetails() {
     } finally {
       setIsCheckingApplication(false);
     }
-  };
+  }, [isLoggedIn, params.id, referrers]);
 
   const fetchReferralDetails = useCallback(async () => {
     try {
@@ -252,7 +242,6 @@ export default function ReferralDetails() {
   useEffect(() => {
     fetchCurrencies();
     fetchLocations();
-    fetchDesignations();
     fetchReferralDetails();
     fetchReferrers();
   }, [fetchReferralDetails, fetchReferrers]);
@@ -262,7 +251,7 @@ export default function ReferralDetails() {
     if (isLoggedIn) {
       fetchApplicationStatus();
     }
-  }, [params.id, isLoggedIn]);
+  }, [params.id, isLoggedIn, fetchApplicationStatus]);
 
   // Set applied referrer once referrers are loaded and we have application data
   useEffect(() => {
@@ -270,34 +259,12 @@ export default function ReferralDetails() {
       // Re-fetch application status to get the latest data and set applied referrer
       fetchApplicationStatus();
     }
-  }, [referrers, applicationId]);
+  }, [referrers, applicationId, fetchApplicationStatus, appliedReferrer]);
 
   // Debug: Monitor applicationStatus changes
   useEffect(() => {
     console.log('applicationStatus changed to:', applicationStatus);
   }, [applicationStatus]);
-
-  // Handle pending application after successful login
-  useEffect(() => {
-    if (isLoggedIn && pendingApplication) {
-      console.log('Auth state updated, proceeding with application');
-      // Small delay to ensure all auth state is properly set
-      const timer = setTimeout(async () => {
-        // Check application status again before proceeding
-        const status = await fetchApplicationStatus();
-        console.log('Fetched status before applying:', status);
-
-        // Only proceed if user hasn't already applied
-        if (!status) {
-          handleApply();
-        } else {
-          console.log('User already applied, not proceeding with application');
-          setPendingApplication(false);
-        }
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [isLoggedIn, pendingApplication]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -307,14 +274,21 @@ export default function ReferralDetails() {
     });
   };
 
-  const formatSalary = (salary: number, currencyId: number) => {
-    return new Intl.NumberFormat('en-US', {
+    const formatSalaryRange = (minSalary: number, maxSalary: number, currencyId: number) => {
+    const currency = currencies[currencyId] || 'USD';
+    const formatter = new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: currencies[currencyId] || 'USD',
-    }).format(salary);
+      currency: currency,
+    });
+
+    if (minSalary === maxSalary) {
+      return formatter.format(minSalary);
+    }
+
+    return `${formatter.format(minSalary)} - ${formatter.format(maxSalary)}`;
   };
 
-  const handleApply = async (forceApply: boolean = false, referrerId?: number) => {
+  const handleApply = useCallback(async (forceApply: boolean = false, referrerId?: number) => {
     console.log('handleApply called, applicationStatus:', applicationStatus, 'forceApply:', forceApply, 'referrerId:', referrerId);
     // Don't proceed if already applied, unless forceApply is true
     if (applicationStatus && !forceApply) {
@@ -379,7 +353,29 @@ export default function ReferralDetails() {
       console.error('Error applying for referral:', error);
       toast.error('Failed to apply for referral');
     }
-  };
+  }, [applicationStatus, isLoggedIn, selectedReferrerId, referrers, params.id]);
+
+  // Handle pending application after successful login
+  useEffect(() => {
+    if (isLoggedIn && pendingApplication) {
+      console.log('Auth state updated, proceeding with application');
+      // Small delay to ensure all auth state is properly set
+      const timer = setTimeout(async () => {
+        // Check application status again before proceeding
+        const status = await fetchApplicationStatus();
+        console.log('Fetched status before applying:', status);
+
+        // Only proceed if user hasn't already applied
+        if (!status) {
+          handleApply();
+        } else {
+          console.log('User already applied, not proceeding with application');
+          setPendingApplication(false);
+        }
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [fetchApplicationStatus, handleApply, isLoggedIn, pendingApplication]);
 
   const handleLoginSuccess = () => {
     console.log('Login successful');
@@ -472,54 +468,91 @@ export default function ReferralDetails() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 py-12">
-      <div className="container mx-auto px-4">
-        <div className="bg-white rounded-lg shadow-sm p-8">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-4">{referral.title}</h1>
-            <div className="flex items-center text-gray-600 mb-2">
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-              </svg>
-              <span className="text-xl">{referral.company}</span>
-            </div>
-            <div className="flex items-center text-gray-600 mb-4">
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              <span className="text-xl">
-                {locations[referral.cityId]?.city}, {locations[referral.cityId]?.country}
-              </span>
-            </div>
-            <div className="flex items-center text-gray-600 mb-4">
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2h14a2 2 0 002-2v-5z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 16h.01" />
-              </svg>
-              <span className="text-xl">{formatSalary(referral.salary, referral.currencyId)}</span>
-            </div>
-            <div className="flex items-center text-gray-500">
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
+    <main className="min-h-screen bg-[#f6fafd] py-12">
+      <div className="container mx-auto px-4 max-w-4xl">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 text-left">
+          {/* Header Section */}
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-gray-900 mb-1 text-left">{referral.title}</h1>
+            <div className="text-base text-gray-500 font-medium mb-2 text-left">{referral.company}</div>
+            <div className="flex items-center text-xs text-gray-400 mb-1 text-left">
               <span>Posted on {formatDate(referral.createdAt)}</span>
             </div>
+            <hr className="my-4 border-gray-200" />
           </div>
 
-          <div className="prose max-w-none">
-            <div className="mb-6">
-              <h2 className="text-xl font-semibold mb-2">Referral Details</h2>
-              <div className="space-y-2">
-                <p><span className="font-medium">Designation:</span> {designations[referral.designationId] || 'Not specified'}</p>
-                <p><span className="font-medium">Status:</span> {referral.active ? 'Active' : 'Inactive'}</p>
+          {/* Summary Row */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-6">
+            <div>
+              <div className="text-xs text-gray-400 font-medium mb-1">Experience</div>
+              <div className="text-base font-semibold text-gray-800">
+                {referral.minExperience && referral.maxExperience
+                  ? `${referral.minExperience} - ${referral.maxExperience} yrs`
+                  : referral.minExperience
+                  ? `${referral.minExperience}+ yrs`
+                  : referral.maxExperience
+                  ? `Up to ${referral.maxExperience} yrs`
+                  : 'Not specified'}
               </div>
             </div>
+            <div>
+              <div className="text-xs text-gray-400 font-medium mb-1">Monthly Salary</div>
+              <div className="text-base font-semibold text-gray-800">
+                {formatSalaryRange(referral.minSalary, referral.maxSalary, referral.currencyId)}
+              </div>
+            </div>
+            <div>
+              <div className="text-xs text-gray-400 font-medium mb-1">Job Location</div>
+              <div className="text-base font-semibold text-gray-800">
+                {locations[referral.cityId]?.city}, {locations[referral.cityId]?.country}
+              </div>
+            </div>
+            <div>
+              <div className="text-xs text-gray-400 font-medium mb-1">Vacancy</div>
+              <div className="text-base font-semibold text-gray-800">{referral.openingCount}</div>
+            </div>
+            <div>
+              <div className="text-xs text-gray-400 font-medium mb-1">Designation</div>
+              <div className="text-base font-semibold text-gray-800">{referral.designation || 'Not specified'}</div>
+            </div>
+            <div>
+              <div className="text-xs text-gray-400 font-medium mb-1">Job Type</div>
+              <div className="text-base font-semibold text-gray-800">{referral.jobType || 'Not specified'}</div>
+            </div>
+          </div>
+          <hr className="my-4 border-gray-200" />
 
-            <h2 className="text-2xl font-semibold mb-4">Referral Description</h2>
-            <div className="whitespace-pre-wrap text-gray-700" dangerouslySetInnerHTML={{ __html: referral.description }} />
+          {/* Job Description Section */}
+          <div className="mb-6">
+            <h2 className="text-lg font-bold text-gray-900 mb-2 text-left">Job Description</h2>
+            <div className="prose max-w-none text-gray-700 whitespace-pre-wrap text-left" dangerouslySetInnerHTML={{ __html: referral.description }} />
           </div>
 
+          <hr className="my-4 border-gray-200" />
+
+
+
+          {/* Keywords as pills above the apply button */}
+          {referral.tags && referral.tags.length > 0 && (
+            <div className="mb-6">
+              <h3 className="text-base font-semibold text-gray-900 mb-2 text-left">Keywords</h3>
+              <div className="flex flex-wrap gap-3 justify-start text-left">
+                {referral.tags.map((tag, idx) => (
+                  <span
+                    key={idx}
+                    className="px-5 py-2 bg-blue-100 text-blue-800 text-sm rounded-full font-semibold min-h-[2.25rem] flex items-center"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+
+          <hr className="my-4 border-gray-200" />
+
+          {/* Application Status & Button */}
           <div className="mt-8">
             {isLoggedIn && applicationStatus && (
               <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
@@ -560,63 +593,61 @@ export default function ReferralDetails() {
               </div>
             )}
 
-
-
             <button
               onClick={() => handleApply()}
               disabled={!!applicationStatus || isCheckingApplication}
-              className={`px-6 py-3 rounded-lg transition duration-200 ${
+              className={`w-full mt-2 px-6 py-3 rounded-lg shadow font-semibold text-lg transition duration-200 ${
                 !!applicationStatus
-                  ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
-                  : 'bg-[#1a73e8] text-white hover:bg-[#1a73e8]/90'
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  : 'bg-[#1a73e8] text-white hover:bg-[#1666c1]'
               }`}
             >
-              {isCheckingApplication ? 'Checking...' : applicationStatus ? 'Applied' : 'Apply Now'}
+              {isCheckingApplication ? 'Checking...' : applicationStatus ? 'Applied' : 'Easy Apply'}
             </button>
+          </div>
 
-            {/* Referrer Information */}
-            {referrers.length > 0 && (
-              <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <h3 className="text-lg font-semibold text-blue-900 mb-3">
-                  Available Referrers ({referrers.length})
-                </h3>
-                <div className="space-y-3">
-                  {referrers.map((referrer) => (
-                    <div key={referrer.userId} className="flex items-center justify-between p-3 bg-white rounded-lg border">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                            <span className="text-blue-600 font-semibold text-sm">
-                              {referrer.userName.charAt(0).toUpperCase()}
-                            </span>
-                          </div>
-                          <div>
-                            <p className="font-medium text-gray-900">{referrer.userName}</p>
-                            <p className="text-sm text-gray-600">{referrer.designation}</p>
-                          </div>
+          {/* Referrer Information */}
+          {referrers.length > 0 && (
+            <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <h3 className="text-base font-semibold text-blue-900 mb-3">
+                Available Referrers ({referrers.length})
+              </h3>
+              <div className="space-y-3">
+                {referrers.map((referrer) => (
+                  <div key={referrer.userId} className="flex items-center justify-between p-3 bg-white rounded-lg border">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                          <span className="text-blue-600 font-semibold text-sm">
+                            {referrer.userName.charAt(0).toUpperCase()}
+                          </span>
                         </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <span>Score: {referrer.overallScore.toFixed(1)}</span>
-                          <span>•</span>
-                          <span>{referrer.numApplicationsAccepted} accepted</span>
+                        <div>
+                          <p className="font-medium text-gray-900">{referrer.userName}</p>
+                          <p className="text-sm text-gray-600">{referrer.designation}</p>
                         </div>
-                        {appliedReferrer && appliedReferrer.id === referrer.userId && (
-                          <span className="text-green-600 text-sm font-medium">Applied with</span>
-                        )}
                       </div>
                     </div>
-                  ))}
-                </div>
-                {referrers.length > 1 && !applicationStatus && (
-                  <p className="text-sm text-blue-700 mt-3">
-                    💡 Multiple referrers available. You&apos;ll be able to choose one when applying.
-                  </p>
-                )}
+                    <div className="text-right">
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <span>Score: {referrer.overallScore.toFixed(1)}</span>
+                        <span>•</span>
+                        <span>{referrer.numApplicationsAccepted} accepted</span>
+                      </div>
+                      {appliedReferrer && appliedReferrer.id === referrer.userId && (
+                        <span className="text-green-600 text-sm font-medium">Applied with</span>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
-            )}
-          </div>
+              {referrers.length > 1 && !applicationStatus && (
+                <p className="text-sm text-blue-700 mt-3">
+                  💡 Multiple referrers available. You&apos;ll be able to choose one when applying.
+                </p>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

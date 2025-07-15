@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import Companies from './components/Companies';
+import IndustriesCarousel from './components/IndustriesCarousel';
 import { useAuth } from './context/AuthContext';
 
 export default function Home() {
@@ -58,7 +58,7 @@ export default function Home() {
         <div className="absolute top-1/3 right-8 w-8 h-8 bg-secondary-400/10 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
       </section>
 
-      <Companies />
+      <IndustriesCarousel />
 
       {/* Features Section */}
       <section className="py-24 bg-gradient-to-b from-gray-50 to-white dark:from-gray-800 dark:to-gray-900">

@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { BASE_URL } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import ReferralSearch from '../components/ReferralSearch';
+import JobTuple from '../components/JobTuple';
 
 interface Referral {
   id: number;
@@ -23,7 +24,10 @@ interface Referral {
   postedBy: number;
   createdAt: string;
   updatedAt: string;
-  referrerCount?: number;
+  openingCount?: number;
+  minExperience?: number;
+  maxExperience?: number;
+  openings?: number;
 }
 
 interface Application {
@@ -69,13 +73,23 @@ interface LocationOption {
   zipCode: string;
 }
 
+interface SearchRequest {
+  page: number;
+  size: number;
+  keywords?: string[];
+  keywordId?: string;
+  countryId?: number;
+  cityId?: number;
+  minExperience?: number;
+  maxExperience?: number;
+}
+
 
 
 export default function Referrals() {
   const { isLoggedIn } = useAuth();
   const [referrals, setReferrals] = useState<Referral[]>([]);
   const [locations, setLocations] = useState<{ [key: number]: LocationOption }>({});
-  const [appliedReferrals, setAppliedReferrals] = useState<{ [key: number]: Application }>({});
   const [postedReferrals, setPostedReferrals] = useState<{ [key: number]: PostedReferral }>({});
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
@@ -115,26 +129,49 @@ export default function Referrals() {
       try {
         setIsLoading(true);
 
-        // Build query parameters
-        const params = new URLSearchParams({
-          page: page.toString(),
-          size: '10'
-        });
+        // Prepare request body for POST API
+        const requestBody: SearchRequest = {
+          page: page,
+          size: 10
+        };
 
         // Add search filters if they exist
-        if (searchFilters.keywordId) params.append('keywordId', searchFilters.keywordId);
-        if (searchFilters.keyword) params.append('keyword', searchFilters.keyword);
-        if (searchFilters.countryId) params.append('countryId', searchFilters.countryId);
-        if (searchFilters.cityId) params.append('cityId', searchFilters.cityId);
-        if (searchFilters.experience) params.append('experience', searchFilters.experience);
+        if (searchFilters.keywordId) requestBody.keywordId = searchFilters.keywordId;
+        if (searchFilters.keyword) requestBody.keywords = [searchFilters.keyword];
+        if (searchFilters.countryId) requestBody.countryId = parseInt(searchFilters.countryId);
+        if (searchFilters.cityId) requestBody.cityId = parseInt(searchFilters.cityId);
+        if (searchFilters.experience) {
+          const experienceValue = parseInt(searchFilters.experience);
+          requestBody.minExperience = experienceValue;
+          requestBody.maxExperience = experienceValue;
+        }
 
-        const response = await fetch(`${BASE_URL}/api/v1/jobsearch?${params.toString()}`);
+        const response = await fetch(`${BASE_URL}/api/v1/jobsearch/search`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestBody)
+        });
         if (!response.ok) {
           throw new Error('Failed to fetch referrals');
         }
-        const data = await response.json();
-        setReferrals(data.content);
-        setTotalPages(data.totalPages);
+                const data = await response.json();
+        console.log('API Response:', data);
+        console.log('Response type:', typeof data);
+        console.log('Is array?', Array.isArray(data));
+        console.log('Has content property?', data && typeof data === 'object' && 'content' in data);
+
+        // Handle different response structures
+        const referralsData = data.jobs || data.content || data.data || data || [];
+        const totalPagesData = data.totalPages || data.total || 0;
+
+        console.log('Processed referralsData:', referralsData);
+        console.log('Processed totalPagesData:', totalPagesData);
+        console.log('Final referrals array:', Array.isArray(referralsData) ? referralsData : []);
+
+        setReferrals(Array.isArray(referralsData) ? referralsData : []);
+        setTotalPages(totalPagesData);
       } catch (error) {
         toast.error('Failed to fetch referrals');
         console.error('Error fetching referrals:', error);
@@ -188,7 +225,7 @@ export default function Referrals() {
 
         console.log('Final appliedReferralsMap:', appliedReferralsMap);
         console.log('Map keys:', Object.keys(appliedReferralsMap));
-        setAppliedReferrals(appliedReferralsMap);
+        // setAppliedReferrals(appliedReferralsMap); // This line is removed as per the edit hint
       } catch (error) {
         console.error('Error fetching applied referrals:', error);
         // Don't show error toast for this as it might be expected for non-logged in users
@@ -241,42 +278,17 @@ export default function Referrals() {
       fetchPostedReferrals();
     } else {
       // Clear the state when user is not logged in
-      setAppliedReferrals({});
+      // setAppliedReferrals({}); // This line is removed as per the edit hint
       setPostedReferrals({});
     }
   }, [currentPage, isLoggedIn, searchFilters]);
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
 
-  const getLocationDisplay = (referral: Referral) => {
-    const location = locations[referral.cityId];
-    if (!location) return 'Location not specified';
-    return `${location.city}, ${location.country}`;
-  };
-
-  const isReferralApplied = (jobId: number) => {
-    const isApplied = appliedReferrals[jobId] !== undefined;
-    console.log(`Checking referral ${jobId}:`, {
-      isApplied,
-      appliedReferralsKeys: Object.keys(appliedReferrals),
-      appliedReferralsValue: appliedReferrals[jobId]
-    });
-    return isApplied;
-  };
-
-  const getApplicationStatus = (jobId: number) => {
-    const application = appliedReferrals[jobId];
-    return application ? application.status : null;
-  };
 
   const isReferralPostedByUser = (jobId: number) => {
-    return postedReferrals[jobId] !== undefined;
+    const isPosted = postedReferrals[jobId] !== undefined;
+    console.log(`isReferralPostedByUser(${jobId}): ${isPosted}, postedReferrals keys:`, Object.keys(postedReferrals));
+    return isPosted;
   };
 
   const handleSearch = (searchData: {
@@ -291,7 +303,18 @@ export default function Referrals() {
   };
 
   // Filter out referrals that are posted by the current user
-  const filteredReferrals = referrals.filter(referral => !isReferralPostedByUser(referral.id));
+  console.log('Current referrals state:', referrals);
+  console.log('Current postedReferrals state:', postedReferrals);
+  console.log('Is logged in:', isLoggedIn);
+
+    // Filter out referrals that are posted by the current user
+  const filteredReferrals = (referrals || []).filter(referral => {
+    const isPostedByUser = isReferralPostedByUser(referral.id);
+    console.log(`Referral ${referral.id} - isPostedByUser: ${isPostedByUser}`);
+    return !isPostedByUser;
+  });
+
+  console.log('Filtered referrals:', filteredReferrals);
 
   return (
     <main className="min-h-screen bg-gray-50 py-12">
@@ -326,43 +349,19 @@ export default function Referrals() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {filteredReferrals.map((referral) => (
-              <Link key={referral.id} href={`/referrals/${referral.id}`} className="block">
-                <div className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition duration-200 cursor-pointer">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
-                    <div>
-                      <h3 className="text-xl font-semibold mb-2">{referral.title}</h3>
-                      <div className="flex items-center text-gray-600 mb-2">
-                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                        </svg>
-                        <span>{referral.company}</span>
-                      </div>
-                      <div className="flex items-center text-gray-600">
-                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        <span>{getLocationDisplay(referral)}</span>
-                      </div>
-                    </div>
-
-                  </div>
-                  <div className="flex flex-wrap gap-2 mt-4">
-                    <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">{formatDate(referral.createdAt)}</span>
-                    {referral.referrerCount && referral.referrerCount > 0 && (
-                      <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
-                        {referral.referrerCount} Referrer{referral.referrerCount > 1 ? 's' : ''} Available
-                      </span>
-                    )}
-                    {isReferralApplied(referral.id) && (
-                      <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
-                        Applied - {getApplicationStatus(referral.id)}
-                      </span>
-                    )}
-                  </div>
-
-                </div>
-              </Link>
+              <JobTuple
+                key={referral.id}
+                id={referral.id}
+                title={referral.title}
+                description={referral.description}
+                company={referral.company}
+                cityId={referral.cityId}
+                minExperience={referral.minExperience}
+                maxExperience={referral.maxExperience}
+                openingCount={referral.openingCount}
+                createdAt={referral.createdAt}
+                locations={locations}
+              />
             ))}
           </div>
         )}
