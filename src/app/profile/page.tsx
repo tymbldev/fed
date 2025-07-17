@@ -24,7 +24,7 @@ import LinkedIn from '../components/fields/LinkedIn';
 import GitHub from '../components/fields/GitHub';
 import Resume from '../components/fields/Resume';
 
-export default function Profile() {
+function ProfileContent() {
   const { userProfile, fetchUserProfile } = useAuth();
   const [formData, setFormData] = useState<{ [key: string]: string }>({});
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -431,4 +431,8 @@ export default function Profile() {
       </div>
     </main>
   );
+}
+
+export default function Profile() {
+  return <ProfileContent />;
 }

@@ -47,7 +47,10 @@ export function middleware(request: NextRequest) {
   // Redirect logic
   if (isProtectedRoute && !isAuthenticated) {
     // Redirect to login if trying to access protected route while not authenticated
-    return NextResponse.redirect(new URL('/login', request.url));
+    // Include the original URL as a redirect parameter
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set('redirect', path);
+    return NextResponse.redirect(loginUrl);
   }
 
   if (isPublicRoute && isAuthenticated) {

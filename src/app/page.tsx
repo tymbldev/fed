@@ -1,16 +1,17 @@
-'use client';
-
 import React from 'react';
 import Link from 'next/link';
-import IndustriesCarousel from './components/IndustriesCarousel';
-import { useAuth } from './context/AuthContext';
+import { fetchIndustries } from './utils/serverData';
+import AuthDependentContent from './components/AuthDependentContent';
+import AuthDependentCTA from './components/AuthDependentCTA';
+import IndustriesCarousel from "./components/IndustriesCarousel";
 
-export default function Home() {
-  const { isLoggedIn } = useAuth();
+export default async function Home() {
+  // Get industries data on the server
+  const industries = await fetchIndustries();
 
   return (
     <main className="min-h-screen bg-white dark:bg-gray-900">
-      {/* Hero Section */}
+      {/* Hero Section - SSR */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary-500/20 via-secondary-500/15 to-primary-400/10 dark:from-primary-400/20 dark:via-secondary-400/15 dark:to-primary-300/10 animate-pulse"></div>
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent dark:via-gray-800/5"></div>
@@ -36,16 +37,9 @@ export default function Home() {
                     Explore Opportunities
                   </span>
                 </Link>
-                {!isLoggedIn && (
-                  <Link href="/register" className="btn btn-outline text-lg px-8 py-[14px] transform hover:scale-105 transition-all duration-300 border-2">
-                    <span className="flex items-center gap-2">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                      </svg>
-                      Join Our Network
-                    </span>
-                  </Link>
-                )}
+
+                {/* Auth-dependent content */}
+                <AuthDependentContent />
               </div>
             </div>
           </div>
@@ -58,9 +52,10 @@ export default function Home() {
         <div className="absolute top-1/3 right-8 w-8 h-8 bg-secondary-400/10 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
       </section>
 
-      <IndustriesCarousel />
 
-      {/* Features Section */}
+      <IndustriesCarousel industries={industries} />
+
+      {/* Features Section - SSR */}
       <section className="py-24 bg-gradient-to-b from-gray-50 to-white dark:from-gray-800 dark:to-gray-900">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
@@ -112,7 +107,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Stats Section */}
+      {/* Stats Section - SSR */}
       <section className="py-16 bg-gradient-to-r from-primary-500 to-secondary-500 dark:from-primary-400 dark:to-secondary-400">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
@@ -136,7 +131,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* CTA Section - SSR with auth-dependent parts */}
       <section className="py-24 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 dark:from-black dark:via-gray-900 dark:to-black relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent"></div>
         <div className="container mx-auto px-4 text-center relative z-10">
@@ -150,16 +145,9 @@ export default function Home() {
             </span>
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-            {!isLoggedIn && (
-              <Link href="/register" className="btn bg-gradient-to-r from-primary-500 to-secondary-500 hover:from-primary-600 hover:to-secondary-600 text-white text-lg px-10 py-5 transform hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-primary-500/25">
-                <span className="flex items-center gap-3">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                  Start Your Journey
-                </span>
-              </Link>
-            )}
+            {/* Auth-dependent CTA buttons */}
+            <AuthDependentCTA />
+
             <Link href="/referrals" className="btn border-2 border-white text-white hover:bg-white hover:text-gray-900 text-lg px-10 py-5 transform hover:scale-105 transition-all duration-300">
               <span className="flex items-center gap-3">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

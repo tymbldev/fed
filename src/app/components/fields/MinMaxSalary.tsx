@@ -39,7 +39,7 @@ const MinMaxSalary: React.FC<MinMaxSalaryProps> = ({
   currencyFieldName
 }) => {
   const [currencies, setCurrencies] = useState<CurrencyOption[]>([]);
-  console.log(minSalaryLabel, maxSalaryLabel);
+  // console.log(minSalaryLabel, maxSalaryLabel);
   useEffect(() => {
     const loadCurrencies = async () => {
       try {

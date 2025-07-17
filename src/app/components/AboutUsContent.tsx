@@ -1,7 +1,11 @@
-import React from 'react';
-import AuthDependentWelcome from '../components/AuthDependentWelcome';
+'use client';
 
-export default function AboutUs() {
+import React from 'react';
+import { useAuth } from '../context/AuthContext';
+
+export default function AboutUsContent() {
+  const { isLoggedIn } = useAuth();
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <h1 className="text-4xl font-bold text-gray-900 mb-8">About TymblHub</h1>
@@ -23,8 +27,13 @@ export default function AboutUs() {
           </p>
         </section>
 
-        {/* Auth-dependent welcome message */}
-        <AuthDependentWelcome />
+        {isLoggedIn && (
+          <div className="bg-green-50 p-6 rounded-lg mb-8">
+            <p className="text-green-800 font-medium">
+              Welcome back! You&apos;re logged in and can access all our features.
+            </p>
+          </div>
+        )}
 
         <section className="mb-12">
           <h2 className="text-3xl font-semibold text-gray-900 mb-6">Why Choose TymblHub?</h2>

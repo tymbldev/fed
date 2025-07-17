@@ -1,55 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import { BASE_URL } from '../services/api';
+import React from 'react';
 import GenericCarousel from './common/GenericCarousel';
 import IndustryCard from './IndustryCard';
+import { Industry } from '../utils/serverData';
 
-interface Company {
-  companyId: number;
-  companyName: string;
-  logoUrl: string;
-  website: string;
-  headquarters: string;
-  activeJobCount: number;
+interface IndustriesCarouselProps {
+  industries: Industry[];
 }
 
-interface Industry {
-  industryId: number;
-  industryName: string;
-  industryDescription: string;
-  companyCount: number;
-  topCompanies: Company[];
-}
-
-const IndustriesCarousel: React.FC = () => {
-  const [industries, setIndustries] = useState<Industry[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchIndustries = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await fetch(`${BASE_URL}/api/v1/companies/industry-wise-companies`);
-        if (!res.ok) throw new Error('Failed to fetch industries');
-        const data = await res.json();
-        setIndustries(data);
-      } catch (err: unknown) {
-        let message = 'Error fetching industries';
-        if (err instanceof Error) message = err.message;
-        setError(message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchIndustries();
-  }, []);
-
-  if (loading) {
-    return <div className="w-full flex justify-center items-center py-12">Loading industries...</div>;
-  }
-  if (error) {
-    return <div className="w-full flex justify-center items-center py-12 text-red-500">{error}</div>;
+const IndustriesCarousel: React.FC<IndustriesCarouselProps> = ({ industries }) => {
+  if (!industries || industries.length === 0) {
+    return <div className="w-full flex justify-center items-center py-12">No industries available</div>;
   }
 
   return (
@@ -58,7 +18,7 @@ const IndustriesCarousel: React.FC = () => {
       viewAllLink={{ href: "/industries", text: "View All" }}
     >
       {industries.slice(0, 50).map((industry) => (
-        <div key={industry.industryId} className="pb-2 bg-transparent">
+        <div key={industry.industryId} className="pb-4 bg-transparent">
           <IndustryCard industry={industry} />
         </div>
       ))}

@@ -30,7 +30,7 @@ const IndustryCard: React.FC<IndustryCardProps> = ({ industry }) => {
   return (
     <Link
       href={`/industries/${industry.industryId}`}
-      className="block bg-white dark:bg-gray-50 rounded-[20px] shadow-lg min-w-[300px] max-w-[220px] flex-shrink-0 p-6 flex flex-col justify-between transition-shadow duration-300 hover:shadow-xl h-[200px] hover:scale-105 transition-transform"
+      className="block bg-white dark:bg-gray-50 rounded-[20px] shadow-lg w-full min-w-[220px] max-w-full sm:min-w-[300px] sm:max-w-[220px] flex-shrink-0 p-6 flex flex-col justify-between transition-shadow duration-300 hover:shadow-xl h-[200px] hover:scale-105 transition-transform"
     >
       <div className="flex-1">
         <div className="flex items-center justify-between mb-2">

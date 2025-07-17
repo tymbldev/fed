@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Designation from './fields/Designation';
 import Location from './fields/Location';
 import SingleExperience from './fields/SingleExperience';
@@ -17,16 +17,24 @@ interface SearchFormData {
 interface ReferralSearchProps {
   onSearch: (searchData: SearchFormData) => void;
   className?: string;
+  initialValues?: SearchFormData;
 }
 
-export default function ReferralSearch({ onSearch, className = '' }: ReferralSearchProps) {
+export default function ReferralSearch({ onSearch, className = '', initialValues }: ReferralSearchProps) {
   const [formData, setFormData] = useState<SearchFormData>({
-    keyword: '',
-    keywordId: '',
-    countryId: '',
-    cityId: '',
-    experience: ''
+    keyword: initialValues?.keyword || '',
+    keywordId: initialValues?.keywordId || '',
+    countryId: initialValues?.countryId || '',
+    cityId: initialValues?.cityId || '',
+    experience: initialValues?.experience || ''
   });
+
+  // Update form data when initialValues change
+  useEffect(() => {
+    if (initialValues) {
+      setFormData(initialValues);
+    }
+  }, [initialValues]);
 
   const [errors] = useState<{ [key: string]: string }>({});
   const [touched, setTouched] = useState<{ [key: string]: boolean }>({});

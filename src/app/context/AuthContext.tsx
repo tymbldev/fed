@@ -70,13 +70,27 @@ interface AuthContextType {
   setUserProfile: (profile: UserProfile | null) => void;
   fetchUserProfile: () => Promise<void>;
   checkAuthState: () => Promise<void>;
+  // New props for SSR support
+  initialAuthState?: {
+    isLoggedIn: boolean;
+    userProfile: UserProfile | null;
+  };
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+interface AuthProviderProps {
+  children: ReactNode;
+  initialAuthState?: {
+    isLoggedIn: boolean;
+    userProfile: UserProfile | null;
+  };
+}
+
+export function AuthProvider({ children, initialAuthState }: AuthProviderProps) {
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(initialAuthState?.isLoggedIn ?? false);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(initialAuthState?.userProfile ?? null);
+  const [isInitialized, setIsInitialized] = useState<boolean>(!!initialAuthState);
 
   const fetchUserProfile = useCallback(async () => {
     try {
@@ -122,9 +136,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [fetchUserProfile]);
 
   useEffect(() => {
-    // Check for auth_token cookie after component mounts to avoid hydration mismatch
-    checkAuthState();
-  }, [checkAuthState]);
+    // If we have initial auth state, use it and mark as initialized
+    if (initialAuthState) {
+      setIsInitialized(true);
+      return;
+    }
+
+    // Otherwise, check auth state after component mounts
+    checkAuthState().finally(() => {
+      setIsInitialized(true);
+    });
+  }, [checkAuthState, initialAuthState]);
+
+  // Don't render children until auth is initialized to prevent hydration mismatch
+  if (!isInitialized) {
+    return null;
+  }
 
   return (
     <AuthContext.Provider value={{
@@ -133,7 +160,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       userProfile,
       setUserProfile,
       fetchUserProfile,
-      checkAuthState
+      checkAuthState,
+      initialAuthState
     }}>
       {children}
     </AuthContext.Provider>

@@ -1,106 +1,46 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
 import Image from "next/image";
-import { BASE_URL } from "../../services/api";
-import JobTuple from "../../components/JobTuple";
+import { fetchCompanyDetails, fetchLocations } from "../../utils/serverData";
+import CompanyJobsClient from "./CompanyJobsClient";
 
-interface LocationOption {
-  id: number;
-  addressLine1: string | null;
-  addressLine2: string | null;
-  city: string;
-  cityId: number;
-  country: string;
-  countryId: number;
-  displayName: string;
-  locationDisplay: string;
-  remote: boolean;
-  state: string;
-  zipCode: string;
-}
+async function getServerData(companyId: string) {
+  try {
+    // Fetch all data in parallel
+    const [company, locations] = await Promise.all([
+      fetchCompanyDetails(companyId),
+      fetchLocations()
+    ]);
 
-interface Job {
-  id: number;
-  title: string;
-  description: string;
-  designation: string;
-  salary: number;
-  currencyId: number;
-  company: string;
-  cityId: number;
-  minExperience?: number;
-  maxExperience?: number;
-  openingCount?: number;
-  createdAt: string;
-}
-
-interface Company {
-  id: number;
-  name: string;
-  description?: string;
-  logoUrl: string;
-  aboutUs?: string;
-  vision?: string;
-  mission?: string;
-  culture?: string;
-  companySize?: string;
-  headquarters?: string;
-  primaryIndustryId?: number;
-  secondaryIndustries?: string;
-  specialties?: string;
-  createdAt?: string;
-  updatedAt?: string;
-  jobs: Job[];
-}
-
-export default function CompanyPage() {
-  const { id } = useParams();
-  const [company, setCompany] = useState<Company | null>(null);
-  const [locations, setLocations] = useState<{ [key: number]: LocationOption }>({});
-  const [loading, setLoading] = useState(true);
-
-  const fetchLocations = async () => {
-    try {
-      const response = await fetch(`${BASE_URL}/api/v1/dropdowns/locations`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch locations');
-      }
-      const data: LocationOption[] = await response.json();
-      const locationMap = data.reduce((acc, location) => {
-        acc[location.cityId] = location;
-        return acc;
-      }, {} as { [key: number]: LocationOption });
-      setLocations(locationMap);
-    } catch (error) {
-      console.error('Error fetching locations:', error);
+    if (!company) {
+      return null;
     }
-  };
 
-  useEffect(() => {
-    const fetchCompany = async () => {
-      try {
-        const res = await fetch(`${BASE_URL}/api/v1/companies/${id}`);
-        if (res.ok) {
-          const data = await res.json();
-          setCompany(data);
-        }
-      } catch {
-        // handle error
-      } finally {
-        setLoading(false);
-      }
+    return {
+      company,
+      locations
     };
+  } catch (error) {
+    console.error('Error fetching server data:', error);
+    return null;
+  }
+}
 
-    if (id) {
-      fetchLocations();
-      fetchCompany();
-    }
-  }, [id]);
+export default async function CompanyPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const data = await getServerData(id);
 
-  if (loading) return <div className="text-center py-12">Loading...</div>;
-  if (!company) return <div className="text-center py-12">Company not found.</div>;
+  if (!data) {
+    return (
+      <div className="max-w-4xl mx-auto py-12 px-4">
+        <div className="text-center py-12 text-red-500">Company not found</div>
+      </div>
+    );
+  }
+
+  const { company, locations } = data;
 
   return (
     <div className="max-w-4xl mx-auto py-12 px-4">
@@ -131,8 +71,6 @@ export default function CompanyPage() {
           </div>
         </div>
       </div>
-
-
 
       {/* Company Information Grid */}
       <div className="grid md:grid-cols-2 gap-8 mb-12">
@@ -191,33 +129,7 @@ export default function CompanyPage() {
       {/* Jobs Section */}
       <div>
         <h2 className="text-2xl font-semibold mb-6">Open Positions</h2>
-        {company.jobs && company.jobs.length > 0 ? (
-          <div className="grid gap-4">
-            {company.jobs.map((job) => (
-              <JobTuple
-                key={job.id}
-                id={job.id}
-                title={job.title}
-                description={job.description}
-                company={job.company}
-                cityId={job.cityId}
-                minExperience={job.minExperience}
-                maxExperience={job.maxExperience}
-                openingCount={job.openingCount}
-                createdAt={job.createdAt}
-                locations={locations}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-12 text-gray-500">
-            <svg className="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m8 0V6a2 2 0 00-2-2H8a2 2 0 00-2 2v2m8 0v8a2 2 0 01-2 2H8a2 2 0 01-2-2V6" />
-            </svg>
-            <p className="text-lg">No open positions at the moment</p>
-            <p className="text-sm">Check back later for new opportunities</p>
-          </div>
-        )}
+        <CompanyJobsClient jobs={company.jobs} locations={locations} />
       </div>
     </div>
   );

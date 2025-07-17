@@ -39,7 +39,7 @@ const InputField: React.FC<InputFieldProps> = ({
   maxLength,
   pattern
 }) => {
-  console.log("InputField", name, label, placeholder);
+  // console.log("InputField", name, label, placeholder);
   return (
     <div className="w-full mb-4">
       <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-2">

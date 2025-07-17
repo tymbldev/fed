@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useRef, useEffect } from 'react';
 
 interface GenericCarouselProps {
@@ -67,7 +69,7 @@ const GenericCarousel: React.FC<GenericCarouselProps> = ({
     <section className={`py-10 pb-6 bg-white dark:bg-gray-900 ${className}`}>
       <div className="container mx-auto px-4">
         {(title || viewAllLink) && (
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex justify-between mb-6">
             {title && (
               <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
                 {title}
@@ -76,7 +78,7 @@ const GenericCarousel: React.FC<GenericCarouselProps> = ({
             {viewAllLink && (
               <a
                 href={viewAllLink.href}
-                className="text-[#5B4EFF] font-semibold hover:underline text-lg"
+                className="text-[#5B4EFF] font-semibold hover:underline text-lg whitespace-nowrap"
               >
                 {viewAllLink.text}
               </a>
@@ -87,7 +89,7 @@ const GenericCarousel: React.FC<GenericCarouselProps> = ({
           {showNavigation && canScrollLeft && (
             <button
               onClick={() => scroll('left')}
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white dark:bg-gray-800 shadow-lg rounded-full flex items-center justify-center hover:scale-110 transition-transform duration-200"
+              className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white dark:bg-gray-800 shadow-lg rounded-full items-center justify-center hover:scale-110 transition-transform duration-200"
               aria-label="Scroll left"
             >
               <svg className="w-6 h-6 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -108,7 +110,7 @@ const GenericCarousel: React.FC<GenericCarouselProps> = ({
           {showNavigation && canScrollRight && (
             <button
               onClick={() => scroll('right')}
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white dark:bg-gray-800 shadow-lg rounded-full flex items-center justify-center hover:scale-110 transition-transform duration-200"
+              className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white dark:bg-gray-800 shadow-lg rounded-full items-center justify-center hover:scale-110 transition-transform duration-200"
               aria-label="Scroll right"
             >
               <svg className="w-6 h-6 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">

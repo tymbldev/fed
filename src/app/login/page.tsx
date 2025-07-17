@@ -2,9 +2,13 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import LoginForm from '../components/auth/LoginForm';
 
 export default function Login() {
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirect') || '/profile';
+
   return (
     <LoginForm
       title="Welcome back"
@@ -17,7 +21,7 @@ export default function Login() {
         </>
       }
       showLinks={true}
-      redirectTo="/profile"
+      redirectTo={redirectTo}
     />
   );
 }
