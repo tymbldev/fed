@@ -180,15 +180,6 @@ export default async function ReferralsPage({
           <ClientReferralSearch />
         </div>
 
-        {/* Login prompt for unauthenticated users */}
-        {!isLoggedIn && (
-          <div className="mb-8 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-blue-700 text-sm">
-              💡 <Link href="/login" className="underline font-medium">Log in</Link> to see your application status for referrals you&apos;ve applied to.
-            </p>
-          </div>
-        )}
-
         {/* Referral Listings SSR */}
         {referralsData.referrals.length === 0 ? (
           <div className="text-center py-8">
