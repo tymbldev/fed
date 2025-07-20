@@ -361,8 +361,7 @@ function ProfileContent() {
                 required={true}
                 salaryFieldName="currentSalary"
                 currencyFieldName="currentSalaryCurrencyId"
-                currencyLabel="Current Salary Currency"
-                salaryLabel="dfdf"
+                label="Monthly Salary"
               />
             </div>
 

@@ -315,10 +315,9 @@ function RegisterForm() {
                 onInputChange={handleInputChange}
                 onBlur={(field) => setTouched(prev => ({ ...prev, [field]: true }))}
                 required={true}
-                currencyLabel="Select Currency"
-                salaryLabel="Annual Salary"
                 salaryFieldName="currentSalary"
                 currencyFieldName="currentSalaryCurrencyId"
+                label="Monthly Salary"
               />
             </div>
           </div>

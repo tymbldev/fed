@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import ReferralSearch from './ReferralSearch';
+import LoadingSpinner from './ui/LoadingSpinner';
 
 interface SearchFormData {
   [key: string]: string;
@@ -22,6 +23,7 @@ interface GlobalSearchModalProps {
 export default function GlobalSearchModal({ isOpen, onClose, initialValues }: GlobalSearchModalProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [isLoading, setIsLoading] = useState(false);
 
   const [currentSearchData, setCurrentSearchData] = useState<SearchFormData>({
     keyword: initialValues?.keyword || searchParams.get('keyword') || '',
@@ -38,27 +40,37 @@ export default function GlobalSearchModal({ isOpen, onClose, initialValues }: Gl
     }
   }, [initialValues]);
 
-  const handleSearch = (searchData: SearchFormData) => {
-    // Create new URLSearchParams with current search params
-    const params = new URLSearchParams(searchParams.toString());
+  const handleSearch = async (searchData: SearchFormData) => {
+    setIsLoading(true);
 
-    // Update with new search data
-    Object.entries(searchData).forEach(([key, value]) => {
-      if (value) {
-        params.set(key, value);
-      } else {
-        params.delete(key);
-      }
-    });
+    try {
+      // Create new URLSearchParams with current search params
+      const params = new URLSearchParams(searchParams.toString());
 
-    // Reset to page 0 for new searches
-    params.set('page', '0');
+      // Update with new search data
+      Object.entries(searchData).forEach(([key, value]) => {
+        if (value) {
+          params.set(key, value);
+        } else {
+          params.delete(key);
+        }
+      });
 
-    // Update URL and navigate to referrals page
-    router.push(`/referrals?${params.toString()}`);
+      // Reset to page 0 for new searches
+      params.set('page', '0');
 
-    // Close the modal
-    onClose();
+      // Update URL and navigate to referrals page
+      await router.push(`/referrals?${params.toString()}`);
+
+      // Close the modal after navigation is complete
+      onClose();
+    } catch (error) {
+      console.error('Navigation error:', error);
+      // Still close the modal even if there's an error
+      onClose();
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -68,7 +80,7 @@ export default function GlobalSearchModal({ isOpen, onClose, initialValues }: Gl
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black bg-opacity-50 z-40"
-        onClick={onClose}
+        onClick={isLoading ? undefined : onClose}
       />
 
       {/* Modal */}
@@ -86,9 +98,14 @@ export default function GlobalSearchModal({ isOpen, onClose, initialValues }: Gl
                 </p>
               </div>
               <button
-                onClick={onClose}
-                className="p-3 rounded-full hover:bg-gray-100 transition-colors"
+                onClick={isLoading ? undefined : onClose}
+                className={`p-3 rounded-full transition-colors ${
+                  isLoading
+                    ? 'opacity-50 cursor-not-allowed'
+                    : 'hover:bg-gray-100'
+                }`}
                 aria-label="Close search"
+                disabled={isLoading}
               >
                 <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -100,10 +117,17 @@ export default function GlobalSearchModal({ isOpen, onClose, initialValues }: Gl
           {/* Modal Content */}
           <div className="flex-1 flex p-8 md:pt-32">
             <div className="container mx-auto px-4">
-              <ReferralSearch
-                onSearch={handleSearch}
-                initialValues={currentSearchData}
-              />
+              {isLoading ? (
+                <div className="flex flex-col items-center justify-center h-full">
+                  <LoadingSpinner size="lg" />
+                  <p className="mt-4 text-lg text-gray-600">Navigating to search results...</p>
+                </div>
+              ) : (
+                <ReferralSearch
+                  onSearch={handleSearch}
+                  initialValues={currentSearchData}
+                />
+              )}
             </div>
           </div>
         </div>

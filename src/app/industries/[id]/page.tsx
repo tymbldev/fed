@@ -3,87 +3,160 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { BASE_URL } from './../../services/api';
 import IndustryDropdown from './../../components/IndustryDropdown';
+import Pagination from './../../components/Pagination';
 
 interface Company {
-  companyId: number;
-  companyName: string;
-  logoUrl: string;
-  headquarters: string;
+  id: number;
+  name: string;
+  description: string;
   website: string;
-  activeJobCount: number;
+  logoUrl: string;
+  createdAt: string | null;
+  updatedAt: string;
+  aboutUs: string;
+  vision: string;
+  mission: string;
+  culture: string;
+  jobs: unknown[];
+  careerPageUrl: string;
+  linkedinUrl: string;
+  headquarters: string;
+  primaryIndustryId: number;
+  secondaryIndustries: string;
   companySize: string;
   specialties: string;
+  activeJobCount?: number;
 }
 
-interface Industry {
-  industryId: number;
-  industryName: string;
-  industryDescription: string;
-  companyCount: number;
-  topCompanies: Company[];
+
+
+interface SpringBootPagination {
+  sort: {
+    sorted: boolean;
+    empty: boolean;
+    unsorted: boolean;
+  };
+  pageNumber: number;
+  pageSize: number;
+  offset: number;
+  paged: boolean;
+  unpaged: boolean;
 }
 
-async function getIndustryWiseCompanies(): Promise<Industry[]> {
-  const res = await fetch(`${BASE_URL}/api/v1/companies/industry-wise-companies`, {
-    next: { revalidate: 3600 } // Cache for 1 hour
+interface SpringBootSort {
+  sorted: boolean;
+  empty: boolean;
+  unsorted: boolean;
+}
+
+interface CompaniesResponse {
+  content: Company[];
+  pageable: SpringBootPagination;
+  last: boolean;
+  totalPages: number;
+  totalElements: number;
+  first: boolean;
+  size: number;
+  number: number;
+  sort: SpringBootSort;
+  numberOfElements: number;
+  empty: boolean;
+}
+
+async function getIndustries(): Promise<{ id: string; name: string }[]> {
+  const res = await fetch(`${BASE_URL}/api/v1/dropdowns/industries`, {
+    next: { revalidate: 0 } // Cache for 1 hour
   });
   if (!res.ok) throw new Error('Failed to fetch industries');
   return res.json();
 }
 
-const IndustryPage = async ({ params }: { params: Promise<{ id: string }> }) => {
+async function getCompaniesByIndustry(industryId: number, page: number = 0, limit: number = 12): Promise<CompaniesResponse> {
+  const res = await fetch(`${BASE_URL}/api/v1/companies/by-industry/${industryId}?page=${page}&limit=${limit}`, {
+    next: { revalidate: 0 } // Cache for 1 hour
+  });
+  if (!res.ok) throw new Error('Failed to fetch companies');
+  return res.json();
+}
+
+const IndustryPage = async ({
+  params,
+  searchParams
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ page?: string }>;
+}) => {
   const { id } = await params;
-  const industries = await getIndustryWiseCompanies();
-  console.log(industries);
-  const selectedIndustry = industries.find(i => i.industryId === Number(id));
+  const { page } = await searchParams;
+  const currentPage = parseInt(page || '1');
+
+  const industries = await getIndustries();
+  const selectedIndustry = industries.find(i => i.id.toString() === id.toString());
+
   if (!selectedIndustry) {
     return <div className="p-8">Industry not found.</div>;
   }
 
+  const companiesData = await getCompaniesByIndustry(Number(id), currentPage - 1, 12);
+
   return (
-    <div>
-      <div className="bg-blue-600 text-white p-8 rounded-b-2xl">
-        <h1 className="text-3xl font-bold">Companies hiring on NaukriGulf</h1>
-        <div className="mt-2">
-          Industry: <IndustryDropdown industries={industries} selectedId={id} />
+    <div className="container mx-auto px-4 py-8">
+      {/* Page Header */}
+      <div className="mb-8">
+        <div className="mb-6">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white float-left">
+            Companies hiring in
+          </h1>
+          <IndustryDropdown industries={industries} selectedId={id} />
         </div>
+        <p className="text-lg text-gray-600 dark:text-gray-300">
+          Showing {companiesData.content.length} of {companiesData.totalElements} companies
+        </p>
       </div>
-      <div className="container mx-auto mt-8">
-        <h2 className="text-xl mb-4">Showing {selectedIndustry.topCompanies.length} companies</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mb-10">
-          {selectedIndustry.topCompanies.map(company => (
-            <Link key={company.companyId} href={`/companies/${company.companyId}`}>
-              <div className="bg-white rounded-xl shadow p-6 flex flex-col items-center hover:shadow-lg transition-shadow cursor-pointer">
-                {company.logoUrl && (
-                  <Image
-                    src={company.logoUrl}
-                    alt={company.companyName}
-                    width={64}
-                    height={64}
-                    className="h-16 mb-4 object-contain"
-                  />
-                )}
-                <div className="font-semibold text-lg text-center mb-2">{company.companyName}</div>
-                <div className="text-sm text-gray-600 text-center mb-3">
-                  {company.activeJobCount > 1 ? `${company.activeJobCount} Openings` : "No Openings"}
-                </div>
-                {company.specialties && (
-                  <div className="flex flex-wrap gap-1 justify-center">
-                    {company.specialties.split(', ').slice(0, 3).map((specialty: string, index: number) => (
-                      <span
-                        key={index}
-                        className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
-                      >
-                        {specialty.trim()}
-                      </span>
-                    ))}
-                  </div>
-                )}
+
+      {/* Companies Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mb-10">
+        {companiesData.content.map(company => (
+          <Link key={company.id} href={`/companies/${company.id}`}>
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-shadow cursor-pointer p-6 flex flex-col items-center border border-gray-200 dark:border-gray-700">
+              {company.logoUrl && (
+                <Image
+                  src={company.logoUrl}
+                  alt={company.name}
+                  width={64}
+                  height={64}
+                  className="h-16 mb-4 object-contain"
+                />
+              )}
+              <div className="font-semibold text-lg text-center mb-2 text-gray-900 dark:text-white">{company.name}</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300 text-center mb-3">
+                {company.activeJobCount && company.activeJobCount > 1 ? `${company.activeJobCount} Openings` : "No Openings"}
               </div>
-            </Link>
-          ))}
-        </div>
+              {company.secondaryIndustries && (
+                <div className="flex flex-wrap gap-1 justify-center">
+                  {company.secondaryIndustries.split(',').slice(0, 3).map((specialty: string, index: number) => (
+                    <span
+                      key={index}
+                      className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs rounded-full"
+                    >
+                      {specialty.trim()}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </Link>
+        ))}
       </div>
+
+      {/* Pagination */}
+      {companiesData.totalPages > 1 && (
+        <Pagination
+          currentPage={companiesData.number + 1}
+          totalPages={companiesData.totalPages}
+          baseUrl={`/industries/${id}`}
+        />
+      )}
     </div>
   );
 };

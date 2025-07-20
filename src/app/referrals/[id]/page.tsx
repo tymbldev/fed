@@ -71,6 +71,8 @@ function formatSalaryRange(minSalary: number, maxSalary: number, currencyId: num
   const formatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: currency,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
   });
 
   if (minSalary === maxSalary) {

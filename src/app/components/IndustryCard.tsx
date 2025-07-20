@@ -28,12 +28,11 @@ const IndustryCard: React.FC<IndustryCardProps> = ({ industry }) => {
   const emptySlots = 3 - topCompanies.length;
 
   return (
-    <Link
-      href={`/industries/${industry.industryId}`}
+    <div
       className="block bg-white dark:bg-gray-50 rounded-[20px] shadow-lg w-full min-w-[220px] max-w-full sm:min-w-[300px] sm:max-w-[220px] flex-shrink-0 p-6 flex flex-col justify-between transition-shadow duration-300 hover:shadow-xl h-[200px] hover:scale-105 transition-transform"
     >
       <div className="flex-1">
-        <div className="flex items-center justify-between mb-2">
+        <Link href={`/industries/${industry.industryId}`} className="flex items-center justify-between mb-2">
           <div>
             <div className="text-l font-semibold text-gray-900 dark:text-white line-clamp-2 leading-tight min-h-[48px]">
               {industry.industryName}
@@ -47,7 +46,7 @@ const IndustryCard: React.FC<IndustryCardProps> = ({ industry }) => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
             </svg>
           </div>
-        </div>
+        </Link>
         <div className="flex gap-3 mt-4 min-h-[56px] items-center">
           {topCompanies.map((company) => (
             <Link
@@ -81,7 +80,7 @@ const IndustryCard: React.FC<IndustryCardProps> = ({ industry }) => {
           )}
         </div>
       </div>
-    </Link>
+    </div>
   );
 };
 

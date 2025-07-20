@@ -28,10 +28,6 @@ const LinkedIn: React.FC<LinkedInProps> = ({ formData, errors, touched, onInputC
         <Image src="/icons/linkedin.svg" alt="LinkedIn" width={20} height={20} />
       </span>
     </div>
-    {/* <div className="flex items-center mt-1">
-      <input type="checkbox" id="linkedinSync" disabled className="mr-2" />
-      <label htmlFor="linkedinSync" className="text-xs text-gray-400 select-none">I agree to sync my Naukrigulf profile with LinkedIn updates</label>
-    </div> */}
     {errors.linkedin && touched.linkedin && (
       <span className="text-xs text-red-500">{errors.linkedin}</span>
     )}

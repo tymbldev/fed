@@ -10,7 +10,7 @@ import { SearchModalProvider } from './context/SearchModalContext';
 import ClientAuthProvider from './components/ClientAuthProvider';
 import GlobalSearchModalWrapper from './components/GlobalSearchModalWrapper';
 import { getServerAuthState } from './utils/serverAuth';
-import CacheManager from './components/CacheManager';
+// import CacheManager from './components/CacheManager';
 
 // Force dynamic rendering for all routes since we use cookies for authentication
 export const dynamic = 'force-dynamic';
@@ -46,7 +46,7 @@ export default async function RootLayout({
               </div>
               <Toaster position="top-right" />
               <GlobalSearchModalWrapper />
-              <CacheManager />
+              {/* <CacheManager /> */}
             </SearchModalProvider>
           </ThemeProvider>
         </ClientAuthProvider>
