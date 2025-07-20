@@ -291,6 +291,7 @@ function ProfileContent() {
                 required={true}
               />
               <Company
+                label="Current Company"
                 formData={formData}
                 errors={errors}
                 touched={touched}
@@ -361,7 +362,7 @@ function ProfileContent() {
                 salaryFieldName="currentSalary"
                 currencyFieldName="currentSalaryCurrencyId"
                 currencyLabel="Current Salary Currency"
-                salaryLabel="Current Annual Salary"
+                salaryLabel="dfdf"
               />
             </div>
 

@@ -1,9 +1,9 @@
 import React from 'react';
-import Link from 'next/link';
 import { fetchIndustries } from './utils/serverData';
 import AuthDependentContent from './components/AuthDependentContent';
 import AuthDependentCTA from './components/AuthDependentCTA';
 import IndustriesCarousel from "./components/IndustriesCarousel";
+import ExploreOpportunitiesButton from './components/ExploreOpportunitiesButton';
 
 export default async function Home() {
   // Get industries data on the server
@@ -29,14 +29,14 @@ export default async function Home() {
                 </span>
               </p>
               <div className="flex flex-col sm:flex-row gap-6 justify-center items-center animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-                <Link href="/referrals" className="btn btn-primary text-lg px-8 py-4 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl">
+                <ExploreOpportunitiesButton className="btn btn-primary text-lg px-8 py-4 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl">
                   <span className="flex items-center gap-2">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                     Explore Opportunities
                   </span>
-                </Link>
+                </ExploreOpportunitiesButton>
 
                 {/* Auth-dependent content */}
                 <AuthDependentContent />
@@ -148,14 +148,14 @@ export default async function Home() {
             {/* Auth-dependent CTA buttons */}
             <AuthDependentCTA />
 
-            <Link href="/referrals" className="btn border-2 border-white text-white hover:bg-white hover:text-gray-900 text-lg px-10 py-5 transform hover:scale-105 transition-all duration-300">
+            <ExploreOpportunitiesButton className="btn border-2 border-white text-white hover:bg-white hover:text-gray-900 text-lg px-10 py-5 transform hover:scale-105 transition-all duration-300">
               <span className="flex items-center gap-3">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
                 Explore Opportunities
               </span>
-            </Link>
+            </ExploreOpportunitiesButton>
           </div>
         </div>
       </section>

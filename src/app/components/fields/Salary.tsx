@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import SelectField from '../common/SelectField';
-import InputField from '../common/InputField';
 import { fetchDropdownOptions } from '../../services/api';
 import { toast } from 'sonner';
 
@@ -11,8 +9,9 @@ interface SalaryProps {
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
   onBlur: (field: string) => void;
   required?: boolean;
-  currencyLabel?: string;
-  salaryLabel?: string;
+  label?: string;
+  currencyPlaceholder?: string;
+  salaryPlaceholder?: string;
   salaryFieldName: string;
   currencyFieldName: string;
 }
@@ -29,8 +28,9 @@ const Salary: React.FC<SalaryProps> = ({
   onInputChange,
   onBlur,
   required = false,
-  currencyLabel = "Currency",
-  salaryLabel = "Salary",
+  label = "Salary",
+  currencyPlaceholder = "Select Currency",
+  salaryPlaceholder = "Enter Salary",
   salaryFieldName,
   currencyFieldName
 }) => {
@@ -63,34 +63,53 @@ const Salary: React.FC<SalaryProps> = ({
   };
 
   return (
-    <div className="grid grid-cols-2 gap-4">
-      <SelectField
-        label={currencyLabel}
-        name={currencyFieldName}
-        options={currencies.map(opt => ({
-          value: opt.id.toString(),
-          label: opt.name
-        }))}
-        value={formData[currencyFieldName] || ''}
-        onChange={onInputChange}
-        onBlur={() => onBlur(currencyFieldName)}
-        error={touched[currencyFieldName] ? errors[currencyFieldName] : undefined}
-        required={required}
-      />
-      <InputField
-        label={salaryLabel}
-        name={salaryFieldName}
-        type="text"
-        value={formData[salaryFieldName] || ''}
-        onChange={onInputChange}
-        onBlur={() => onBlur(salaryFieldName)}
-        error={touched[salaryFieldName] ? errors[salaryFieldName] : undefined}
-        required={required}
-        placeholder="Enter your salary"
-        maxLength={9}
-        pattern="[0-9]*"
-        onKeyDown={handleKeyPress}
-      />
+    <div className="w-full">
+      <div className="mb-2">
+        <label className="block text-sm font-medium text-gray-700">
+          {label}
+          {required && <span className="text-red-500 ml-1">*</span>}
+        </label>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="w-full">
+          <select
+            name={currencyFieldName}
+            value={formData[currencyFieldName] || ''}
+            onChange={onInputChange}
+            onBlur={() => onBlur(currencyFieldName)}
+            className={`block w-full h-12 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${touched[currencyFieldName] && errors[currencyFieldName] ? 'border-red-500' : ''}`}
+            required={required}
+          >
+            <option value="">{currencyPlaceholder}</option>
+            {currencies.map((option) => (
+              <option key={option.id} value={option.id.toString()}>
+                {option.name}
+              </option>
+            ))}
+          </select>
+          {touched[currencyFieldName] && errors[currencyFieldName] && (
+            <p className="mt-1 text-sm text-red-600">{errors[currencyFieldName]}</p>
+          )}
+        </div>
+        <div className="w-full">
+          <input
+            type="text"
+            name={salaryFieldName}
+            value={formData[salaryFieldName] || ''}
+            onChange={onInputChange}
+            onBlur={() => onBlur(salaryFieldName)}
+            placeholder={salaryPlaceholder}
+            required={required}
+            maxLength={9}
+            pattern="[0-9]*"
+            onKeyDown={handleKeyPress}
+            className={`block w-full h-12 px-3 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base sm:text-sm ${touched[salaryFieldName] && errors[salaryFieldName] ? 'border-red-500' : ''}`}
+          />
+          {touched[salaryFieldName] && errors[salaryFieldName] && (
+            <p className="mt-1 text-sm text-red-600">{errors[salaryFieldName]}</p>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

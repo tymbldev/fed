@@ -152,7 +152,8 @@ function PostReferralForm() {
       name: field,
       value: formData[field] || '',
       required: field === 'uniqueUrl' ? Boolean(formData.platform && formData.platform !== 'Other') :
-              field === 'minSalary' || field === 'maxSalary' || field === 'minExperience' || field === 'maxExperience' || field === 'jobType' ? true : true
+              field === 'minSalary' || field === 'maxSalary' || field === 'minExperience' || field === 'maxExperience' || field === 'jobType' ? true :
+              field === 'platform' ? false : true
     };
 
     const newErrors = validateFields([fieldToValidate]);
@@ -245,7 +246,8 @@ function PostReferralForm() {
       name: field,
       value: formData[field] || '',
       required: field === 'uniqueUrl' ? Boolean(formData.platform && formData.platform !== 'Other') :
-              field === 'minSalary' || field === 'maxSalary' || field === 'minExperience' || field === 'maxExperience' || field === 'jobType' ? true : true
+              field === 'minSalary' || field === 'maxSalary' || field === 'minExperience' || field === 'maxExperience' || field === 'jobType' ? true :
+              field === 'platform' ? false : true
     }));
 
     const newErrors = validateFields(fieldsToValidate);
@@ -336,7 +338,6 @@ function PostReferralForm() {
         jobType: formData.jobType || undefined,
         currencyId: formData.currencyId ? parseInt(formData.currencyId) : undefined,
         tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()) : [],
-        // skillIds: formData.skillIds ? formData.skillIds.split(',').map(id => id.trim()) : [],
         company: formData.company || userProfile?.company || '',
         companyId: formData.companyId ? parseInt(formData.companyId) : (userProfile?.companyId || undefined),
         designation: formData.designation,
@@ -519,7 +520,7 @@ function PostReferralForm() {
           touched={touched}
           onInputChange={handleInputChange}
           onBlur={() => handleBlur('platform')}
-          required={true}
+          required={false}
           label="Platform"
         />
 

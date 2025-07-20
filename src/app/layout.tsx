@@ -6,8 +6,11 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import BottomNav from './components/BottomNav';
 import { ThemeProvider } from './context/ThemeContext';
+import { SearchModalProvider } from './context/SearchModalContext';
 import ClientAuthProvider from './components/ClientAuthProvider';
+import GlobalSearchModalWrapper from './components/GlobalSearchModalWrapper';
 import { getServerAuthState } from './utils/serverAuth';
+import CacheManager from './components/CacheManager';
 
 // Force dynamic rendering for all routes since we use cookies for authentication
 export const dynamic = 'force-dynamic';
@@ -32,15 +35,19 @@ export default async function RootLayout({
       <body className={`${inter.className} bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200`}>
         <ClientAuthProvider initialAuthState={authState}>
           <ThemeProvider>
-            <div className="min-h-screen flex flex-col">
-              <Header />
-              <main className="flex-grow pb-20 md:pb-0">
-                {children}
-              </main>
-              <Footer />
-              <BottomNav />
-            </div>
-            <Toaster position="top-right" />
+            <SearchModalProvider>
+              <div className="min-h-screen flex flex-col">
+                <Header />
+                <main className="flex-grow pb-20 md:pb-0">
+                  {children}
+                </main>
+                <Footer />
+                <BottomNav />
+              </div>
+              <Toaster position="top-right" />
+              <GlobalSearchModalWrapper />
+              <CacheManager />
+            </SearchModalProvider>
           </ThemeProvider>
         </ClientAuthProvider>
       </body>

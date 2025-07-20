@@ -226,7 +226,7 @@ export default function ReferralDetailsClient({
             : 'bg-[#1a73e8] text-white hover:bg-[#1666c1]'
         }`}
       >
-        {applicationStatus ? 'Applied' : 'Apply'}
+        {applicationStatus ? 'Referral Sent' : 'Send referral'}
       </button>
 
       {/* Referrer Information */}
@@ -246,17 +246,11 @@ export default function ReferralDetailsClient({
                       </span>
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900">{referrer.userName}</p>
-                      <p className="text-sm text-gray-600">{referrer.designation}</p>
+                      <p className="font-medium text-gray-900">{referrer.designation}</p>
                     </div>
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <span>Score: {referrer.overallScore.toFixed(1)}</span>
-                    <span>•</span>
-                    <span>{referrer.numApplicationsAccepted} accepted</span>
-                  </div>
                   {appliedReferrer && appliedReferrer.id === referrer.userId && (
                     <span className="text-green-600 text-sm font-medium">Applied with</span>
                   )}
@@ -376,7 +370,7 @@ export default function ReferralDetailsClient({
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <LoginForm
             isModal={true}
-            title="Login to Apply"
+            title="Login to Send Referral"
             subtitle="Please log in to apply for this referral opportunity."
             onSuccess={handleLoginSuccess}
             onCancel={handleLoginCancel}

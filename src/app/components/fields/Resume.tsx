@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 interface ResumeProps {
   errors: { [key: string]: string };
@@ -29,6 +29,45 @@ const Resume: React.FC<ResumeProps> = ({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Clear selectedFile when resumeContentType updates (indicating parent has processed upload)
+  useEffect(() => {
+    if (selectedFile && resumeContentType) {
+      // Check if the content type matches the selected file type
+      const getFileTypeFromContentType = (contentType: string) => {
+        switch (contentType) {
+          case 'application/pdf':
+            return 'application/pdf';
+          case 'application/msword':
+            return 'application/msword';
+          case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+            return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+          case 'application/rtf':
+          case 'text/rtf':
+            return 'application/rtf';
+          default:
+            return null;
+        }
+      };
+
+      const expectedType = getFileTypeFromContentType(resumeContentType);
+      if (expectedType && selectedFile.type === expectedType) {
+        // Content type matches selected file, safe to clear
+        setSelectedFile(null);
+      }
+    }
+  }, [resumeContentType, selectedFile]);
+
+  // Fallback: Clear selectedFile after 5 seconds if parent doesn't update resumeContentType
+  useEffect(() => {
+    if (selectedFile && !uploading) {
+      const timeout = setTimeout(() => {
+        setSelectedFile(null);
+      }, 5000);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [selectedFile, uploading]);
+
   const handleFileSelect = async (file: File) => {
     if (!file) return;
     const allowedTypes = [
@@ -54,8 +93,8 @@ const Resume: React.FC<ResumeProps> = ({
       setUploading(true);
       try {
         await onFileUpload(file);
-        // Clear selected file after successful upload
-        setSelectedFile(null);
+        // Don't clear selectedFile immediately - let it persist until parent updates
+        // The selectedFile will be cleared when the component re-renders with updated props
       } catch (error) {
         console.error('Upload failed:', error);
         // Clear selected file on error

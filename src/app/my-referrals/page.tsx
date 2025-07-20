@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { BASE_URL } from '../services/api';
-import ReferralSearch from '../components/ReferralSearch';
 
 interface Referral {
   id: number;
@@ -31,13 +30,6 @@ export default function MyReferrals() {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchFilters, setSearchFilters] = useState({
-    keyword: '',
-    keywordId: '',
-    countryId: '',
-    cityId: '',
-    experience: ''
-  });
 
   const fetchApplicationCounts = async (referralIds: number[]) => {
     try {
@@ -81,17 +73,6 @@ export default function MyReferrals() {
     }
   };
 
-  const handleSearch = (searchData: {
-    keyword: string;
-    keywordId: string;
-    countryId: string;
-    cityId: string;
-    experience: string;
-  }) => {
-    setSearchFilters(searchData);
-    setCurrentPage(0); // Reset to first page when searching
-  };
-
   const fetchReferrals = useCallback(async (page: number) => {
     try {
       setIsLoading(true);
@@ -105,12 +86,6 @@ export default function MyReferrals() {
         page: page.toString(),
         size: '10'
       });
-
-      // Add search filters if they exist
-      if (searchFilters.keywordId) params.append('designationId', searchFilters.keywordId);
-      if (searchFilters.countryId) params.append('countryId', searchFilters.countryId);
-      if (searchFilters.cityId) params.append('cityId', searchFilters.cityId);
-      if (searchFilters.experience) params.append('experience', searchFilters.experience);
 
       const response = await fetch(`${BASE_URL}/api/v1/jobmanagement/my-posts?${params.toString()}`, {
         headers: {
@@ -135,7 +110,7 @@ export default function MyReferrals() {
     } finally {
       setIsLoading(false);
     }
-  }, [searchFilters]);
+  }, []);
 
   useEffect(() => {
     fetchReferrals(currentPage);
@@ -166,16 +141,22 @@ export default function MyReferrals() {
         <h1 className="text-3xl font-bold">My Posted Referrals</h1>
         <Link
           href="/post-referral"
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+          className="hidden md:inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
         >
           Post a New Referral
         </Link>
       </div>
 
-      {/* Search Section */}
-      <div className="mb-8">
-        <ReferralSearch onSearch={handleSearch} />
-      </div>
+      {/* Floating + button for mobile */}
+      <Link
+        href="/post-referral"
+        className="md:hidden fixed bottom-32 right-6 w-14 h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-lg flex items-center justify-center z-50 transition-colors duration-200"
+        aria-label="Post a new referral"
+      >
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+        </svg>
+      </Link>
 
       {isLoading ? (
         <div className="text-center py-8">Loading...</div>

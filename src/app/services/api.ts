@@ -1,3 +1,5 @@
+import { indexedDBService } from './indexedDB';
+
 export const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 // TypeScript declarations for File System Access API
@@ -99,37 +101,68 @@ export const updateProfile = async (profileData: {
 
 export const fetchDropdownOptions = async (type: string): Promise<{ value: string; label: string }[]> => {
   try {
-    // Special handling for skills
-    if (type === 'skills') {
-      const response = await fetch(`${BASE_URL}/api/v1/skills`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch skills');
-      }
-      const data = await response.json();
-      return data;
+    // Check if we're in a browser environment
+    if (typeof window === 'undefined') {
+      // Server-side rendering - fetch directly
+      return await fetchDropdownOptionsFromAPI(type);
     }
 
-    // // Special handling for companies
-    // if (type === 'companies') {
-    //   const response = await fetch(`${BASE_URL}/api/v1/companies`);
-    //   if (!response.ok) {
-    //     throw new Error('Failed to fetch companies');
-    //   }
-    //   const data = await response.json();
-    //   return data;
-    // }
-
-    // For other dropdowns, use the dropdowns endpoint
-    const response = await fetch(`${BASE_URL}/api/v1/dropdowns/${type}`);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch ${type}`);
+    // Try to get cached data first
+    const cachedData = await indexedDBService.getDropdownOptions(type);
+    if (cachedData) {
+      console.log(`Using cached ${type} data`);
+      return cachedData;
     }
-    const data = await response.json();
+
+    // If no cached data, fetch from API
+    console.log(`Fetching ${type} data from API`);
+    const data = await fetchDropdownOptionsFromAPI(type);
+
+    // Cache the data
+    try {
+      await indexedDBService.setDropdownOptions(type, data);
+      console.log(`Cached ${type} data successfully`);
+    } catch (cacheError) {
+      console.warn(`Failed to cache ${type} data:`, cacheError);
+      // Don't throw error if caching fails, just return the data
+    }
+
     return data;
   } catch (error) {
     console.error(`Error fetching ${type}:`, error);
     throw error;
   }
+};
+
+// Helper function to fetch dropdown options from API
+const fetchDropdownOptionsFromAPI = async (type: string): Promise<{ value: string; label: string }[]> => {
+  // Special handling for skills
+  if (type === 'skills') {
+    const response = await fetch(`${BASE_URL}/api/v1/skills`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch skills');
+    }
+    const data = await response.json();
+    return data;
+  }
+
+  // // Special handling for companies
+  // if (type === 'companies') {
+  //   const response = await fetch(`${BASE_URL}/api/v1/companies`);
+  //   if (!response.ok) {
+  //     throw new Error('Failed to fetch companies');
+  //   }
+  //   const data = await response.json();
+  //   return data;
+  // }
+
+  // For other dropdowns, use the dropdowns endpoint
+  const response = await fetch(`${BASE_URL}/api/v1/dropdowns/${type}`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch ${type}`);
+  }
+  const data = await response.json();
+  return data;
 };
 
 export const fetchSkills = async (query: string) => {
@@ -284,4 +317,62 @@ export const deleteResume = async () => {
   }
 
   return response.json();
+};
+
+// Utility functions for cache management
+export const clearDropdownCache = async (type?: string): Promise<void> => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  try {
+    if (type) {
+      await indexedDBService.deleteDropdownOptions(type);
+      console.log(`Cleared cache for ${type}`);
+    } else {
+      await indexedDBService.clearAllData();
+      console.log('Cleared all dropdown cache');
+    }
+  } catch (error) {
+    console.error('Error clearing dropdown cache:', error);
+    throw error;
+  }
+};
+
+export const refreshDropdownCache = async (type: string): Promise<{ value: string; label: string }[]> => {
+  // Clear the cache for this type
+  await clearDropdownCache(type);
+
+  // Fetch fresh data
+  return await fetchDropdownOptions(type);
+};
+
+export const getDropdownCacheInfo = async (): Promise<{ type: string; timestamp: number }[]> => {
+  if (typeof window === 'undefined') {
+    return [];
+  }
+
+  try {
+    const db = await indexedDBService.initDB();
+    const transaction = db.transaction(['dropdownOptions'], 'readonly');
+    const store = transaction.objectStore('dropdownOptions');
+    const request = store.getAll();
+
+    return new Promise((resolve, reject) => {
+      request.onerror = () => {
+        reject(new Error('Failed to get cache info'));
+      };
+
+      request.onsuccess = () => {
+        const results = request.result as Array<{ type: string; timestamp: number }>;
+        resolve(results.map(item => ({
+          type: item.type,
+          timestamp: item.timestamp
+        })));
+      };
+    });
+  } catch (error) {
+    console.error('Error getting cache info:', error);
+    return [];
+  }
 };

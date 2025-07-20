@@ -1,12 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import SelectField from '../common/SelectField';
-import { fetchDropdownOptions } from '../../services/api';
-import { toast } from 'sonner';
-
-interface DepartmentOption {
-    id: number;
-    name: string;
-}
+import { useDropdownOptions } from '../../hooks/useDropdownOptions';
 
 interface DepartmentProps {
   formData: { [key: string]: string };
@@ -25,31 +19,29 @@ const Department: React.FC<DepartmentProps> = ({
   onBlur,
   required = false
 }) => {
-  const [options, setOptions] = useState<DepartmentOption[]>([]);
+  const { options, isLoading } = useDropdownOptions('departments');
 
-  useEffect(() => {
-    const loadOptions = async () => {
-      try {
-        const data = await fetchDropdownOptions('departments') as unknown as DepartmentOption[];
-        // console.log("departments", data);
-        setOptions(data);
-      } catch (err) {
-        console.error('Failed to fetch departments:', err);
-        toast.error('Failed to load departments. Please try again.');
-      }
-    };
-
-    loadOptions();
-  }, []);
+  // Show loading state if data is still loading
+  if (isLoading) {
+    return (
+      <div className="w-full">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Department {required && <span className="text-red-500">*</span>}
+        </label>
+        <div className="block w-full h-12 rounded-md border-gray-300 shadow-sm bg-gray-100 animate-pulse">
+          <div className="h-full flex items-center justify-center text-gray-500">
+            Loading departments...
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <SelectField
       label="Department"
       name="departmentId"
-      options={options.map(opt => ({
-        value: opt.id.toString(),
-        label: opt.name
-      }))}
+      options={options}
       value={formData.departmentId || ''}
       onChange={onInputChange}
       onBlur={() => onBlur('departmentId')}

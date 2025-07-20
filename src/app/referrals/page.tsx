@@ -1,10 +1,9 @@
 import { Suspense } from 'react';
 import { BASE_URL } from '../services/api';
-import { getServerAuthState } from '../utils/serverAuth';
 import ReferralStatusBadge from './ReferralStatusBadge';
-import ClientReferralSearch from '../components/ClientReferralSearch';
 import FloatingFilterButton from '../components/FloatingFilterButton';
 import JobTuple from '../components/JobTuple';
+import CurrentSearchCriteria from '../components/CurrentSearchCriteria';
 import Link from 'next/link';
 
 interface Referral {
@@ -89,6 +88,7 @@ async function fetchReferrals(page: number = 0, searchFilters: {
 }): Promise<{
   referrals: Referral[];
   totalPages: number;
+  totalElements: number;
 }> {
   try {
     // Prepare request body for POST API
@@ -126,16 +126,19 @@ async function fetchReferrals(page: number = 0, searchFilters: {
     // Handle different response structures
     const referralsData = data.jobs || data.content || data.data || data || [];
     const totalPagesData = data.totalPages || data.total || 0;
+    const totalElementsData = data.totalElements || data.totalCount || data.total || (totalPagesData * 10);
 
     return {
       referrals: Array.isArray(referralsData) ? referralsData : [],
-      totalPages: totalPagesData
+      totalPages: totalPagesData,
+      totalElements: totalElementsData
     };
   } catch (error) {
     console.error('Error fetching referrals:', error);
     return {
       referrals: [],
-      totalPages: 0
+      totalPages: 0,
+      totalElements: 0
     };
   }
 }
@@ -156,29 +159,16 @@ export default async function ReferralsPage({
   };
 
   // Fetch data on the server
-  const [locations, referralsData, authState] = await Promise.all([
+  const [locations, referralsData] = await Promise.all([
     fetchLocations(),
-    fetchReferrals(page, searchFilters),
-    getServerAuthState()
+    fetchReferrals(page, searchFilters)
   ]);
-
-  const isLoggedIn = authState.isLoggedIn;
 
   return (
     <main className="min-h-screen bg-gray-50 py-6 md:py-12">
       <div className="container mx-auto px-4">
-        {/* Header Section - SSR */}
-        <div className="text-center mb-5 md:mb-12">
-          <h1 className="text-4xl font-bold mb-2 md:mb-4 bg-gradient-to-r from-[#1a73e8] to-[#34c759] text-transparent bg-clip-text">
-            Referral Listings
-          </h1>
-          <p className="text-gray-600">Find your next career opportunity</p>
-        </div>
-
-        {/* Search Section */}
-        <div className="mb-8 hidden md:block">
-          <ClientReferralSearch />
-        </div>
+        {/* Current Search Criteria */}
+        <CurrentSearchCriteria totalCount={referralsData.totalElements} />
 
         {/* Referral Listings SSR */}
         {referralsData.referrals.length === 0 ? (

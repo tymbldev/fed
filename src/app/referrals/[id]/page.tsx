@@ -101,9 +101,9 @@ export default async function ReferralDetailsPage({
   const { referral, currencies, locations, referrers, applicationStatus, applicationId, appliedReferrer } = data;
 
   return (
-    <main className="min-h-screen bg-[#f6fafd] py-12">
+    <main className="min-h-screen bg-[#f6fafd] py-12 md:py-12 py-4">
       <div className="container mx-auto px-4 max-w-4xl">
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 text-left">
+        <div className="bg-white md:rounded-2xl md:shadow-lg md:border md:border-gray-200 p-4 md:p-8 text-left">
           {/* Header Section */}
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-gray-900 mb-1 text-left">{referral.title}</h1>
