@@ -18,7 +18,7 @@ interface IndustryCardProps {
     industryId: number;
     industryName: string;
     industryDescription: string;
-    companyCount: number;
+    totalJobCount: number;
     topCompanies: Company[];
   };
 }
@@ -38,7 +38,7 @@ const IndustryCard: React.FC<IndustryCardProps> = ({ industry }) => {
               {industry.industryName}
             </div>
             <div className="text-sm text-gray-500 dark:text-gray-300 truncate">
-              {industry.companyCount}+ vacancies
+              {industry.totalJobCount} vacancies
             </div>
           </div>
           <div className="ml-2 text-primary-600">

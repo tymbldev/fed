@@ -13,6 +13,7 @@ export interface Industry {
   industryDescription: string;
   companyCount: number;
   topCompanies: CompanySummary[];
+  totalJobCount: number;
 }
 
 export interface Referral {

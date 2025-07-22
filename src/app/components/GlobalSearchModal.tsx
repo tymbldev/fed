@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import ReferralSearch from './ReferralSearch';
-import LoadingSpinner from './ui/LoadingSpinner';
 
 interface SearchFormData {
   [key: string]: string;
@@ -24,6 +23,7 @@ export default function GlobalSearchModal({ isOpen, onClose, initialValues }: Gl
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
+  const [navigationInProgress, setNavigationInProgress] = useState(false);
 
   const [currentSearchData, setCurrentSearchData] = useState<SearchFormData>({
     keyword: initialValues?.keyword || searchParams.get('keyword') || '',
@@ -40,8 +40,17 @@ export default function GlobalSearchModal({ isOpen, onClose, initialValues }: Gl
     }
   }, [initialValues]);
 
-  const handleSearch = async (searchData: SearchFormData) => {
+  // Reset loading state when modal opens/closes
+  useEffect(() => {
+    if (!isOpen) {
+      setIsLoading(false);
+      setNavigationInProgress(false);
+    }
+  }, [isOpen]);
+
+            const handleSearch = async (searchData: SearchFormData) => {
     setIsLoading(true);
+    setNavigationInProgress(true);
 
     try {
       // Create new URLSearchParams with current search params
@@ -59,15 +68,18 @@ export default function GlobalSearchModal({ isOpen, onClose, initialValues }: Gl
       // Reset to page 0 for new searches
       params.set('page', '0');
 
-      // Update URL and navigate to referrals page
+                  // Update URL and navigate to referrals page
       await router.push(`/referrals?${params.toString()}`);
+
+      // Wait for navigation to complete - use a longer delay for global modal
+      await new Promise(resolve => setTimeout(resolve, 1500));
 
       // Close the modal after navigation is complete
       onClose();
     } catch (error) {
       console.error('Navigation error:', error);
-      // Still close the modal even if there's an error
-      onClose();
+      setIsLoading(false);
+      setNavigationInProgress(false);
     } finally {
       setIsLoading(false);
     }
@@ -80,7 +92,7 @@ export default function GlobalSearchModal({ isOpen, onClose, initialValues }: Gl
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black bg-opacity-50 z-40"
-        onClick={isLoading ? undefined : onClose}
+        onClick={isLoading || navigationInProgress ? undefined : onClose}
       />
 
       {/* Modal */}
@@ -98,14 +110,14 @@ export default function GlobalSearchModal({ isOpen, onClose, initialValues }: Gl
                 </p>
               </div>
               <button
-                onClick={isLoading ? undefined : onClose}
+                onClick={isLoading || navigationInProgress ? undefined : onClose}
                 className={`p-3 rounded-full transition-colors ${
-                  isLoading
+                  isLoading || navigationInProgress
                     ? 'opacity-50 cursor-not-allowed'
                     : 'hover:bg-gray-100'
                 }`}
                 aria-label="Close search"
-                disabled={isLoading}
+                disabled={isLoading || navigationInProgress}
               >
                 <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -117,17 +129,11 @@ export default function GlobalSearchModal({ isOpen, onClose, initialValues }: Gl
           {/* Modal Content */}
           <div className="flex-1 flex p-8 md:pt-32">
             <div className="container mx-auto px-4">
-              {isLoading ? (
-                <div className="flex flex-col items-center justify-center h-full">
-                  <LoadingSpinner size="lg" />
-                  <p className="mt-4 text-lg text-gray-600">Navigating to search results...</p>
-                </div>
-              ) : (
-                <ReferralSearch
-                  onSearch={handleSearch}
-                  initialValues={currentSearchData}
-                />
-              )}
+              <ReferralSearch
+                onSearch={handleSearch}
+                initialValues={currentSearchData}
+                isLoading={isLoading}
+              />
             </div>
           </div>
         </div>

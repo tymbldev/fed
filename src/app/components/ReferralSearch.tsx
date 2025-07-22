@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Designation from './fields/Designation';
 import Location from './fields/Location';
 import SingleExperience from './fields/SingleExperience';
+import { validateField } from '../utils/validation';
 
 interface SearchFormData {
   [key: string]: string;
@@ -18,13 +19,14 @@ interface ReferralSearchProps {
   onSearch: (searchData: SearchFormData) => void;
   className?: string;
   initialValues?: SearchFormData;
+  isLoading?: boolean;
 }
 
-export default function ReferralSearch({ onSearch, className = '', initialValues }: ReferralSearchProps) {
+export default function ReferralSearch({ onSearch, className = '', initialValues, isLoading = false }: ReferralSearchProps) {
   const [formData, setFormData] = useState<SearchFormData>({
     keyword: initialValues?.keyword || '',
     keywordId: initialValues?.keywordId || '',
-    countryId: initialValues?.countryId || '',
+    countryId: initialValues?.countryId || '1', // Default to India (assuming countryId 1 is India)
     cityId: initialValues?.cityId || '',
     experience: initialValues?.experience || ''
   });
@@ -36,7 +38,7 @@ export default function ReferralSearch({ onSearch, className = '', initialValues
     }
   }, [initialValues]);
 
-  const [errors] = useState<{ [key: string]: string }>({});
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -45,6 +47,15 @@ export default function ReferralSearch({ onSearch, className = '', initialValues
       ...prev,
       [name]: value
     }));
+
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
   };
 
   const handleBlur = (field: string) => {
@@ -52,11 +63,61 @@ export default function ReferralSearch({ onSearch, className = '', initialValues
       ...prev,
       [field]: true
     }));
+
+    // Only validate required fields on blur
+    if (field === 'keywordId' || field === 'keyword') {
+      // Validate keyword field (required)
+      const fieldToValidate = field === 'keywordId' ? 'keyword' : field;
+      const error = validateField(fieldToValidate, formData[fieldToValidate] || '', true);
+      if (error) {
+        setErrors(prev => ({
+          ...prev,
+          [fieldToValidate]: error
+        }));
+      } else {
+        setErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors[fieldToValidate];
+          return newErrors;
+        });
+      }
+    }
+    // For non-required fields (countryId, cityId, experience), don't validate on blur
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSearch(formData);
+
+    // Validate all required fields
+    const newErrors: { [key: string]: string } = {};
+    const keywordError = validateField('keyword', formData.keyword, true);
+    if (keywordError) {
+      newErrors.keyword = keywordError;
+    }
+
+    // Mark all fields as touched to show errors
+    const newTouched = {
+      keyword: true,
+      countryId: true,
+      cityId: true,
+      experience: true
+    };
+
+    setErrors(newErrors);
+    setTouched(newTouched);
+
+    // Only submit if there are no errors
+    if (Object.keys(newErrors).length === 0) {
+      // Filter out keywordId if its value is "1000" (default/placeholder value)
+      const searchData = { ...formData };
+      if (searchData.keywordId === '1000') {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { keywordId, ...filteredData } = searchData;
+        onSearch(filteredData as SearchFormData);
+      } else {
+        onSearch(searchData);
+      }
+    }
   };
 
   const handleClear = () => {
@@ -73,7 +134,7 @@ export default function ReferralSearch({ onSearch, className = '', initialValues
 
   return (
     <div className={`bg-white rounded-lg shadow-sm border border-gray-200 p-6 ${className}`}>
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6" noValidate>
         {/* Search Fields Row */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Keyword Field - Using existing component with custom labels */}
@@ -84,8 +145,8 @@ export default function ReferralSearch({ onSearch, className = '', initialValues
               touched={touched}
               onInputChange={handleInputChange}
               onBlur={handleBlur}
-              required={false}
-              label="Job Title"
+              required={true}
+              label="Keyword"
               fieldName="keywordId"
               updateFieldName="keyword"
               placeholder="Enter job title or designation..."
@@ -134,9 +195,21 @@ export default function ReferralSearch({ onSearch, className = '', initialValues
           </button>
           <button
             type="submit"
-            className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
+            disabled={isLoading}
+            className={`px-6 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200 ${
+              isLoading
+                ? 'bg-blue-400 text-white cursor-not-allowed'
+                : 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500'
+            }`}
           >
-            Search Referrals
+            {isLoading ? (
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span>Searching...</span>
+              </div>
+            ) : (
+              'Search Referrals'
+            )}
           </button>
         </div>
       </form>

@@ -88,7 +88,7 @@ function PostReferralForm() {
             tags: referral.tags?.join(', ') || '',
             openingCount: referral.openingCount?.toString() || '1',
             uniqueUrl: referral.uniqueUrl || '',
-            platform: referral.platform || '',
+            platform: referral.platform || 'other',
             company: referral.company || userProfile?.company || '',
             companyId: referral.companyId?.toString() || '',
           });
@@ -401,7 +401,7 @@ function PostReferralForm() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="md:col-span-2">
             <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
-              Referral Title <span className="text-red-500">*</span>
+              Job Title <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -411,7 +411,7 @@ function PostReferralForm() {
               onChange={handleInputChange}
               onBlur={() => handleBlur('title')}
               required={true}
-              placeholder="Enter referral title"
+              placeholder="Enter job title or designation"
               className={`block h-12 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${touched.title && errors.title ? 'border-red-500' : ''}`}
             />
             {touched.title && errors.title && (
@@ -452,7 +452,7 @@ function PostReferralForm() {
           onInputChange={handleInputChange}
           onBlur={() => handleBlur('description')}
           required={true}
-          label="Referral Description"
+          label="Job Description"
         />
 
         <Location
@@ -463,8 +463,8 @@ function PostReferralForm() {
           onBlur={() => handleBlur('location')}
           required={true}
           layout="horizontal"
-          countryLabel="Referral Country"
-          cityLabel="Referral City"
+          countryLabel="Job Country"
+          cityLabel="Job City"
         />
 
         <MinMaxSalary

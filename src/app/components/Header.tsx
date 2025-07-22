@@ -112,7 +112,7 @@ export default function Header() {
     { href: '/profile', label: 'Profile' },
     { href: '/post-referral', label: 'Post a Referral' },
     { href: '/my-referrals', label: 'My Referrals' },
-    { href: '/refer', label: 'Refer' },
+    // { href: '/refer', label: 'Refer' },
   ];
 
   const navItems = isLoggedIn ? loggedInNavItems : loggedOutNavItems;

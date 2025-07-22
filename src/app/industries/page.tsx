@@ -17,6 +17,7 @@ interface Industry {
   industryDescription: string;
   companyCount: number;
   topCompanies: Company[];
+  totalJobCount: number;
 }
 
 // Server-side data fetching function
@@ -43,6 +44,7 @@ const AllIndustriesPage: React.FC = async () => {
 
   try {
     industries = await getIndustries();
+    console.log(industries);
   } catch (err) {
     error = err instanceof Error ? err.message : 'Error fetching industries';
   }

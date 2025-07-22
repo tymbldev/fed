@@ -46,6 +46,7 @@ const Location: React.FC<LocationProps> = ({
   const [isLoadingCities, setIsLoadingCities] = useState(false);
   const [previousCountryId, setPreviousCountryId] = useState('');
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [hasSetDefaultCountry, setHasSetDefaultCountry] = useState(false);
 
   // Load initial countries data
   useEffect(() => {
@@ -62,6 +63,21 @@ const Location: React.FC<LocationProps> = ({
         );
 
         setCountries(uniqueCountries);
+
+        // Find India's country ID if not already set and this is the initial load
+        if (!formData.countryId && !hasSetDefaultCountry && isInitialLoad) {
+          const indiaLocation = data.find(loc => loc.country === 'India');
+          if (indiaLocation && indiaLocation.countryId) {
+            // Set India as default country only on initial load
+            onInputChange({
+              target: {
+                name: 'countryId',
+                value: indiaLocation.countryId.toString()
+              }
+            } as React.ChangeEvent<HTMLSelectElement>);
+            setHasSetDefaultCountry(true);
+          }
+        }
 
         // Handle initial city loading if we have both country and city
         if (formData.countryId && formData.cityId) {
@@ -89,7 +105,7 @@ const Location: React.FC<LocationProps> = ({
     };
 
     loadCountries();
-  }, [formData.countryId, formData.cityId]);
+  }, [formData.countryId, formData.cityId, onInputChange]);
 
   // Handle country change and update cities
   useEffect(() => {

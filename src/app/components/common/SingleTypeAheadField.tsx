@@ -127,7 +127,6 @@ const SingleTypeAheadField: React.FC<SingleTypeAheadFieldProps> = ({
           onKeyDown={handleKeyDown}
           onBlur={onBlur}
           placeholder={placeholder}
-          required={required}
           className={`block h-12 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${error ? 'border-red-500' : ''} ${className}`}
         />
         {isOpen && filteredSuggestions.length > 0 && (

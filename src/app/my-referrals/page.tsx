@@ -30,6 +30,12 @@ export default function MyReferrals() {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{ show: boolean; referralId: number | null; referralTitle: string }>({
+    show: false,
+    referralId: null,
+    referralTitle: ''
+  });
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchApplicationCounts = async (referralIds: number[]) => {
     try {
@@ -135,6 +141,53 @@ export default function MyReferrals() {
     return `${getDayWithOrdinal(day)} ${month} ${year}`;
   };
 
+  const handleDeleteReferral = async (referralId: number) => {
+    try {
+      setIsDeleting(true);
+      const token = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('auth_token='))
+        ?.split('=')[1];
+
+      const response = await fetch(`${BASE_URL}/api/v1/jobmanagement/${referralId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete referral');
+      }
+
+      toast.success('Referral deleted successfully');
+
+      // Remove the deleted referral from the list
+      setReferrals(prevReferrals => prevReferrals.filter(referral => referral.id !== referralId));
+
+      // Close the confirmation dialog
+      setDeleteConfirmation({ show: false, referralId: null, referralTitle: '' });
+
+      // If this was the last item on the current page and not the first page, go to previous page
+      if (referrals.length === 1 && currentPage > 0) {
+        setCurrentPage(prev => prev - 1);
+      }
+    } catch (error) {
+      console.error('Error deleting referral:', error);
+      toast.error('Failed to delete referral');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const openDeleteConfirmation = (referralId: number, referralTitle: string) => {
+    setDeleteConfirmation({ show: true, referralId, referralTitle });
+  };
+
+  const closeDeleteConfirmation = () => {
+    setDeleteConfirmation({ show: false, referralId: null, referralTitle: '' });
+  };
+
   return (
     <div className="max-w-7xl mx-auto p-6">
       <div className="flex justify-between items-center mb-8">
@@ -185,8 +238,6 @@ export default function MyReferrals() {
                           </Link>
                         </h2>
                         <div className="mt-1 text-sm text-gray-500">
-                          <span>Company: {referral.company}</span>
-                          <span className="mx-2">|</span>
                           <span>Posted by: me on {formatDate(referral.createdAt)}</span>
                         </div>
                         <div className="mt-3 flex items-center">
@@ -197,14 +248,29 @@ export default function MyReferrals() {
                           </Link>
                         </div>
                       </div>
-                      <div className="ml-4 flex-shrink-0">
+                      <div className="ml-4 flex-shrink-0 flex gap-2">
                         {referral.userRole === 'POSTER' && (
-                          <Link
-                            href={`/post-referral?edit=true&id=${referral.id}`}
-                            className="text-indigo-600 hover:text-indigo-500 font-medium"
-                          >
-                            Edit Referral
-                          </Link>
+                          <>
+                            <Link
+                              href={`/post-referral?edit=true&id=${referral.id}`}
+                              className="p-2 text-indigo-600 hover:text-indigo-500 hover:bg-indigo-50 rounded-full transition-colors duration-200"
+                              title="Edit referral"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                            </Link>
+                            <button
+                              onClick={() => openDeleteConfirmation(referral.id, referral.title)}
+                              className="p-2 text-red-600 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors duration-200"
+                              disabled={isDeleting}
+                              title="Delete referral"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          </>
                         )}
                       </div>
                     </div>
@@ -248,6 +314,34 @@ export default function MyReferrals() {
             </div>
           )}
         </>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmation.show && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Delete Referral</h3>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete &quot;{deleteConfirmation.referralTitle}&quot;? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={closeDeleteConfirmation}
+                className="px-4 py-2 text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-md font-medium"
+                disabled={isDeleting}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => deleteConfirmation.referralId && handleDeleteReferral(deleteConfirmation.referralId)}
+                className="px-4 py-2 text-white bg-red-600 hover:bg-red-700 rounded-md font-medium disabled:opacity-50"
+                disabled={isDeleting}
+              >
+                {isDeleting ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
