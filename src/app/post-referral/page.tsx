@@ -85,10 +85,11 @@ function PostReferralForm() {
             maxExperience: referral.maxExperience?.toString() || '',
             jobType: referral.jobType || '',
             currencyId: referral.currencyId?.toString() || '',
-            tags: referral.tags?.join(', ') || '',
+            skillNames: referral.tags?.join(', ') || '',
+            skillIds: referral.skillIds?.join(',') || '',
             openingCount: referral.openingCount?.toString() || '1',
             uniqueUrl: referral.uniqueUrl || '',
-            platform: referral.platform || 'other',
+            platform: referral.platform || 'Other',
             company: referral.company || userProfile?.company || '',
             companyId: referral.companyId?.toString() || '',
           });
@@ -226,7 +227,7 @@ function PostReferralForm() {
       'maxExperience',
       'jobType',
       'currencyId',
-      'tags',
+      'skillNames',
       'openingCount',
       'platform',
       'uniqueUrl'
@@ -337,14 +338,14 @@ function PostReferralForm() {
         maxExperience: formData.maxExperience ? parseInt(formData.maxExperience) : undefined,
         jobType: formData.jobType || undefined,
         currencyId: formData.currencyId ? parseInt(formData.currencyId) : undefined,
-        tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()) : [],
+        tags: formData.skillNames ? formData.skillNames.split(',').map(tag => tag.trim()) : [],
         company: formData.company || userProfile?.company || '',
         companyId: formData.companyId ? parseInt(formData.companyId) : (userProfile?.companyId || undefined),
         designation: formData.designation,
         designationId: formData.designationId ? parseInt(formData.designationId) : undefined,
         openingCount: formData.openingCount ? parseInt(formData.openingCount) : 1,
         uniqueUrl: formData.uniqueUrl || '',
-        platform: formData.platform || ''
+        platform: formData.platform || 'Other'
       };
 
       const token = document.cookie
@@ -498,10 +499,9 @@ function PostReferralForm() {
           errors={errors}
           touched={touched}
           onInputChange={handleInputChange}
-          onBlur={() => handleBlur('tags')}
+          onBlur={() => handleBlur('skillNames')}
           required={true}
           label="Required Skills"
-          fieldName="tags"
         />
 
         <OpeningCount

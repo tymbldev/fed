@@ -50,7 +50,8 @@ async function getServerData(jobId: string) {
       referrers,
       applicationStatus: applicationData.status,
       applicationId: applicationData.application?.id || null,
-      appliedReferrer
+      appliedReferrer,
+      applicationCreatedAt: applicationData.application?.createdAt || null
     };
   } catch (error) {
     console.error('Error fetching server data:', error);
@@ -100,7 +101,7 @@ export default async function ReferralDetailsPage({
     );
   }
 
-  const { referral, currencies, locations, referrers, applicationStatus, applicationId, appliedReferrer } = data;
+  const { referral, currencies, locations, referrers, applicationStatus, applicationId, appliedReferrer, applicationCreatedAt } = data;
 
   return (
     <main className="min-h-screen bg-[#f6fafd] py-12 md:py-12 py-4">
@@ -192,6 +193,7 @@ export default async function ReferralDetailsPage({
               initialApplicationStatus={applicationStatus}
               initialApplicationId={applicationId}
               initialAppliedReferrer={appliedReferrer}
+              applicationCreatedAt={applicationCreatedAt}
             />
           </div>
         </div>

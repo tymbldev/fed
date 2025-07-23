@@ -119,6 +119,9 @@ export default function CurrentSearchCriteria({ totalCount = 0 }: CurrentSearchC
       parts.push('Jobs');
     }
 
+    // Add "jobs" after keyword
+    parts.push('jobs');
+
     // Add location
     if (currentSearch.cityId && locations[parseInt(currentSearch.cityId)]) {
       const location = locations[parseInt(currentSearch.cityId)];
@@ -131,13 +134,6 @@ export default function CurrentSearchCriteria({ totalCount = 0 }: CurrentSearchC
       } else {
         parts.push('in UAE');
       }
-    } else {
-      parts.push('worldwide');
-    }
-
-    // Add experience
-    if (currentSearch.experience) {
-      parts.push(`for ${currentSearch.experience} years of experience`);
     }
 
     return parts.join(' ');

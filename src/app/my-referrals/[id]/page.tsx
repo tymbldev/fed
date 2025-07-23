@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -63,6 +63,7 @@ export default function ReferralApplications() {
   const [currencies, setCurrencies] = useState<{ [key: number]: string }>({});
   const [countries, setCountries] = useState<{ [key: number]: string }>({});
   const [cities, setCities] = useState<{ [key: number]: { city: string; country: string } }>({});
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const fetchCurrencies = async () => {
     try {
@@ -181,6 +182,36 @@ export default function ReferralApplications() {
     fetchCountries();
     fetchApplications();
   }, [referralId]);
+
+    // Auto-scroll animation to indicate scrollability
+  useEffect(() => {
+    // Wait for the component to be fully rendered and data loaded
+    const timer = setTimeout(() => {
+      if (scrollContainerRef.current && !isLoading) {
+        const container = scrollContainerRef.current;
+        console.log('Starting scroll animation');
+
+        // Scroll to the right after a short delay
+        setTimeout(() => {
+          container.scrollTo({ left: 100, behavior: 'smooth' });
+          console.log('Scrolled right');
+        }, 500);
+
+        // Scroll back to the left
+        setTimeout(() => {
+          container.scrollTo({ left: 0, behavior: 'smooth' });
+          console.log('Scrolled back');
+        }, 1500);
+
+        // Stop animation after completion
+        setTimeout(() => {
+          console.log('Animation complete');
+        }, 2500);
+      }
+    }, 1000); // Wait 1 second after component mounts
+
+    return () => clearTimeout(timer);
+  }, [isLoading]); // Run when loading state changes
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -341,43 +372,52 @@ export default function ReferralApplications() {
   return (
     <div className="max-w-7xl mx-auto p-4 sm:p-6 bg-gray-50 min-h-screen">
       {/* Header */}
-      <div className="mb-6 sm:mb-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+      <div className="mb-4 sm:mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
           <div>
             <Link
               href="/my-referrals"
-              className="inline-flex items-center text-sm text-indigo-600 hover:text-indigo-500 mb-4"
+              className="inline-flex items-center text-xs sm:text-sm text-indigo-600 hover:text-indigo-500 mb-2 sm:mb-4"
             >
-              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
               </svg>
               Back to My Referrals
             </Link>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Referral Applications</h1>
+            <h1 className="text-lg sm:text-3xl font-bold text-gray-900">Referral Applications</h1>
             {referralDetails && (
-              <div className="mt-2">
-                <h2 className="text-lg sm:text-xl font-semibold text-gray-700">{referralDetails.referralTitle}</h2>
-                <p className="text-gray-500">
+              <div className="mt-1 sm:mt-2">
+                <h2 className="text-sm sm:text-xl font-semibold text-gray-700">{referralDetails.referralTitle}</h2>
+                <p className="text-xs sm:text-base text-gray-500">
                   {referralDetails.referralCompany}
                 </p>
+                {referralDetails.referralDesignation && (
+                  <p className="text-xs sm:text-sm text-indigo-600 font-medium mt-1">
+                    {referralDetails.referralDesignation}
+                  </p>
+                )}
               </div>
             )}
           </div>
           <div className="text-center sm:text-right">
-            <p className="text-sm text-gray-500">Total Applications</p>
-            <p className="text-2xl font-bold text-indigo-600">{applications.length}</p>
+            <p className="text-xs sm:text-sm text-gray-500">Total Applications</p>
+            <p className="text-lg sm:text-2xl font-bold text-indigo-600">{applications.length}</p>
           </div>
         </div>
       </div>
 
       {/* Filter */}
-      <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-        <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
-          <span className="text-sm font-medium text-gray-700">Filter by Status:</span>
-          <div className="flex flex-wrap gap-2">
+      <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4 mb-4 sm:mb-6 -mx-4 sm:mx-0">
+        <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+          <span className="text-xs sm:text-sm font-medium text-gray-700">Filter by Status:</span>
+          <div className="relative">
+            <div
+              ref={scrollContainerRef}
+              className="flex gap-2 overflow-x-auto hide-scrollbar pb-2 sm:pb-0 sm:flex-wrap sm:overflow-visible"
+            >
             <button
               onClick={() => setStatusFilter('ALL')}
-              className={`px-3 py-2 rounded-md text-xs sm:text-sm font-medium border ${
+              className={`px-3 py-2 rounded-md text-xs sm:text-sm font-medium border flex-shrink-0 ${
                 statusFilter === 'ALL'
                   ? 'bg-gray-100 text-gray-800 border-gray-300'
                   : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
@@ -387,7 +427,7 @@ export default function ReferralApplications() {
             </button>
             <button
               onClick={() => setStatusFilter('PENDING')}
-              className={`px-3 py-2 rounded-md text-xs sm:text-sm font-medium border ${
+              className={`px-3 py-2 rounded-md text-xs sm:text-sm font-medium border flex-shrink-0 ${
                 statusFilter === 'PENDING'
                   ? 'bg-gray-100 text-gray-800 border-gray-300'
                   : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
@@ -397,7 +437,7 @@ export default function ReferralApplications() {
             </button>
             <button
               onClick={() => setStatusFilter('SHORTLISTED')}
-              className={`px-3 py-2 rounded-md text-xs sm:text-sm font-medium border ${
+              className={`px-3 py-2 rounded-md text-xs sm:text-sm font-medium border flex-shrink-0 ${
                 statusFilter === 'SHORTLISTED'
                   ? 'bg-gray-100 text-gray-800 border-gray-300'
                   : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
@@ -407,7 +447,7 @@ export default function ReferralApplications() {
             </button>
             <button
               onClick={() => setStatusFilter('REJECTED')}
-              className={`px-3 py-2 rounded-md text-xs sm:text-sm font-medium border ${
+              className={`px-3 py-2 rounded-md text-xs sm:text-sm font-medium border flex-shrink-0 ${
                 statusFilter === 'REJECTED'
                   ? 'bg-gray-100 text-gray-800 border-gray-300'
                   : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
@@ -415,6 +455,7 @@ export default function ReferralApplications() {
             >
               Rejected ({applications.filter((app) => app.applicationStatus === 'REJECTED').length})
             </button>
+            </div>
           </div>
         </div>
       </div>
@@ -425,25 +466,25 @@ export default function ReferralApplications() {
           <p className="text-gray-500">No applications found for this referral.</p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {filteredApplications.map((application, index) => (
             <div key={application.id} className="bg-white rounded-lg shadow-sm border border-gray-200">
-              <div className="p-4 sm:p-6">
-                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between space-y-4 sm:space-y-0">
+              <div className="p-3 sm:p-6">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between space-y-3 sm:space-y-0">
                   <div className="flex-1">
-                    <div className="flex items-center mb-2">
-                      <span className="text-gray-500 mr-2">{index + 1}.</span>
-                      <h3 className="text-base sm:text-lg font-bold text-gray-800">
+                    <div className="flex items-center mb-1 sm:mb-2">
+                      <span className="text-gray-500 mr-2 text-xs sm:text-sm">{index + 1}.</span>
+                      <h3 className="text-sm sm:text-lg font-bold text-gray-800">
                         {application.applicantName}
                         {application.applicantYearsOfExperience !== undefined && application.applicantMonthsOfExperience !== undefined &&
                           ` (${formatExperience(application.applicantYearsOfExperience, application.applicantMonthsOfExperience)})`}
                       </h3>
                     </div>
-                    <p className="text-sm text-gray-600 ml-5 mb-4">
+                    <p className="text-xs sm:text-sm text-gray-600 ml-5 mb-3 sm:mb-4">
                       {application.applicantDesignation || application.referralDesignation || 'Designation not specified'}
                     </p>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 sm:gap-x-6 gap-y-3 sm:gap-y-4 text-sm ml-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-3 sm:gap-x-6 gap-y-2 sm:gap-y-4 text-xs sm:text-sm ml-5">
                       <div>
                         <p className="text-gray-500">Current Company</p>
                         <p className="text-gray-800 font-semibold">{application.applicantCompany || 'Not specified'}</p>
@@ -536,26 +577,26 @@ export default function ReferralApplications() {
               </div>
 
               {/* Skills Section - Full Width */}
-              <div className="px-4 sm:px-6 py-4 border-t border-gray-200">
-                <p className="text-sm font-medium text-gray-700 mb-2">Key Skills</p>
-                <div className="flex flex-wrap gap-2">
+              <div className="px-3 sm:px-6 py-3 sm:py-4 border-t border-gray-200">
+                <p className="text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Key Skills</p>
+                <div className="flex flex-wrap gap-1 sm:gap-2">
                   {(application.applicantSkillNames || application.applicantSkills || []).length > 0 ? (
                     (application.applicantSkillNames || application.applicantSkills || []).map((skill, skillIndex) => (
                       <span
                         key={skillIndex}
-                        className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-indigo-100 text-indigo-800"
+                        className="inline-flex items-center px-1.5 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800"
                       >
                         {skill}
                       </span>
                     ))
                   ) : (
-                    <span className="text-gray-500 text-sm">Not mentioned</span>
+                    <span className="text-gray-500 text-xs sm:text-sm">Not mentioned</span>
                   )}
                 </div>
               </div>
 
-              <div className="bg-gray-50 px-4 sm:px-6 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
-                <p className="text-sm text-gray-500 text-center sm:text-left">
+              <div className="bg-gray-50 px-3 sm:px-6 py-2 sm:py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-1 sm:space-y-0">
+                <p className="text-xs sm:text-sm text-gray-500 text-center sm:text-left">
                   Applied on {formatDate(application.createdAt)}
                 </p>
                 {(application.resumeUrl || application.applicantResume) && (
@@ -565,9 +606,9 @@ export default function ReferralApplications() {
                       application.applicantName,
                       application.applicantResumeContentType
                     )}
-                    className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200 w-full sm:w-auto"
+                    className="inline-flex items-center justify-center px-3 sm:px-4 py-1.5 sm:py-2 border border-transparent text-xs sm:text-sm font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200 w-full sm:w-auto"
                   >
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
                     Download Resume

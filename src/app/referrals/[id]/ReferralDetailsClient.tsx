@@ -6,6 +6,7 @@ import { BASE_URL } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import LoginForm from '../../components/auth/LoginForm';
 import { Referral, Referrer } from '../../utils/serverData';
+import { SWITCH_CONFIG } from '../../config/switchConfig';
 
 interface ReferralDetailsClientProps {
   referral: Referral;
@@ -13,6 +14,7 @@ interface ReferralDetailsClientProps {
   initialApplicationStatus: string | null;
   initialApplicationId: number | null;
   initialAppliedReferrer: { id: number; name: string; designation: string } | null;
+  applicationCreatedAt: string | null;
 }
 
 export default function ReferralDetailsClient({
@@ -20,7 +22,8 @@ export default function ReferralDetailsClient({
   referrers,
   initialApplicationStatus,
   initialApplicationId,
-  initialAppliedReferrer
+  initialAppliedReferrer,
+  applicationCreatedAt
 }: ReferralDetailsClientProps) {
   const { isLoggedIn } = useAuth();
   const [applicationStatus, setApplicationStatus] = useState<string | null>(initialApplicationStatus);
@@ -32,6 +35,23 @@ export default function ReferralDetailsClient({
   const [isSwitchingReferrer, setIsSwitchingReferrer] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [pendingApplication, setPendingApplication] = useState(false);
+        const [showSwitchOption, setShowSwitchOption] = useState(false);
+
+  // Check if we should show the switch referrer option based on application date
+  // The switch option becomes available after a configurable number of days (default: 3 days)
+  useEffect(() => {
+    if (applicationCreatedAt) {
+      const appliedDate = new Date(applicationCreatedAt);
+      const currentDate = new Date();
+      const daysDifference = Math.floor((currentDate.getTime() - appliedDate.getTime()) / (1000 * 60 * 60 * 24));
+
+      console.log("daysDifference", daysDifference);
+
+      if (daysDifference >= SWITCH_CONFIG.SHOW_APPLIED_DATE_AFTER_DAYS) {
+        setShowSwitchOption(true);
+      }
+    }
+  }, [applicationCreatedAt]);
 
   // Auto-select referrer if only one available
   useEffect(() => {
@@ -78,6 +98,8 @@ export default function ReferralDetailsClient({
       }
 
       toast.success('Successfully applied for the referral!');
+      const data = await response.json();
+      console.log(data);
       setApplicationStatus('Applied');
 
       if (targetReferrerId) {
@@ -188,32 +210,37 @@ export default function ReferralDetailsClient({
               You have already applied for this referral - Status: {applicationStatus}
             </span>
           </div>
-          {appliedReferrer && (
-            <div className="mt-3 p-3 bg-white rounded-lg border border-green-200">
-              <p className="text-sm text-green-800 font-medium mb-2">Applied with:</p>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                    <span className="text-green-600 font-semibold text-xs">
-                      {appliedReferrer.name.charAt(0).toUpperCase()}
-                    </span>
+                      {appliedReferrer && (
+              <div className="mt-3 p-3 bg-white rounded-lg border border-green-200">
+                <p className="text-sm text-green-800 font-medium mb-2">Applied with:</p>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                      <span className="text-green-600 font-semibold text-xs">
+                        {appliedReferrer.name.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-green-900">{appliedReferrer.name}</p>
+                      <p className="text-xs text-green-700">{appliedReferrer.designation}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-green-900">{appliedReferrer.name}</p>
-                    <p className="text-xs text-green-700">{appliedReferrer.designation}</p>
-                  </div>
+                  {applicationStatus === 'PENDING' && referrers.length > 1 && showSwitchOption && (
+                    <button
+                      onClick={() => setShowSwitchReferrerModal(true)}
+                      className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors"
+                    >
+                      Switch Referrer
+                    </button>
+                  )}
                 </div>
-                {applicationStatus === 'PENDING' && referrers.length > 1 && (
-                  <button
-                    onClick={() => setShowSwitchReferrerModal(true)}
-                    className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors"
-                  >
-                    Switch Referrer
-                  </button>
+                {applicationStatus === 'PENDING' && referrers.length > 1 && !showSwitchOption && applicationCreatedAt && (
+                  <div className="mt-2 text-xs text-gray-500">
+                    Switch referrer option will be available after {SWITCH_CONFIG.SHOW_APPLIED_DATE_AFTER_DAYS} days from application date
+                  </div>
                 )}
               </div>
-            </div>
-          )}
+            )}
         </div>
       )}
 

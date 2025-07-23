@@ -275,6 +275,7 @@ export async function fetchApplicationStatus(jobId: string, token: string | null
     }
 
     const data: Application[] = await response.json();
+    console.log(data);
     const application = data.find(app => app.jobId === Number(jobId));
 
     return {

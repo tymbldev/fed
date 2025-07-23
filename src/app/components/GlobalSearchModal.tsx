@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import ReferralSearch from './ReferralSearch';
 
 interface SearchFormData {
@@ -22,23 +22,72 @@ interface GlobalSearchModalProps {
 export default function GlobalSearchModal({ isOpen, onClose, initialValues }: GlobalSearchModalProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const [isLoading, setIsLoading] = useState(false);
   const [navigationInProgress, setNavigationInProgress] = useState(false);
 
+  // Only read URL parameters if we're on a search results page
+  const isSearchResultsPage = pathname === '/referrals' || pathname === '/search-referrals';
+
   const [currentSearchData, setCurrentSearchData] = useState<SearchFormData>({
-    keyword: initialValues?.keyword || searchParams.get('keyword') || '',
-    keywordId: initialValues?.keywordId || searchParams.get('keywordId') || '',
-    countryId: initialValues?.countryId || searchParams.get('countryId') || '',
-    cityId: initialValues?.cityId || searchParams.get('cityId') || '',
-    experience: initialValues?.experience || searchParams.get('experience') || ''
+    keyword: '',
+    keywordId: '',
+    countryId: '',
+    cityId: '',
+    experience: ''
   });
 
+  // Handle initial values and URL parameters when modal opens or values change
   useEffect(() => {
-    // Update current search data when initialValues change
     if (initialValues) {
+      // If explicit initial values are provided, use them
       setCurrentSearchData(initialValues);
+    } else if (isSearchResultsPage) {
+      // Only read from URL params if we're on a search results page
+      setCurrentSearchData({
+        keyword: searchParams.get('keyword') || '',
+        keywordId: searchParams.get('keywordId') || '',
+        countryId: searchParams.get('countryId') || '',
+        cityId: searchParams.get('cityId') || '',
+        experience: searchParams.get('experience') || ''
+      });
+    } else {
+      // Reset to empty values except country (keep India as default) if not on search results page
+      setCurrentSearchData({
+        keyword: '',
+        keywordId: '',
+        countryId: '31', // Keep India as default
+        cityId: '',
+        experience: ''
+      });
     }
-  }, [initialValues]);
+  }, [initialValues, isSearchResultsPage, searchParams]);
+
+  // Reset search data when modal opens/closes
+  useEffect(() => {
+    if (isOpen) {
+      // When modal opens, ensure we have the correct data based on current context
+      if (initialValues) {
+        setCurrentSearchData(initialValues);
+      } else if (isSearchResultsPage) {
+        setCurrentSearchData({
+          keyword: searchParams.get('keyword') || '',
+          keywordId: searchParams.get('keywordId') || '',
+          countryId: searchParams.get('countryId') || '',
+          cityId: searchParams.get('cityId') || '',
+          experience: searchParams.get('experience') || ''
+        });
+      } else {
+        setCurrentSearchData({
+          keyword: '',
+          keywordId: '',
+          countryId: '31', // Keep India as default
+          cityId: '',
+          experience: ''
+        });
+      }
+    }
+  }, [isOpen, initialValues, isSearchResultsPage, searchParams]);
 
   // Reset loading state when modal opens/closes
   useEffect(() => {

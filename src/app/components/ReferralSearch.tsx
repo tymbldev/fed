@@ -26,7 +26,7 @@ export default function ReferralSearch({ onSearch, className = '', initialValues
   const [formData, setFormData] = useState<SearchFormData>({
     keyword: initialValues?.keyword || '',
     keywordId: initialValues?.keywordId || '',
-    countryId: initialValues?.countryId || '1', // Default to India (assuming countryId 1 is India)
+    countryId: initialValues?.countryId || '31', // Default to India (assuming countryId 1 is India)
     cityId: initialValues?.cityId || '',
     experience: initialValues?.experience || ''
   });
@@ -35,6 +35,15 @@ export default function ReferralSearch({ onSearch, className = '', initialValues
   useEffect(() => {
     if (initialValues) {
       setFormData(initialValues);
+    } else {
+      // Reset to empty values except country (keep India as default) when initialValues is undefined/null
+      setFormData({
+        keyword: '',
+        keywordId: '',
+        countryId: '31', // Keep India as default
+        cityId: '',
+        experience: ''
+      });
     }
   }, [initialValues]);
 
@@ -124,7 +133,7 @@ export default function ReferralSearch({ onSearch, className = '', initialValues
     const clearedData = {
       keyword: '',
       keywordId: '',
-      countryId: '',
+      countryId: '31', // Keep India as default when clearing
       cityId: '',
       experience: ''
     };

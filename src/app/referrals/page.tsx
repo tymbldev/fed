@@ -98,7 +98,7 @@ async function fetchReferrals(page: number = 0, searchFilters: {
     };
 
     // Add search filters if they exist
-    if (searchFilters.keywordId) requestBody.keywordId = searchFilters.keywordId;
+    // if (searchFilters.keywordId) requestBody.keywordId = searchFilters.keywordId;
     if (searchFilters.keyword) requestBody.keywords = [searchFilters.keyword];
     if (searchFilters.countryId) requestBody.countryId = parseInt(searchFilters.countryId);
     if (searchFilters.cityId) requestBody.cityId = parseInt(searchFilters.cityId);
@@ -107,6 +107,8 @@ async function fetchReferrals(page: number = 0, searchFilters: {
       requestBody.minExperience = experienceValue;
       requestBody.maxExperience = experienceValue;
     }
+
+    console.log("requestBody", requestBody);
 
     const response = await fetch(`${BASE_URL}/api/v1/jobsearch/search`, {
       method: 'POST',
@@ -122,6 +124,7 @@ async function fetchReferrals(page: number = 0, searchFilters: {
     }
 
     const data = await response.json();
+    console.log("data", data);
 
     // Handle different response structures
     const referralsData = data.jobs || data.content || data.data || data || [];
