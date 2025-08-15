@@ -7,9 +7,11 @@ import ReferralSearch from './ReferralSearch';
 interface SearchFormData {
   [key: string]: string;
   keyword: string;
-  keywordId: string;
-  countryId: string;
-  cityId: string;
+  // keywordId: string;
+  // countryId: string;
+  country: string;
+  // cityId: string;
+  city: string;
   experience: string;
 }
 
@@ -24,9 +26,11 @@ export default function ClientReferralSearch({ onSearch, initialValues: propInit
 
   const [initialValues, setInitialValues] = useState<SearchFormData>({
     keyword: propInitialValues?.keyword || searchParams.get('keyword') || '',
-    keywordId: propInitialValues?.keywordId || searchParams.get('keywordId') || '',
-    countryId: propInitialValues?.countryId || searchParams.get('countryId') || '',
-    cityId: propInitialValues?.cityId || searchParams.get('cityId') || '',
+    // keywordId: propInitialValues?.keywordId || searchParams.get('keywordId') || '',
+    // countryId: propInitialValues?.countryId || searchParams.get('countryId') || '',
+    country: propInitialValues?.country || searchParams.get('country') || '',
+    // cityId: propInitialValues?.cityId || searchParams.get('cityId') || '',
+    city: propInitialValues?.city || searchParams.get('city') || '',
     experience: propInitialValues?.experience || searchParams.get('experience') || ''
   });
 
@@ -34,9 +38,11 @@ export default function ClientReferralSearch({ onSearch, initialValues: propInit
     // Read URL parameters on component mount
     const searchData: SearchFormData = {
       keyword: propInitialValues?.keyword || searchParams.get('keyword') || '',
-      keywordId: propInitialValues?.keywordId || searchParams.get('keywordId') || '',
-      countryId: propInitialValues?.countryId || searchParams.get('countryId') || '',
-      cityId: propInitialValues?.cityId || searchParams.get('cityId') || '',
+      // keywordId: propInitialValues?.keywordId || searchParams.get('keywordId') || '',
+      // countryId: propInitialValues?.countryId || searchParams.get('countryId') || '',
+      country: propInitialValues?.country || searchParams.get('country') || '',
+      // cityId: propInitialValues?.cityId || searchParams.get('cityId') || '',
+      city: propInitialValues?.city || searchParams.get('city') || '',
       experience: propInitialValues?.experience || searchParams.get('experience') || ''
     };
     setInitialValues(searchData);

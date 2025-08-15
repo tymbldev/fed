@@ -123,6 +123,7 @@ function PostReferralForm() {
       value = e;
     } else {
       // Handle form input events
+      console.log('handleInputChange', e.target.name, e.target.value);
       name = e.target.name;
       value = e.target.value;
     }

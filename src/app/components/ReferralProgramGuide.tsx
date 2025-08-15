@@ -205,7 +205,7 @@ const ReferralProgramGuide: React.FC = () => {
                   S
                 </div>
                 <div>
-                  <h4 className="font-bold text-gray-900 dark:text-white">Sarah Chen</h4>
+                  <h4 className="font-bold text-gray-900 dark:text-white">Shreya Mehta</h4>
                   <p className="text-gray-600 dark:text-gray-300 text-sm">Software Engineer at Google</p>
                 </div>
               </div>
@@ -220,7 +220,7 @@ const ReferralProgramGuide: React.FC = () => {
                   M
                 </div>
                 <div>
-                  <h4 className="font-bold text-gray-900 dark:text-white">Michael Rodriguez</h4>
+                  <h4 className="font-bold text-gray-900 dark:text-white">Mohit Sharma</h4>
                   <p className="text-gray-600 dark:text-gray-300 text-sm">Product Manager at Microsoft</p>
                 </div>
               </div>
@@ -235,7 +235,7 @@ const ReferralProgramGuide: React.FC = () => {
                   A
                 </div>
                 <div>
-                  <h4 className="font-bold text-gray-900 dark:text-white">Alex Thompson</h4>
+                  <h4 className="font-bold text-gray-900 dark:text-white">Ananya Iyer</h4>
                   <p className="text-gray-600 dark:text-gray-300 text-sm">Data Scientist at Amazon</p>
                 </div>
               </div>

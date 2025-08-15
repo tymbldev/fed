@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { toast } from 'sonner';
-import { BASE_URL } from '../../services/api';
+import { BASE_URL, fetchDropdownOptions } from '../../services/api';
 
 interface ReferralApplication {
   id: number;
@@ -67,13 +67,9 @@ export default function ReferralApplications() {
 
   const fetchCurrencies = async () => {
     try {
-      const response = await fetch(`${BASE_URL}/api/v1/dropdowns/currencies`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch currencies');
-      }
-      const data = await response.json();
-      const currencyMap = data.reduce((acc: { [key: number]: string }, currency: { id: number; code: string }) => {
-        acc[currency.id] = currency.code;
+      const data = await fetchDropdownOptions('currencies');
+      const currencyMap = data.reduce((acc: { [key: number]: string }, currency: { value: string; label: string }) => {
+        acc[parseInt(currency.value)] = currency.label;
         return acc;
       }, {});
       setCurrencies(currencyMap);
@@ -85,11 +81,7 @@ export default function ReferralApplications() {
 
   const fetchCountries = async () => {
     try {
-      const response = await fetch(`${BASE_URL}/api/v1/dropdowns/locations`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch locations');
-      }
-      const data = await response.json();
+      const data = await fetchDropdownOptions('locations') as unknown as Array<{ countryId: number; country: string; cityId: number; city: string }>;
       const countryMap = data.reduce((acc: { [key: number]: string }, location: { countryId: number; country: string }) => {
         if (location.countryId && location.country) {
           acc[location.countryId] = location.country;

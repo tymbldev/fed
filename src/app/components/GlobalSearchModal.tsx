@@ -7,9 +7,10 @@ import ReferralSearch from './ReferralSearch';
 interface SearchFormData {
   [key: string]: string;
   keyword: string;
-  keywordId: string;
-  countryId: string;
-  cityId: string;
+  // countryId: string;
+  country: string;
+  // cityId: string;
+  city: string;
   experience: string;
 }
 
@@ -25,15 +26,17 @@ export default function GlobalSearchModal({ isOpen, onClose, initialValues }: Gl
   const pathname = usePathname();
   const [isLoading, setIsLoading] = useState(false);
   const [navigationInProgress, setNavigationInProgress] = useState(false);
+  const [animateIn, setAnimateIn] = useState(false);
 
   // Only read URL parameters if we're on a search results page
   const isSearchResultsPage = pathname === '/referrals' || pathname === '/search-referrals';
 
   const [currentSearchData, setCurrentSearchData] = useState<SearchFormData>({
     keyword: '',
-    keywordId: '',
-    countryId: '',
-    cityId: '',
+    // countryId: '',
+    country: '',
+    // cityId: '',
+    city: '',
     experience: ''
   });
 
@@ -46,18 +49,20 @@ export default function GlobalSearchModal({ isOpen, onClose, initialValues }: Gl
       // Only read from URL params if we're on a search results page
       setCurrentSearchData({
         keyword: searchParams.get('keyword') || '',
-        keywordId: searchParams.get('keywordId') || '',
-        countryId: searchParams.get('countryId') || '',
-        cityId: searchParams.get('cityId') || '',
+        countryId: '', // No longer reading from URL since we don't push IDs
+        country: searchParams.get('country') || '',
+        cityId: '', // No longer reading from URL since we don't push IDs
+        city: searchParams.get('city') || '',
         experience: searchParams.get('experience') || ''
       });
     } else {
-      // Reset to empty values except country (keep India as default) if not on search results page
+      // Reset to default values (including India) if not on search results page
       setCurrentSearchData({
         keyword: '',
-        keywordId: '',
-        countryId: '31', // Keep India as default
-        cityId: '',
+        // countryId: '31', // Default to India when no search context
+        country: 'India',
+        // cityId: '',
+        city: '',
         experience: ''
       });
     }
@@ -72,17 +77,19 @@ export default function GlobalSearchModal({ isOpen, onClose, initialValues }: Gl
       } else if (isSearchResultsPage) {
         setCurrentSearchData({
           keyword: searchParams.get('keyword') || '',
-          keywordId: searchParams.get('keywordId') || '',
-          countryId: searchParams.get('countryId') || '',
-          cityId: searchParams.get('cityId') || '',
+          // countryId: '', // No longer reading from URL since we don't push IDs
+          country: searchParams.get('country') || '',
+          // cityId: '', // No longer reading from URL since we don't push IDs
+          city: searchParams.get('city') || '',
           experience: searchParams.get('experience') || ''
         });
       } else {
         setCurrentSearchData({
           keyword: '',
-          keywordId: '',
-          countryId: '31', // Keep India as default
-          cityId: '',
+          // countryId: '31', // Default to India when opening modal with no context
+          country: 'India',
+          // cityId: '',
+          city: '',
           experience: ''
         });
       }
@@ -94,6 +101,15 @@ export default function GlobalSearchModal({ isOpen, onClose, initialValues }: Gl
     if (!isOpen) {
       setIsLoading(false);
       setNavigationInProgress(false);
+      setAnimateIn(false);
+    }
+  }, [isOpen]);
+
+  // Trigger enter animation on mount/open (desktop only styles applied via classes)
+  useEffect(() => {
+    if (isOpen) {
+      const id = requestAnimationFrame(() => setAnimateIn(true));
+      return () => cancelAnimationFrame(id);
     }
   }, [isOpen]);
 
@@ -105,14 +121,34 @@ export default function GlobalSearchModal({ isOpen, onClose, initialValues }: Gl
       // Create new URLSearchParams with current search params
       const params = new URLSearchParams(searchParams.toString());
 
-      // Update with new search data
-      Object.entries(searchData).forEach(([key, value]) => {
-        if (value) {
-          params.set(key, value);
-        } else {
-          params.delete(key);
-        }
-      });
+      // Only push display values to URL, not IDs
+      if (searchData.keyword) {
+        params.set('keyword', searchData.keyword);
+      } else {
+        params.delete('keyword');
+      }
+
+      if (searchData.country) {
+        params.set('country', searchData.country);
+      } else {
+        params.delete('country');
+      }
+
+      if (searchData.city) {
+        params.set('city', searchData.city);
+      } else {
+        params.delete('city');
+      }
+
+      if (searchData.experience) {
+        params.set('experience', searchData.experience);
+      } else {
+        params.delete('experience');
+      }
+
+      // Remove ID fields from URL
+      // params.delete('countryId');
+      // params.delete('cityId');
 
       // Reset to page 0 for new searches
       params.set('page', '0');
@@ -140,13 +176,19 @@ export default function GlobalSearchModal({ isOpen, onClose, initialValues }: Gl
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 z-40"
+        className="fixed inset-0 bg-black bg-opacity-50 z-40 animate-fade-in"
         onClick={isLoading || navigationInProgress ? undefined : onClose}
       />
 
       {/* Modal */}
       <div className="fixed inset-0 z-50">
-        <div className="bg-white h-full w-full flex flex-col">
+        <div
+          className={
+            `bg-white h-full w-full flex flex-col ` +
+            `md:transform md:transition-transform md:duration-500 md:ease-out ` +
+            (animateIn ? `md:translate-y-0` : `md:-translate-y-full`)
+          }
+        >
           {/* Modal Header */}
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
             <div className='container mx-auto px-4 py-4 flex items-center justify-between'>

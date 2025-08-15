@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import Designation from './fields/Designation';
+import React, { useState, useEffect, useCallback } from 'react';
+import Keywords from './fields/search/keywords';
 import Location from './fields/Location';
 import SingleExperience from './fields/SingleExperience';
 import { validateField } from '../utils/validation';
@@ -9,9 +9,10 @@ import { validateField } from '../utils/validation';
 interface SearchFormData {
   [key: string]: string;
   keyword: string;
-  keywordId: string;
-  countryId: string;
-  cityId: string;
+  country: string;
+  // countryId: string;
+  city: string;
+  // cityId: string;
   experience: string;
 }
 
@@ -20,28 +21,47 @@ interface ReferralSearchProps {
   className?: string;
   initialValues?: SearchFormData;
   isLoading?: boolean;
+  autoDefaultToIndia?: boolean;
 }
 
-export default function ReferralSearch({ onSearch, className = '', initialValues, isLoading = false }: ReferralSearchProps) {
-  const [formData, setFormData] = useState<SearchFormData>({
-    keyword: initialValues?.keyword || '',
-    keywordId: initialValues?.keywordId || '',
-    countryId: initialValues?.countryId || '31', // Default to India (assuming countryId 1 is India)
-    cityId: initialValues?.cityId || '',
-    experience: initialValues?.experience || ''
+export default function ReferralSearch({ onSearch, className = '', initialValues, isLoading = false, autoDefaultToIndia = false }: ReferralSearchProps) {
+  const [formData, setFormData] = useState<SearchFormData>(() => {
+    console.log('initialValues', initialValues);
+    // If initialValues are provided, use them exactly (including empty values)
+    if (initialValues) {
+      return {
+        keyword: initialValues.keyword || '',
+        country: initialValues.country || '',
+        // countryId: initialValues.countryId || '',
+        city: initialValues.city || '',
+        // cityId: initialValues.cityId || '',
+        experience: initialValues.experience || ''
+      };
+    }
+    // If no initialValues, start with empty values - Location component will set India as default
+    return {
+      keyword: '',
+      country: '',
+      // countryId: '',
+      city: '',
+      // cityId: '',
+      experience: ''
+    };
   });
 
   // Update form data when initialValues change
   useEffect(() => {
     if (initialValues) {
+      // Use initialValues exactly as provided (preserving explicitly cleared values)
       setFormData(initialValues);
     } else {
-      // Reset to empty values except country (keep India as default) when initialValues is undefined/null
+      // Reset to empty values when no initialValues - Location component will set India as default
       setFormData({
         keyword: '',
-        keywordId: '',
-        countryId: '31', // Keep India as default
-        cityId: '',
+        country: '',
+        // countryId: '',
+        city: '',
+        // cityId: '',
         experience: ''
       });
     }
@@ -50,7 +70,8 @@ export default function ReferralSearch({ onSearch, className = '', initialValues
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    console.log('handleInputChange', e.target.name, e.target.value);
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -58,14 +79,15 @@ export default function ReferralSearch({ onSearch, className = '', initialValues
     }));
 
     // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors(prev => {
+    setErrors(prev => {
+      if (prev[name]) {
         const newErrors = { ...prev };
         delete newErrors[name];
         return newErrors;
-      });
-    }
-  };
+      }
+      return prev;
+    });
+  }, []);
 
   const handleBlur = (field: string) => {
     setTouched(prev => ({
@@ -74,19 +96,18 @@ export default function ReferralSearch({ onSearch, className = '', initialValues
     }));
 
     // Only validate required fields on blur
-    if (field === 'keywordId' || field === 'keyword') {
+    if (field === 'keyword') {
       // Validate keyword field (required)
-      const fieldToValidate = field === 'keywordId' ? 'keyword' : field;
-      const error = validateField(fieldToValidate, formData[fieldToValidate] || '', true);
+      const error = validateField(field, formData[field] || '', true);
       if (error) {
         setErrors(prev => ({
           ...prev,
-          [fieldToValidate]: error
+          [field]: error
         }));
       } else {
         setErrors(prev => {
           const newErrors = { ...prev };
-          delete newErrors[fieldToValidate];
+          delete newErrors[field];
           return newErrors;
         });
       }
@@ -107,8 +128,6 @@ export default function ReferralSearch({ onSearch, className = '', initialValues
     // Mark all fields as touched to show errors
     const newTouched = {
       keyword: true,
-      countryId: true,
-      cityId: true,
       experience: true
     };
 
@@ -117,28 +136,21 @@ export default function ReferralSearch({ onSearch, className = '', initialValues
 
     // Only submit if there are no errors
     if (Object.keys(newErrors).length === 0) {
-      // Filter out keywordId if its value is "1000" (default/placeholder value)
-      const searchData = { ...formData };
-      if (searchData.keywordId === '1000') {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { keywordId, ...filteredData } = searchData;
-        onSearch(filteredData as SearchFormData);
-      } else {
-        onSearch(searchData);
-      }
+      onSearch(formData);
     }
   };
 
   const handleClear = () => {
     const clearedData = {
       keyword: '',
-      keywordId: '',
-      countryId: '31', // Keep India as default when clearing
-      cityId: '',
+      country: '',
+      // countryId: '',
+      city: '',
+      // cityId: '',
       experience: ''
     };
     setFormData(clearedData);
-    onSearch(clearedData);
+    // onSearch(clearedData);
   };
 
   return (
@@ -148,7 +160,7 @@ export default function ReferralSearch({ onSearch, className = '', initialValues
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Keyword Field - Using existing component with custom labels */}
           <div className="md:col-span-1">
-            <Designation
+            <Keywords
               formData={formData}
               errors={errors}
               touched={touched}
@@ -156,7 +168,7 @@ export default function ReferralSearch({ onSearch, className = '', initialValues
               onBlur={handleBlur}
               required={true}
               label="Keyword"
-              fieldName="keywordId"
+              fieldName="keyword"
               updateFieldName="keyword"
               placeholder="Enter job title or designation..."
             />
@@ -174,6 +186,8 @@ export default function ReferralSearch({ onSearch, className = '', initialValues
               layout="horizontal"
               countryLabel="Country"
               cityLabel="City"
+              setValue={true}
+              autoDefaultToIndia={autoDefaultToIndia}
             />
           </div>
 

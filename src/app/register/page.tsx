@@ -255,8 +255,8 @@ function RegisterForm() {
               onBlur={(field) => setTouched(prev => ({ ...prev, [field]: true }))}
               required={true}
               layout="horizontal"
-              countryLabel="Preferred Country"
-              cityLabel="Preferred City"
+              countryLabel="Current Country"
+              cityLabel="Current City"
             />
           </div>
         );
@@ -369,21 +369,23 @@ function RegisterForm() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    {currentStep === 4 ? 'Completing Setup...' : 'Saving...'}
+                    {currentStep === 4 ? 'Completing Profile...' : 'Saving...'}
                   </div>
                 ) : (
-                  currentStep === 4 ? 'Complete Setup' : 'Save & Continue'
+                  currentStep === 4 ? 'Complete Profile' : 'Save & Continue'
                 )}
               </button>
             </div>
           </form>
 
-          <p className="text-center mt-8 text-gray-600 dark:text-gray-400">
-            Already have an account?{' '}
-            <Link href="/login" className="text-primary-500 dark:text-primary-400 hover:text-primary-600 dark:hover:text-primary-300">
-              Sign in
-            </Link>
-          </p>
+          {currentStep === 1 && (
+            <p className="text-center mt-8 text-gray-600 dark:text-gray-400">
+              Already have an account?{' '}
+              <Link href="/login" className="text-primary-500 dark:text-primary-400 hover:text-primary-600 dark:hover:text-primary-300">
+                Sign in
+              </Link>
+            </p>
+          )}
         </div>
       </div>
     </div>

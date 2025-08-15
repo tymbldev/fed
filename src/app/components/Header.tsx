@@ -49,6 +49,12 @@ export default function Header() {
 
   useEffect(() => {
     const handleScroll = () => {
+      // Only apply scroll behavior on desktop (md breakpoint and above)
+      if (window.innerWidth < 768) {
+        setIsVisible(true);
+        return;
+      }
+
       const currentScrollY = window.scrollY;
 
       // Show header when scrolling up or at the top
@@ -61,10 +67,19 @@ export default function Header() {
       setLastScrollY(currentScrollY);
     };
 
+    // Handle resize events to update behavior when screen size changes
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setIsVisible(true);
+      }
+    };
+
     window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleResize, { passive: true });
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleResize);
     };
   }, [lastScrollY]);
 
@@ -119,7 +134,7 @@ export default function Header() {
 
   return (
     <>
-      <header className={`sticky top-0 z-50 bg-white dark:bg-gray-800 shadow-sm transition-transform duration-300 ${
+      <header className={`md:sticky top-0 z-50 bg-white dark:bg-gray-800 shadow-sm transition-transform duration-300 ${
         isVisible ? 'translate-y-0' : '-translate-y-full'
       }`}>
         <nav className="container mx-auto px-4 py-4">
@@ -226,7 +241,7 @@ export default function Header() {
             }`}
           >
             {/* Drawer Content */}
-            <div className="p-6 space-y-4 overflow-y-auto max-h-[calc(100vh-80px)]">
+            <div className="py-6 px-2 space-y-4 overflow-y-auto max-h-[calc(100vh-80px)]">
               {/* Main Navigation Items */}
               <div className="space-y-2">
                 {navItems.map((item) => (

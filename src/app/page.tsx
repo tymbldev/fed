@@ -21,7 +21,7 @@ export default async function Home() {
             <div className="animate-fade-in-up">
               <h1 className="text-4xl md:text-7xl lg:text-8xl font-black mb-8 bg-gradient-to-r from-primary-500 via-secondary-500 to-primary-600 dark:from-primary-400 dark:via-secondary-400 dark:to-primary-300 text-transparent bg-clip-text leading-tight">
                 Unlock Your
-                <span className="block text-4xl md:text-5xl lg:text-6xl mt-2">Career Potential</span>
+                <span className="block text-4xl md:text-5xl lg:text-6xl md:mt-2">Career Potential</span>
               </h1>
               <p className="text-xl md:text-2xl text-gray-700 dark:text-gray-200 mb-10 max-w-3xl mx-auto leading-relaxed font-medium">
                 Discover exclusive job opportunities through trusted referrals.

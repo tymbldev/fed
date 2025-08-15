@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 import { toast } from 'sonner';
 import { BASE_URL } from '../../services/api';
+import { isMobile } from '../../utils/deviceUtils';
 
 interface LoginFormProps {
   isModal?: boolean;
@@ -83,6 +84,20 @@ export default function LoginForm({
     }
   };
 
+    const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    // Scroll the input field to the top of the viewport only on mobile
+    console.log('focus');
+
+    // Check if screen width is mobile (768px and below)
+    if (isMobile()) {
+      e.target.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+        inline: 'nearest'
+      });
+    }
+  };
+
   const handleCancel = () => {
     if (onCancel) {
       onCancel();
@@ -101,6 +116,7 @@ export default function LoginForm({
           type="email"
           value={email}
           onChange={handleInputChange}
+          onFocus={handleInputFocus}
           required
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           placeholder="Enter your email"
@@ -116,6 +132,7 @@ export default function LoginForm({
           type="password"
           value={password}
           onChange={handleInputChange}
+          onFocus={handleInputFocus}
           required
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           placeholder="Enter your password"

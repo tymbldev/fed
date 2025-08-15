@@ -105,7 +105,8 @@ html {
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.3s ease-in-out;
+  animation: fadeIn 0.35s ease-in-out both;
+  will-change: opacity;
 }
 
 /* Slide up animation */
@@ -138,6 +139,35 @@ html {
 
 .animate-slide-down {
   animation: slideDown 0.3s ease-out;
+}
+
+/* Slide from top animation */
+@keyframes slideFromTop {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-from-top {
+  animation: slideFromTop 0.45s ease-out both;
+  will-change: transform, opacity;
+}
+
+/* Desktop-only animation helpers */
+@media (min-width: 768px) {
+  .animate-slide-from-top-desktop {
+    animation: slideFromTop 0.45s ease-out both;
+    will-change: transform, opacity;
+  }
+  .animate-fade-in-desktop {
+    animation: fadeIn 0.35s ease-in-out both;
+    will-change: opacity;
+  }
 }
 
 /* Base styles for common elements */

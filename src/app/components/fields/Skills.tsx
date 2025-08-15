@@ -108,7 +108,7 @@ const Skills: React.FC<SkillsProps> = ({
   };
 
   return (
-    <div className="skills-field w-full mb-4">
+    <div className="skills-field w-full">
       <TypeAheadField
         label={label}
         name={fieldName === 'skillIds' ? 'skillNames' : fieldName}

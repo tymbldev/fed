@@ -7,6 +7,7 @@ import {
   fetchReferrers,
   fetchApplicationStatus
 } from '../../utils/serverData';
+import Link from 'next/link';
 
 // Force dynamic rendering since this page uses cookies for authentication
 export const dynamic = 'force-dynamic';
@@ -110,7 +111,7 @@ export default async function ReferralDetailsPage({
           {/* Header Section */}
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-gray-900 mb-1 text-left">{referral.title}</h1>
-            <div className="text-base text-gray-500 font-medium mb-2 text-left">{referral.company}</div>
+            <Link href={`/companies/${referral.companyId}`} className="text-base text-gray-500 font-medium mb-2 text-left hover:underline">{referral.company}</Link>
             <div className="flex items-center text-xs text-gray-400 mb-1 text-left">
               <span>Posted on {formatDate(referral.createdAt)}</span>
             </div>

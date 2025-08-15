@@ -22,7 +22,7 @@ export default function BottomNav() {
     if (isLoggedIn) {
       router.push('/profile');
     } else {
-      router.push('/login?redirect=/profile');
+      router.push('/register?redirect=/profile');
     }
   };
 

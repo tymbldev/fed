@@ -7,13 +7,16 @@ interface JobTupleProps {
   title: string;
   description: string;
   company: string;
+  companyId?: number;
   cityId: number;
   minExperience?: number;
   maxExperience?: number;
   openingCount?: number;
   createdAt: string;
-  locations: { [key: number]: LocationOption };
+  locations?: { [key: number]: LocationOption };
   applicationStatus?: React.ReactNode;
+  cityName?: string;
+  countryName?: string;
 }
 
 export default function JobTuple({
@@ -21,14 +24,18 @@ export default function JobTuple({
   title,
   description,
   company,
+  companyId,
   cityId,
   minExperience,
   maxExperience,
   openingCount,
   createdAt,
   locations,
-  applicationStatus
+  applicationStatus,
+  cityName,
+  countryName
 }: JobTupleProps) {
+  console.log('companyId', companyId);
   // Utility to strip HTML tags from a string - consistent between server and client
   function stripHtml(html: string): string {
     if (!html) return '';
@@ -45,18 +52,35 @@ export default function JobTuple({
   };
 
   const getLocationDisplay = (cityId: number) => {
-    const location = locations[cityId];
-    if (!location) return 'Location not specified';
-    return `${location.city}, ${location.country}`;
+    // If we have cityName and countryName directly, use them
+    if (cityName && countryName) {
+      return `${cityName}, ${countryName}`;
+    }
+
+    // Otherwise, fall back to locations lookup
+    if (locations) {
+      const location = locations[cityId];
+      if (location) {
+        return `${location.city}, ${location.country}`;
+      }
+    }
+
+    return 'Location not specified';
   };
 
   return (
-    <Link href={`/referrals/${id}`} className="block">
-      <div className="bg-white rounded-lg shadow p-6 hover:shadow-md transition duration-200 cursor-pointer flex flex-col justify-between h-full">
+    <div className="block">
+      <div className="bg-white rounded-lg shadow p-6 hover:shadow-md transition duration-200 flex flex-col justify-between h-full">
         {/* Header: Title & Company */}
         <div>
-          <h3 className="text-xl font-semibold mb-1">{title}</h3>
-          <div className="text-blue-900 font-medium text-base mb-2">{company}</div>
+          <h3 className="text-xl font-semibold mb-1">
+            <Link href={`/referrals/${id}`} className="hover:underline">{title}</Link>
+          </h3>
+          {companyId ? (
+            <Link href={`/companies/${companyId}`} className="text-blue-900 font-medium text-base mb-2 hover:underline">{company}</Link>
+          ) : (
+            <div className="text-blue-900 font-medium text-base mb-2">{company}</div>
+          )}
         </div>
         {/* Meta: Experience & Location */}
         <div className="flex flex-col sm:flex-row sm:items-center text-gray-600 mb-2 sm:gap-6 gap-2">
@@ -72,7 +96,7 @@ export default function JobTuple({
           </div>
           <div className="flex items-center">
             <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ width: '20px', height: '20px' }}>
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 8 0 1111.314 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
             <span>{getLocationDisplay(cityId)}</span>
@@ -96,6 +120,6 @@ export default function JobTuple({
           <div className="text-gray-400 text-xs">{formatDateShort(createdAt)}</div>
         </div>
       </div>
-    </Link>
+    </div>
   );
 }

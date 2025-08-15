@@ -29,7 +29,7 @@ const Salary: React.FC<SalaryProps> = ({
   onBlur,
   required = false,
   label = "Salary",
-  currencyPlaceholder = "Select Currency",
+  currencyPlaceholder = "Currency",
   salaryPlaceholder = "Enter Salary",
   salaryFieldName,
   currencyFieldName

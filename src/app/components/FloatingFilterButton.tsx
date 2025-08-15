@@ -8,7 +8,9 @@ export default function FloatingFilterButton() {
 
   // Navigate to search page for mobile
   const handleMobileSearch = () => {
-    router.push(`/search-referrals?${searchParams.toString()}`);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('edit', 'true');
+    router.push(`/search-referrals?${params.toString()}`);
   };
 
   return (

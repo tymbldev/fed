@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 interface DropdownIndustry {
-  id: string;
+  id: number;
   name: string;
 }
 

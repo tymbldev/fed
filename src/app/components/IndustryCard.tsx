@@ -17,15 +17,17 @@ interface IndustryCardProps {
   industry: {
     industryId: number;
     industryName: string;
-    industryDescription: string;
-    totalJobCount: number;
+    industryDescription: string | null;
+    companyCount: number;
     topCompanies: Company[];
   };
 }
 
 const IndustryCard: React.FC<IndustryCardProps> = ({ industry }) => {
   const topCompanies = industry.topCompanies.slice(0, 3);
+  // console.log('industry', industry);
   const emptySlots = 3 - topCompanies.length;
+  const totalVacancies = industry.topCompanies.reduce((sum, company) => sum + company.activeJobCount, 0);
 
   return (
     <div
@@ -38,7 +40,7 @@ const IndustryCard: React.FC<IndustryCardProps> = ({ industry }) => {
               {industry.industryName}
             </div>
             <div className="text-sm text-gray-500 dark:text-gray-300 truncate">
-              {industry.totalJobCount} vacancies
+              {totalVacancies} vacancies
             </div>
           </div>
           <div className="ml-2 text-primary-600">

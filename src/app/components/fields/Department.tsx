@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import SelectField from '../common/SelectField';
-import { useDropdownOptions } from '../../hooks/useDropdownOptions';
+import { fetchDropdownOptions } from '../../services/api';
+import { toast } from 'sonner';
 
 interface DepartmentProps {
   formData: { [key: string]: string };
@@ -11,6 +12,11 @@ interface DepartmentProps {
   required?: boolean;
 }
 
+interface DepartmentOption {
+  id: string;
+  name: string;
+}
+
 const Department: React.FC<DepartmentProps> = ({
   formData,
   errors,
@@ -19,7 +25,32 @@ const Department: React.FC<DepartmentProps> = ({
   onBlur,
   required = false
 }) => {
-  const { options, isLoading } = useDropdownOptions('departments');
+  const [options, setOptions] = useState<{ value: string; label: string }[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadOptions = async () => {
+      try {
+        setIsLoading(true);
+        const data: DepartmentOption[] = await fetchDropdownOptions('departments') as unknown as DepartmentOption[];
+
+        // Transform the data to have value and label properties
+        const transformedOptions = data.map(dept => ({
+          value: dept.id,
+          label: dept.name
+        }));
+
+        setOptions(transformedOptions);
+      } catch (err) {
+        console.error('Failed to fetch departments:', err);
+        toast.error('Failed to load departments. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadOptions();
+  }, []);
 
   // Show loading state if data is still loading
   if (isLoading) {

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import SingleTypeAheadField from '../common/SingleTypeAheadField';
-import { fetchDropdownOptions } from '../../services/api';
+import SingleTypeAheadField from '../../common/SingleTypeAheadField';
+import { fetchDropdownOptions } from '../../../services/api';
 import { toast } from 'sonner';
 
-interface DesignationProps {
+interface KeywordsProps {
   formData: { [key: string]: string };
   errors: { [key: string]: string };
   touched: { [key: string]: boolean };
@@ -21,12 +21,12 @@ interface Option {
   name: string;
 }
 
-const Designation: React.FC<DesignationProps> = ({
+const Keywords: React.FC<KeywordsProps> = ({
   formData,
   errors,
   touched,
   onInputChange,
-  onBlur,
+  // onBlur,
   required = false,
   label = "Designation",
   fieldName = "designationId",
@@ -73,39 +73,10 @@ const Designation: React.FC<DesignationProps> = ({
     }
   };
 
-  const handleBlur = () => {
-    const fieldValue = formData[updateFieldName] || '';
-
-    if (fieldValue) {
-      // Check if the field value maps to an existing designation
-      const foundDesignation = options.find(opt =>
-        opt.name.toLowerCase() === fieldValue.toLowerCase()
-      );
-
-      if (foundDesignation) {
-        // Update fieldName with the found designation's ID
-        const fieldNameEvent = {
-          target: {
-            name: fieldName,
-            value: foundDesignation.id
-          }
-        } as React.ChangeEvent<HTMLInputElement>;
-        onInputChange(fieldNameEvent);
-      } else {
-        // No mapping found, set fieldName to 1000
-        const fieldNameEvent = {
-          target: {
-            name: fieldName,
-            value: '1000'
-          }
-        } as React.ChangeEvent<HTMLInputElement>;
-        onInputChange(fieldNameEvent);
-      }
-    }
-
-    // Call the original onBlur
-    onBlur(updateFieldName);
-  };
+  // const handleBlur = () => {
+  //   // Call the original onBlur
+  //   onBlur(updateFieldName);
+  // };
 
   const handleSuggestionSelect = (suggestion: { value: string; label: string }) => {
     const selectedOption = options.find(opt => opt.name === suggestion.label);
@@ -155,7 +126,7 @@ const Designation: React.FC<DesignationProps> = ({
       placeholder={placeholder}
       value={formData[updateFieldName] || ''}
       onChange={handleInputChange}
-      onBlur={handleBlur}
+      // onBlur={handleBlur}
       error={touched[updateFieldName] ? errors[updateFieldName] : undefined}
       suggestions={options.map(opt => ({
         value: opt.id,
@@ -169,4 +140,4 @@ const Designation: React.FC<DesignationProps> = ({
   );
 };
 
-export default Designation;
+export default Keywords;

@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { BASE_URL } from './../../services/api';
+import { BASE_URL, fetchDropdownOptions } from './../../services/api';
 import IndustryDropdown from './../../components/IndustryDropdown';
 import Pagination from './../../components/Pagination';
 
@@ -27,8 +27,10 @@ interface Company {
   specialties: string;
   activeJobCount?: number;
 }
-
-
+interface IndustryOption {
+  id: number;
+  name: string;
+}
 
 interface SpringBootPagination {
   sort: {
@@ -63,18 +65,20 @@ interface CompaniesResponse {
   empty: boolean;
 }
 
-async function getIndustries(): Promise<{ id: string; name: string }[]> {
-  const res = await fetch(`${BASE_URL}/api/v1/dropdowns/industries`, {
-    next: { revalidate: 0 } // Cache for 1 hour
-  });
-  if (!res.ok) throw new Error('Failed to fetch industries');
-  return res.json();
+
+async function getIndustries(): Promise<IndustryOption[]> {
+  console.log('getIndustries');
+  const data = await fetchDropdownOptions('industries') as unknown as IndustryOption[];;
+  return data
 }
 
 async function getCompaniesByIndustry(industryId: number, page: number = 0, limit: number = 12): Promise<CompaniesResponse> {
   const res = await fetch(`${BASE_URL}/api/v1/companies/by-industry/${industryId}?page=${page}&limit=${limit}`, {
-    next: { revalidate: 0 } // Cache for 1 hour
+    method: 'GET',
+    next: { revalidate: 0 }
   });
+  console.log('url', `${BASE_URL}/api/v1/companies/by-industry/${industryId}?page=${page}&limit=${limit}`);
+  console.log('res', res);
   if (!res.ok) throw new Error('Failed to fetch companies');
   return res.json();
 }
@@ -91,6 +95,7 @@ const IndustryPage = async ({
   const currentPage = parseInt(page || '1');
 
   const industries = await getIndustries();
+  console.log('industries', industries);
   const selectedIndustry = industries.find(i => i.id.toString() === id.toString());
 
   if (!selectedIndustry) {

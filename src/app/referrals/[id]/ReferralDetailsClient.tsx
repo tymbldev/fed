@@ -35,7 +35,10 @@ export default function ReferralDetailsClient({
   const [isSwitchingReferrer, setIsSwitchingReferrer] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [pendingApplication, setPendingApplication] = useState(false);
-        const [showSwitchOption, setShowSwitchOption] = useState(false);
+  const [showSwitchOption, setShowSwitchOption] = useState(false);
+  const [justApplied, setJustApplied] = useState(false);
+
+  console.log('referrers', referrers);
 
   // Check if we should show the switch referrer option based on application date
   // The switch option becomes available after a configurable number of days (default: 3 days)
@@ -101,6 +104,7 @@ export default function ReferralDetailsClient({
       const data = await response.json();
       console.log(data);
       setApplicationStatus('Applied');
+      setJustApplied(true);
 
       if (targetReferrerId) {
         const referrer = referrers.find(ref => ref.userId === targetReferrerId);
@@ -207,7 +211,7 @@ export default function ReferralDetailsClient({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <span className="text-green-700 font-medium">
-              You have already applied for this referral - Status: {applicationStatus}
+              {justApplied ? 'Referrer successfully sent' : 'Referrer already sent'}
             </span>
           </div>
                       {appliedReferrer && (
@@ -318,10 +322,10 @@ export default function ReferralDetailsClient({
                       <p className="font-medium text-gray-900">{referrer.userName}</p>
                       <p className="text-sm text-gray-600">{referrer.designation}</p>
                     </div>
-                    <div className="text-right text-sm text-gray-500">
+                    {/* <div className="text-right text-sm text-gray-500">
                       <div>Score: {referrer.overallScore.toFixed(1)}</div>
                       <div>{referrer.numApplicationsAccepted} accepted</div>
-                    </div>
+                    </div> */}
                   </div>
                 </button>
               ))}

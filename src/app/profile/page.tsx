@@ -62,7 +62,7 @@ function ProfileContent() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    // console.log(name, value);
+    console.log(name, value);
 
     // Update form data
     setFormData(prev => ({
@@ -246,12 +246,12 @@ function ProfileContent() {
     <main className="min-h-screen bg-gray-50 py-6 px-4 sm:py-12 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-6">
-          <h2 className={`text-2xl sm:text-3xl font-bold ${styles.heading.gradient}`}>
+          <h1 className={`text-2xl sm:text-3xl font-bold ${styles.heading.gradient}`}>
             Profile
+          </h1>
+          <h2 className="mt-2 text-sm sm:text-base text-gray-600">
+            Complete your profile to unlock better referral opportunities and stand out to potential referrers
           </h2>
-          <p className="mt-2 text-sm sm:text-base text-gray-600">
-            View and update your profile information
-          </p>
         </div>
 
         <div className="bg-white p-4 sm:p-8 rounded-lg shadow-sm">

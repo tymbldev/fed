@@ -238,6 +238,8 @@ export async function fetchLocations(): Promise<{ [key: number]: LocationOption 
   }
 }
 
+
+
 export async function fetchReferrers(jobId: string): Promise<Referrer[]> {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000';

@@ -34,7 +34,7 @@ const Email: React.FC<EmailProps> = ({
         value={formData['email'] || ''}
         onChange={onInputChange}
         onBlur={() => onBlur('email')}
-        className={`input ${touched['email'] && errors['email'] ? 'border-red-500' : ''}`}
+        className={`input ${touched['email'] && errors['email'] ? 'border-red-500' : ''} ${disabled ? 'bg-gray-100 text-gray-500 cursor-not-allowed dark:bg-gray-800 dark:text-gray-400' : ''}`}
         placeholder="Enter your email"
       />
       {touched['email'] && errors['email'] && (

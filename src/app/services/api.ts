@@ -101,6 +101,7 @@ export const updateProfile = async (profileData: {
 
 export const fetchDropdownOptions = async (type: string): Promise<{ value: string; label: string }[]> => {
   try {
+    console.log("fetchDropdownOptions", type);
     // Check if we're in a browser environment
     if (typeof window === 'undefined') {
       // Server-side rendering - fetch directly
@@ -117,6 +118,7 @@ export const fetchDropdownOptions = async (type: string): Promise<{ value: strin
     // If no cached data, fetch from API
     console.log(`Fetching ${type} data from API`);
     const data = await fetchDropdownOptionsFromAPI(type);
+    console.log('fetchDropdownOptionsFromAPI data', data);
 
     // Cache the data
     try {
@@ -157,11 +159,13 @@ const fetchDropdownOptionsFromAPI = async (type: string): Promise<{ value: strin
   // }
 
   // For other dropdowns, use the dropdowns endpoint
+  console.log('fetchDropdownOptionsFromAPI', `${BASE_URL}/api/v1/dropdowns/${type}`);
   const response = await fetch(`${BASE_URL}/api/v1/dropdowns/${type}`);
   if (!response.ok) {
     throw new Error(`Failed to fetch ${type}`);
   }
   const data = await response.json();
+  console.log('data', data);
   return data;
 };
 

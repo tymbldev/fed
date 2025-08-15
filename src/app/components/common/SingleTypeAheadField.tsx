@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 
 interface Suggestion {
   value: string;
@@ -17,6 +17,8 @@ interface SingleTypeAheadFieldProps {
   suggestions: Suggestion[];
   className?: string;
   onSuggestionSelect?: (suggestion: Suggestion) => void;
+  maxResults?: number;
+  debounceMs?: number;
 }
 
 const SingleTypeAheadField: React.FC<SingleTypeAheadFieldProps> = ({
@@ -30,12 +32,15 @@ const SingleTypeAheadField: React.FC<SingleTypeAheadFieldProps> = ({
   error,
   suggestions,
   className = '',
-  onSuggestionSelect
+  onSuggestionSelect,
+  maxResults = 50,
+  debounceMs = 150
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [filteredSuggestions, setFilteredSuggestions] = useState<Suggestion[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -49,17 +54,74 @@ const SingleTypeAheadField: React.FC<SingleTypeAheadFieldProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Optimized filtering function with early exit and result limiting
+  const filterSuggestions = useCallback((inputValue: string): Suggestion[] => {
+    if (!inputValue.trim()) return [];
+
+    const lowerInput = inputValue.toLowerCase();
+    const results: Suggestion[] = [];
+    let count = 0;
+
+    // Use for...of for better performance than filter
+    for (const suggestion of suggestions) {
+      if (count >= maxResults) break;
+
+      const lowerLabel = suggestion.label.toLowerCase();
+
+      // Check for exact prefix match first (highest priority)
+      if (lowerLabel.startsWith(lowerInput)) {
+        results.unshift(suggestion); // Add to beginning for priority
+        count++;
+        continue;
+      }
+
+      // Check for contains match
+      if (lowerLabel.includes(lowerInput)) {
+        results.push(suggestion);
+        count++;
+      }
+    }
+
+    return results;
+  }, [suggestions, maxResults]);
+
+  const handleInputFocus = () => {
+    // Scroll the field into view with some offset to make space for dropdown
+    setTimeout(() => {
+      wrapperRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+        inline: 'nearest'
+      });
+    }, 100);
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
     onChange(e);
 
+    // Clear previous timeout
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+
     if (inputValue) {
-      const filtered = suggestions.filter(suggestion =>
-        suggestion.label.toLowerCase().includes(inputValue.toLowerCase())
-      );
-      setFilteredSuggestions(filtered);
-      setIsOpen(true);
-      setSelectedIndex(-1);
+      // Debounce the filtering
+      debounceTimeoutRef.current = setTimeout(() => {
+        const filtered = filterSuggestions(inputValue);
+        setFilteredSuggestions(filtered);
+        setIsOpen(true);
+        setSelectedIndex(-1);
+      }, debounceMs);
     } else {
       setFilteredSuggestions([]);
       setIsOpen(false);
@@ -124,6 +186,7 @@ const SingleTypeAheadField: React.FC<SingleTypeAheadFieldProps> = ({
           name={name}
           value={value}
           onChange={handleInputChange}
+          onFocus={handleInputFocus}
           onKeyDown={handleKeyDown}
           onBlur={onBlur}
           placeholder={placeholder}
