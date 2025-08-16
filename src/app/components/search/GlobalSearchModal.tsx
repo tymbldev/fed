@@ -3,13 +3,12 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import ReferralSearch from './ReferralSearch';
+import { buildSeoPath } from '../../utils/seo';
 
 interface SearchFormData {
   [key: string]: string;
   keyword: string;
-  // countryId: string;
   country: string;
-  // cityId: string;
   city: string;
   experience: string;
 }
@@ -33,9 +32,7 @@ export default function GlobalSearchModal({ isOpen, onClose, initialValues }: Gl
 
   const [currentSearchData, setCurrentSearchData] = useState<SearchFormData>({
     keyword: '',
-    // countryId: '',
     country: '',
-    // cityId: '',
     city: '',
     experience: ''
   });
@@ -49,9 +46,7 @@ export default function GlobalSearchModal({ isOpen, onClose, initialValues }: Gl
       // Only read from URL params if we're on a search results page
       setCurrentSearchData({
         keyword: searchParams.get('keyword') || '',
-        countryId: '', // No longer reading from URL since we don't push IDs
         country: searchParams.get('country') || '',
-        cityId: '', // No longer reading from URL since we don't push IDs
         city: searchParams.get('city') || '',
         experience: searchParams.get('experience') || ''
       });
@@ -59,9 +54,7 @@ export default function GlobalSearchModal({ isOpen, onClose, initialValues }: Gl
       // Reset to default values (including India) if not on search results page
       setCurrentSearchData({
         keyword: '',
-        // countryId: '31', // Default to India when no search context
         country: 'India',
-        // cityId: '',
         city: '',
         experience: ''
       });
@@ -77,18 +70,14 @@ export default function GlobalSearchModal({ isOpen, onClose, initialValues }: Gl
       } else if (isSearchResultsPage) {
         setCurrentSearchData({
           keyword: searchParams.get('keyword') || '',
-          // countryId: '', // No longer reading from URL since we don't push IDs
           country: searchParams.get('country') || '',
-          // cityId: '', // No longer reading from URL since we don't push IDs
           city: searchParams.get('city') || '',
           experience: searchParams.get('experience') || ''
         });
       } else {
         setCurrentSearchData({
           keyword: '',
-          // countryId: '31', // Default to India when opening modal with no context
           country: 'India',
-          // cityId: '',
           city: '',
           experience: ''
         });
@@ -113,48 +102,24 @@ export default function GlobalSearchModal({ isOpen, onClose, initialValues }: Gl
     }
   }, [isOpen]);
 
-            const handleSearch = async (searchData: SearchFormData) => {
+  const handleSearch = async (searchData: SearchFormData) => {
     setIsLoading(true);
     setNavigationInProgress(true);
 
     try {
-      // Create new URLSearchParams with current search params
-      const params = new URLSearchParams(searchParams.toString());
+      const pathname = buildSeoPath({
+        keyword: searchData.keyword || '',
+        country: searchData.country || '',
+        city: searchData.city || '',
+        experience: searchData.experience || ''
+      });
 
-      // Only push display values to URL, not IDs
-      if (searchData.keyword) {
-        params.set('keyword', searchData.keyword);
-      } else {
-        params.delete('keyword');
-      }
+      const params = new URLSearchParams();
+      // params.set('page', '0');
+      if (searchData.experience) params.set('experience', searchData.experience);
 
-      if (searchData.country) {
-        params.set('country', searchData.country);
-      } else {
-        params.delete('country');
-      }
-
-      if (searchData.city) {
-        params.set('city', searchData.city);
-      } else {
-        params.delete('city');
-      }
-
-      if (searchData.experience) {
-        params.set('experience', searchData.experience);
-      } else {
-        params.delete('experience');
-      }
-
-      // Remove ID fields from URL
-      // params.delete('countryId');
-      // params.delete('cityId');
-
-      // Reset to page 0 for new searches
-      params.set('page', '0');
-
-                  // Update URL and navigate to referrals page
-      await router.push(`/referrals?${params.toString()}`);
+      const qs = params.toString();
+      await router.push(qs ? `${pathname}?${qs}` : pathname);
 
       // Wait for navigation to complete - use a longer delay for global modal
       await new Promise(resolve => setTimeout(resolve, 1500));
@@ -232,3 +197,5 @@ export default function GlobalSearchModal({ isOpen, onClose, initialValues }: Gl
     </>
   );
 }
+
+

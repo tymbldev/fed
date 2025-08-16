@@ -2,16 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import ReferralSearch from '../components/ReferralSearch';
+import ReferralSearch from '../components/search/ReferralSearch';
 import { fetchDropdownOptions } from '../services/api';
+import { buildSeoPath } from '../utils/seo';
 
 interface SearchFormData {
   [key: string]: string;
   keyword: string;
   country: string;
-  // countryId: string;
   city: string;
-  // cityId: string;
   experience: string;
 }
 
@@ -40,9 +39,7 @@ export default function SearchReferralsPage() {
   const [initialValues, setInitialValues] = useState<SearchFormData>({
     keyword: searchParams.get('keyword') || '',
     country: searchParams.get('country') || '',
-    // countryId: '',
     city: searchParams.get('city') || '',
-    // cityId: '',
     experience: searchParams.get('experience') || ''
   });
 
@@ -67,40 +64,10 @@ export default function SearchReferralsPage() {
   useEffect(() => {
     if (locationData.length === 0 || isLoadingLocation) return;
 
-    // const countryName = searchParams.get('country');
-    // const cityName = searchParams.get('city');
-
-    // let countryId = '';
-    // let cityId = '';
-
-    // Find country ID from display name
-    // if (countryName) {
-    //   const countryLocation = locationData.find(loc =>
-    //     loc.country && loc.country.toLowerCase() === countryName.toLowerCase()
-    //   );
-    //   if (countryLocation) {
-    //     countryId = countryLocation.countryId.toString();
-    //   }
-    // }
-
-    // Find city ID from display name (within the selected country if available)
-    // if (cityName) {
-    //   const cityLocation = locationData.find(loc =>
-    //     loc.city && loc.city.toLowerCase() === cityName.toLowerCase() &&
-    //     (!countryId || loc.countryId.toString() === countryId)
-    //   );
-    //   if (cityLocation) {
-    //     cityId = cityLocation.cityId.toString();
-    //   }
-    // }
-
-    // Update initial values with IDs
     const searchData: SearchFormData = {
       keyword: searchParams.get('keyword') || '',
       country: searchParams.get('country') || '',
-      // countryId: countryId,
       city: searchParams.get('city') || '',
-      // cityId: cityId,
       experience: searchParams.get('experience') || ''
     };
     setInitialValues(searchData);
@@ -110,83 +77,29 @@ export default function SearchReferralsPage() {
     // Update initial values when search params change (without location data dependency)
     if (isLoadingLocation) return;
 
-    // const countryName = searchParams.get('country');
-    // const cityName = searchParams.get('city');
-
-    // let countryId = '';
-    // let cityId = '';
-
-    // // Find country ID from display name
-    // if (countryName && locationData.length > 0) {
-    //   const countryLocation = locationData.find(loc =>
-    //     loc.country && loc.country.toLowerCase() === countryName.toLowerCase()
-    //   );
-    //   if (countryLocation) {
-    //     countryId = countryLocation.countryId.toString();
-    //   }
-    // }
-
-    // Find city ID from display name (within the selected country if available)
-    // if (cityName && locationData.length > 0) {
-    //   const cityLocation = locationData.find(loc =>
-    //     loc.city && loc.city.toLowerCase() === cityName.toLowerCase() &&
-    //     (!countryId || loc.countryId.toString() === countryId)
-    //   );
-    //   if (cityLocation) {
-    //     cityId = cityLocation.cityId.toString();
-    //   }
-    // }
-
     const searchData: SearchFormData = {
       keyword: searchParams.get('keyword') || '',
       country: searchParams.get('country') || '',
-      // countryId: countryId,
       city: searchParams.get('city') || '',
-      // cityId: cityId,
       experience: searchParams.get('experience') || ''
     };
     setInitialValues(searchData);
   }, [searchParams, locationData, isLoadingLocation]);
 
   const handleSearch = (searchData: SearchFormData) => {
-    // Create new URLSearchParams with current search params
-    const params = new URLSearchParams(searchParams.toString());
+    const pathname = buildSeoPath({
+      keyword: searchData.keyword || '',
+      country: searchData.country || '',
+      city: searchData.city || '',
+      experience: searchData.experience || ''
+    });
 
-    // Only push display values to URL, not IDs
-    if (searchData.keyword) {
-      params.set('keyword', searchData.keyword);
-    } else {
-      params.delete('keyword');
-    }
-
-    if (searchData.country) {
-      params.set('country', searchData.country);
-    } else {
-      params.delete('country');
-    }
-
-    if (searchData.city) {
-      params.set('city', searchData.city);
-    } else {
-      params.delete('city');
-    }
-
-    if (searchData.experience) {
-      params.set('experience', searchData.experience);
-    } else {
-      params.delete('experience');
-    }
-
-    // Remove ID fields from URL
-    // params.delete('keywordId');
-    // params.delete('countryId');
-    // params.delete('cityId');
-
-    // Reset to page 0 for new searches
+    const params = new URLSearchParams();
     // params.set('page', '0');
+    if (searchData.experience) params.set('experience', searchData.experience);
 
-    // Navigate to referrals page with search parameters
-    router.push(`/referrals?${params.toString()}`);
+    const qs = params.toString();
+    router.push(qs ? `${pathname}?${qs}` : pathname);
   };
 
   return (

@@ -1,7 +1,7 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useSearchModal } from '../context/SearchModalContext';
+import { useSearchModal } from '../../context/SearchModalContext';
 import Link from 'next/link';
 
 interface SearchFormData {
@@ -15,18 +15,24 @@ interface SearchFormData {
 
 interface CurrentSearchCriteriaProps {
   totalCount?: number;
+  derivedSearch?: {
+    keyword: string;
+    country: string;
+    city: string;
+    experience: string;
+  };
 }
 
-export default function CurrentSearchCriteria({ totalCount = 0 }: CurrentSearchCriteriaProps) {
+export default function CurrentSearchCriteria({ totalCount = 0, derivedSearch }: CurrentSearchCriteriaProps) {
   const searchParams = useSearchParams();
   const { openSearchModal } = useSearchModal();
 
   const currentSearch: SearchFormData = {
-    keyword: searchParams.get('keyword') || '',
+    keyword: searchParams.get('keyword') || derivedSearch?.keyword || '',
     keywordId: '', // No longer reading from URL since we don't push IDs
-    country: searchParams.get('country') || '',
-    city: searchParams.get('city') || '',
-    experience: searchParams.get('experience') || ''
+    country: searchParams.get('country') || derivedSearch?.country || '',
+    city: searchParams.get('city') || derivedSearch?.city || '',
+    experience: searchParams.get('experience') || derivedSearch?.experience || ''
   };
 
   // Check if there are any active search filters
@@ -38,7 +44,7 @@ export default function CurrentSearchCriteria({ totalCount = 0 }: CurrentSearchC
 
   // Show content immediately, only show loading for total count
   const getSearchSummary = () => {
-    const parts = [];
+    const parts = [] as string[];
 
     // Add "Showing" prefix
     parts.push('Showing');
@@ -100,3 +106,5 @@ export default function CurrentSearchCriteria({ totalCount = 0 }: CurrentSearchC
     </div>
   );
 }
+
+

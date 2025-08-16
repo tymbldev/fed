@@ -1,18 +1,16 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import Keywords from './fields/search/keywords';
-import Location from './fields/Location';
+import Keywords from './fields/keywords';
+import LocationTypeahead from './fields/LocationTypeahead';
 import SingleExperience from './fields/SingleExperience';
-import { validateField } from '../utils/validation';
+import { validateField } from '../../utils/validation';
 
 interface SearchFormData {
   [key: string]: string;
   keyword: string;
   country: string;
-  // countryId: string;
   city: string;
-  // cityId: string;
   experience: string;
 }
 
@@ -32,9 +30,7 @@ export default function ReferralSearch({ onSearch, className = '', initialValues
       return {
         keyword: initialValues.keyword || '',
         country: initialValues.country || '',
-        // countryId: initialValues.countryId || '',
         city: initialValues.city || '',
-        // cityId: initialValues.cityId || '',
         experience: initialValues.experience || ''
       };
     }
@@ -42,9 +38,7 @@ export default function ReferralSearch({ onSearch, className = '', initialValues
     return {
       keyword: '',
       country: '',
-      // countryId: '',
       city: '',
-      // cityId: '',
       experience: ''
     };
   });
@@ -59,9 +53,7 @@ export default function ReferralSearch({ onSearch, className = '', initialValues
       setFormData({
         keyword: '',
         country: '',
-        // countryId: '',
         city: '',
-        // cityId: '',
         experience: ''
       });
     }
@@ -112,7 +104,7 @@ export default function ReferralSearch({ onSearch, className = '', initialValues
         });
       }
     }
-    // For non-required fields (countryId, cityId, experience), don't validate on blur
+    // For non-required fields (experience), don't validate on blur
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -144,9 +136,7 @@ export default function ReferralSearch({ onSearch, className = '', initialValues
     const clearedData = {
       keyword: '',
       country: '',
-      // countryId: '',
       city: '',
-      // cityId: '',
       experience: ''
     };
     setFormData(clearedData);
@@ -157,9 +147,9 @@ export default function ReferralSearch({ onSearch, className = '', initialValues
     <div className={`bg-white rounded-lg shadow-sm border border-gray-200 p-6 ${className}`}>
       <form onSubmit={handleSubmit} className="space-y-6" noValidate>
         {/* Search Fields Row */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Keyword Field - Using existing component with custom labels */}
-          <div className="md:col-span-1">
+          <div>
             <Keywords
               formData={formData}
               errors={errors}
@@ -174,25 +164,21 @@ export default function ReferralSearch({ onSearch, className = '', initialValues
             />
           </div>
 
-          {/* Location Field - Using existing component with custom labels */}
-          <div className="md:col-span-2">
-            <Location
+          {/* Location Field - single typeahead for city and country */}
+          <div>
+            <LocationTypeahead
               formData={formData}
               errors={errors}
               touched={touched}
               onInputChange={handleInputChange}
               onBlur={handleBlur}
               required={false}
-              layout="horizontal"
-              countryLabel="Country"
-              cityLabel="City"
-              setValue={true}
               autoDefaultToIndia={autoDefaultToIndia}
             />
           </div>
 
           {/* Experience Field - Single selection */}
-          <div className="md:col-span-1">
+          <div>
             <SingleExperience
               formData={formData}
               errors={errors}
@@ -239,3 +225,5 @@ export default function ReferralSearch({ onSearch, className = '', initialValues
     </div>
   );
 }
+
+

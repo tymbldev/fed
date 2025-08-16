@@ -1,6 +1,6 @@
 'use client';
 
-import { useSearchModal } from '../context/SearchModalContext';
+import { useSearchModal } from '../../context/SearchModalContext';
 import GlobalSearchModal from './GlobalSearchModal';
 
 export default function GlobalSearchModalWrapper() {
@@ -14,3 +14,5 @@ export default function GlobalSearchModalWrapper() {
     />
   );
 }
+
+

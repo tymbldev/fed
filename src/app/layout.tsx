@@ -9,7 +9,7 @@ import BottomNav from './components/BottomNav';
 import { ThemeProvider } from './context/ThemeContext';
 import { SearchModalProvider } from './context/SearchModalContext';
 import ClientAuthProvider from './components/ClientAuthProvider';
-import GlobalSearchModalWrapper from './components/GlobalSearchModalWrapper';
+import GlobalSearchModalWrapper from './components/search/GlobalSearchModalWrapper';
 import { getServerAuthState } from './utils/serverAuth';
 // import CacheManager from './components/CacheManager';
 
