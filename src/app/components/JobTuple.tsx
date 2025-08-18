@@ -95,9 +95,9 @@ export default function JobTuple({
             </span>
           </div>
           <div className="flex items-center">
-            <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ width: '20px', height: '20px' }}>
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 8 0 1111.314 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ width: '20px', height: '20px' }} aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.25 10.5c0 5.385-4.865 10.09-7.2 12.034a1.5 1.5 0 01-1.8 0C7.95 20.59 3.75 15.885 3.75 10.5a8.25 8.25 0 1116.5 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 12.75a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" />
             </svg>
             <span>{getLocationDisplay(cityId)}</span>
           </div>

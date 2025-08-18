@@ -1,4 +1,3 @@
-import { Suspense } from 'react';
 import { BASE_URL } from '../services/api';
 import ReferralStatusBadge from './ReferralStatusBadge';
 import FloatingFilterButton from '../components/FloatingFilterButton';
@@ -7,6 +6,7 @@ import CurrentSearchCriteria from '../components/search/CurrentSearchCriteria';
 import { fetchLocations } from '../utils/serverData';
 import { splitSeoSlug } from '../utils/seo';
 import Link from 'next/link';
+import { cookies } from 'next/headers';
 
 interface Referral {
   id: number;
@@ -39,8 +39,8 @@ interface SearchRequest {
   size: number;
   keywords?: string[];
   keywordId?: string;
-  country?: string;
-  city?: string;
+  countryName?: string;
+  cityName?: string;
   minExperience?: number;
   maxExperience?: number;
 }
@@ -67,8 +67,8 @@ async function fetchReferrals(page: number = 0, searchFilters: {
     };
 
     if (searchFilters.keyword) requestBody.keywords = [searchFilters.keyword];
-    if (searchFilters.country) requestBody.country = searchFilters.country;
-    if (searchFilters.city) requestBody.city = searchFilters.city;
+    if (searchFilters.country) requestBody.countryName = searchFilters.country;
+    if (searchFilters.city) requestBody.cityName = searchFilters.city;
     if (searchFilters.experience) {
       const experienceValue = parseInt(searchFilters.experience);
       requestBody.minExperience = experienceValue;
@@ -155,6 +155,34 @@ async function resolveLocation(locationName: string): Promise<{ city: string; co
   }
 }
 
+async function fetchMyApplicationsStatusMap(): Promise<Record<number, string>> {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('auth_token')?.value;
+    if (!token) return {};
+
+    const response = await fetch(`${BASE_URL}/api/v1/my-applications`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      cache: 'no-store',
+    });
+
+    if (!response.ok) return {};
+
+    const data: Array<{ jobId: number; status: string }> = await response.json();
+    const map: Record<number, string> = {};
+    for (const row of data) {
+      if (row && typeof row.jobId === 'number' && typeof row.status === 'string') {
+        map[row.jobId] = row.status;
+      }
+    }
+    return map;
+  } catch {
+    return {};
+  }
+}
+
 export default async function ReferralsListing({
   searchParams,
   seoSlug: seoSlugOverride,
@@ -175,7 +203,10 @@ export default async function ReferralsListing({
     experience: typeof resolvedSearchParams.experience === 'string' ? resolvedSearchParams.experience : ''
   };
 
-  const referralsData = await fetchReferrals(page, searchFilters);
+  const [referralsData, applicationStatusMap] = await Promise.all([
+    fetchReferrals(page, searchFilters),
+    fetchMyApplicationsStatusMap(),
+  ]);
 
   return (
     <main className="min-h-screen bg-gray-50 py-6 md:py-12">
@@ -202,7 +233,7 @@ export default async function ReferralsListing({
                 createdAt={referral.createdAt}
                 cityName={referral.cityName}
                 countryName={referral.countryName}
-                applicationStatus={<Suspense fallback={null}><ReferralStatusBadge jobId={referral.id} /></Suspense>}
+                applicationStatus={<ReferralStatusBadge status={applicationStatusMap[referral.id] || null} />}
               />
             ))}
           </div>

@@ -15,18 +15,8 @@ interface LocationProps {
 }
 
 interface LocationOption {
-  id: number;
-  addressLine1: string | null;
-  addressLine2: string | null;
   city: string;
-  cityId: number;
   country: string;
-  countryId: number;
-  displayName: string;
-  locationDisplay: string;
-  remote: boolean;
-  state: string;
-  zipCode: string;
 }
 
 const LocationTypeahead: React.FC<LocationProps> = ({
@@ -46,8 +36,18 @@ const LocationTypeahead: React.FC<LocationProps> = ({
     const load = async () => {
       try {
         setIsLoading(true);
-        const data = await fetchDropdownOptions('locations') as unknown as LocationOption[];
-        setLocationData(data);
+        const raw = await fetchDropdownOptions('locations') as unknown as unknown[];
+        // Normalize to simplified shape
+        const normalized: LocationOption[] = (Array.isArray(raw) ? raw : []).map((item: unknown) => {
+          const obj = item as { city?: unknown; country?: unknown };
+          const cityVal = typeof obj.city === 'string' ? obj.city : '';
+          const countryVal = typeof obj.country === 'string' ? obj.country : '';
+          return {
+            city: cityVal.trim(),
+            country: countryVal.trim()
+          };
+        }).filter(d => d.city || d.country);
+        setLocationData(normalized);
       } catch (err) {
         console.error('Failed to fetch locations:', err);
         toast.error('Failed to load locations. Please try again.');
@@ -58,121 +58,61 @@ const LocationTypeahead: React.FC<LocationProps> = ({
     load();
   }, []);
 
-  // Prepare unique lists and quick lookups
-  const { suggestions, cityIdToSample, countryIdToName } = useMemo(() => {
-    const cityMap = new Map<string, LocationOption>();
-    const countryMap = new Map<string, string>();
+  // Prepare unique lists and quick lookups (by names only)
+  const suggestions = useMemo(() => {
+    const countrySet = new Set<string>();
+    const cityCountrySet = new Set<string>();
 
     for (const loc of locationData) {
-      if (loc.cityId != null) {
-        const key = `${loc.cityId}`;
-        if (!cityMap.has(key)) cityMap.set(key, loc);
-      }
-      if (loc.countryId != null) {
-        const ckey = `${loc.countryId}`;
-        if (!countryMap.has(ckey)) countryMap.set(ckey, loc.country);
-      }
+      if (loc.country) countrySet.add(loc.country);
+      const ccKey = `${loc.city}||${loc.country}`; // use delimiter unlikely in names
+      if (loc.city) cityCountrySet.add(ccKey);
     }
 
-    // Countries suggestions
-    const countrySuggestions = Array.from(countryMap.entries()).map(([countryId, countryName]) => ({
-      value: `country:${countryId}`,
-      label: countryName
+    const countrySuggestions = Array.from(countrySet).map(country => ({
+      value: `country:${country}`,
+      label: country
     }));
 
-    // City suggestions as "City, Country"
-    const citySuggestions = Array.from(cityMap.values()).map(sample => ({
-      value: `city:${sample.cityId}`,
-      label: `${sample.city}, ${sample.country}`
-    }));
+    const citySuggestions = Array.from(cityCountrySet).map(key => {
+      const [city, country] = key.split('||');
+      return {
+        value: `city:${city}||${country}`,
+        label: country ? `${city}, ${country}` : city
+      };
+    });
 
-    return {
-      suggestions: [...citySuggestions, ...countrySuggestions],
-      cityIdToSample: cityMap,
-      countryIdToName: countryMap
-    };
+    return [...citySuggestions, ...countrySuggestions];
   }, [locationData]);
 
   // Optionally default to India if requested and no location set
   useEffect(() => {
     if (!autoDefaultToIndia) return;
     if (!locationData.length) return;
-    if (formData.country || formData.city || (formData as any).countryId || (formData as any).cityId) return;
+    const current = (formData.location || '').trim();
+    if (current) return;
 
     const india = locationData.find(l => l.country === 'India');
     if (india) {
-      onInputChange({
-        target: { name: 'country', value: india.country }
-      } as React.ChangeEvent<HTMLInputElement>);
-      onInputChange({
-        target: { name: 'countryId', value: String(india.countryId) }
-      } as React.ChangeEvent<HTMLInputElement>);
+      onInputChange({ target: { name: 'location', value: 'India' } } as React.ChangeEvent<HTMLInputElement>);
     }
-  }, [autoDefaultToIndia, locationData, formData.country, formData.city, (formData as any).countryId, (formData as any).cityId, onInputChange]);
+  }, [autoDefaultToIndia, locationData, formData.location, onInputChange]);
 
-  // Free-text typing should set city text and clear IDs/country unless explicitly chosen
+  // Store the raw single input value; parent will derive city/country on submit
   const handleFreeTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputValue = e.target.value;
-
-    // Update combined via city field (used for SEO if country empty)
-    onInputChange({
-      target: { name: 'city', value: inputValue }
-    } as React.ChangeEvent<HTMLInputElement>);
-
-    // Clear mappings when user types free text
-    onInputChange({ target: { name: 'cityId', value: '' } } as React.ChangeEvent<HTMLInputElement>);
-    onInputChange({ target: { name: 'countryId', value: '' } } as React.ChangeEvent<HTMLInputElement>);
-    if (!inputValue) {
-      onInputChange({ target: { name: 'country', value: '' } } as React.ChangeEvent<HTMLInputElement>);
-    }
+    const rawInput = e.target.value || '';
+    onInputChange({ target: { name: 'location', value: rawInput } } as React.ChangeEvent<HTMLInputElement>);
   };
 
   const handleSuggestionSelect = (suggestion: { value: string; label: string }) => {
-    if (suggestion.value.startsWith('country:')) {
-      const countryId = suggestion.value.split(':')[1];
-      const countryName = countryIdToName.get(countryId) || suggestion.label;
-
-      // Set country fields and clear city
-      onInputChange({ target: { name: 'countryId', value: countryId } } as React.ChangeEvent<HTMLInputElement>);
-      onInputChange({ target: { name: 'country', value: countryName } } as React.ChangeEvent<HTMLInputElement>);
-      onInputChange({ target: { name: 'cityId', value: '' } } as React.ChangeEvent<HTMLInputElement>);
-      onInputChange({ target: { name: 'city', value: '' } } as React.ChangeEvent<HTMLInputElement>);
-      return;
-    }
-
-    if (suggestion.value.startsWith('city:')) {
-      const cityId = suggestion.value.split(':')[1];
-      const sample = cityIdToSample.get(cityId);
-      if (sample) {
-        onInputChange({ target: { name: 'cityId', value: String(sample.cityId) } } as React.ChangeEvent<HTMLInputElement>);
-        onInputChange({ target: { name: 'city', value: sample.city } } as React.ChangeEvent<HTMLInputElement>);
-        onInputChange({ target: { name: 'countryId', value: String(sample.countryId) } } as React.ChangeEvent<HTMLInputElement>);
-        onInputChange({ target: { name: 'country', value: sample.country } } as React.ChangeEvent<HTMLInputElement>);
-      } else {
-        // Fallback: set city text from label (before comma)
-        const [cityText, countryText] = suggestion.label.split(',').map(s => s.trim());
-        onInputChange({ target: { name: 'city', value: cityText || suggestion.label } } as React.ChangeEvent<HTMLInputElement>);
-        onInputChange({ target: { name: 'country', value: countryText || '' } } as React.ChangeEvent<HTMLInputElement>);
-        onInputChange({ target: { name: 'cityId', value: '' } } as React.ChangeEvent<HTMLInputElement>);
-        onInputChange({ target: { name: 'countryId', value: '' } } as React.ChangeEvent<HTMLInputElement>);
-      }
-      return;
-    }
-
-    // Default: treat as free text
-    onInputChange({ target: { name: 'city', value: suggestion.label } } as React.ChangeEvent<HTMLInputElement>);
-    onInputChange({ target: { name: 'cityId', value: '' } } as React.ChangeEvent<HTMLInputElement>);
-    onInputChange({ target: { name: 'country', value: '' } } as React.ChangeEvent<HTMLInputElement>);
-    onInputChange({ target: { name: 'countryId', value: '' } } as React.ChangeEvent<HTMLInputElement>);
+    // Put selected label into the single location field
+    onInputChange({ target: { name: 'location', value: suggestion.label } } as React.ChangeEvent<HTMLInputElement>);
   };
 
-  // Value shown in the single input combines city and country
+  // Single raw value kept in parent under `location`
   const combinedValue = useMemo(() => {
-    const city = (formData.city || '').trim();
-    const country = (formData.country || '').trim();
-    if (city && country) return `${city}, ${country}`;
-    return city || country || '';
-  }, [formData.city, formData.country]);
+    return (formData.location || '').trim();
+  }, [formData.location]);
 
   return (
     <div className="w-full">
@@ -182,13 +122,15 @@ const LocationTypeahead: React.FC<LocationProps> = ({
         placeholder={isLoading ? 'Loading locations...' : 'Type a city or country'}
         value={combinedValue}
         onChange={handleFreeTextChange}
-        onBlur={() => onBlur('city')}
-        error={touched.city ? errors.city : undefined}
+        onBlur={() => onBlur('location')}
+        error={touched.location ? errors.location : undefined}
         suggestions={suggestions}
         required={required}
         onSuggestionSelect={handleSuggestionSelect}
         maxResults={100}
         debounceMs={150}
+        openByDefault={false}
+        showSuggestionsOnEmpty
       />
     </div>
   );

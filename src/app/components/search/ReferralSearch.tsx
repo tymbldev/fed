@@ -6,13 +6,14 @@ import LocationTypeahead from './fields/LocationTypeahead';
 import SingleExperience from './fields/SingleExperience';
 import { validateField } from '../../utils/validation';
 
-interface SearchFormData {
+type SearchFormData = {
   [key: string]: string;
   keyword: string;
   country: string;
   city: string;
   experience: string;
-}
+  location: string; // single raw field for the UI
+};
 
 interface ReferralSearchProps {
   onSearch: (searchData: SearchFormData) => void;
@@ -27,11 +28,15 @@ export default function ReferralSearch({ onSearch, className = '', initialValues
     console.log('initialValues', initialValues);
     // If initialValues are provided, use them exactly (including empty values)
     if (initialValues) {
+      const city = initialValues.city || '';
+      const country = initialValues.country || '';
+      const location = city && country ? `${city}, ${country}` : (city || country);
       return {
         keyword: initialValues.keyword || '',
-        country: initialValues.country || '',
-        city: initialValues.city || '',
-        experience: initialValues.experience || ''
+        country,
+        city,
+        experience: initialValues.experience || '',
+        location: location || ''
       };
     }
     // If no initialValues, start with empty values - Location component will set India as default
@@ -39,22 +44,30 @@ export default function ReferralSearch({ onSearch, className = '', initialValues
       keyword: '',
       country: '',
       city: '',
-      experience: ''
+      experience: '',
+      location: ''
     };
   });
 
   // Update form data when initialValues change
   useEffect(() => {
     if (initialValues) {
-      // Use initialValues exactly as provided (preserving explicitly cleared values)
-      setFormData(initialValues);
+      const city = initialValues.city || '';
+      const country = initialValues.country || '';
+      const location = city && country ? `${city}, ${country}` : (city || country);
+      setFormData(prev => ({
+        ...prev,
+        ...initialValues,
+        location
+      }));
     } else {
       // Reset to empty values when no initialValues - Location component will set India as default
       setFormData({
         keyword: '',
         country: '',
         city: '',
-        experience: ''
+        experience: '',
+        location: ''
       });
     }
   }, [initialValues]);
@@ -128,7 +141,36 @@ export default function ReferralSearch({ onSearch, className = '', initialValues
 
     // Only submit if there are no errors
     if (Object.keys(newErrors).length === 0) {
-      onSearch(formData);
+      // Derive city/country from single location field when submitting
+      const rawLocation = (formData.location || '').trim();
+      let derivedCity = '';
+      let derivedCountry = '';
+      if (rawLocation) {
+        const [left, ...rest] = rawLocation.split(',');
+        const leftPart = (left || '').trim();
+        const rightCombined = rest.join(',');
+        const rightPart = (rightCombined || '').trim();
+        if (rightPart) {
+          derivedCity = leftPart;
+          derivedCountry = rightPart;
+        } else {
+          // No comma → try to match a country from our current value (fallback to treating as city)
+          // Keep simple: if existing country equals this value, set country; else set as city
+          if (leftPart.toLowerCase() === (formData.country || '').toLowerCase()) {
+            derivedCountry = leftPart;
+            derivedCity = '';
+          } else {
+            derivedCity = leftPart;
+            derivedCountry = '';
+          }
+        }
+      }
+
+      onSearch({
+        ...formData,
+        city: derivedCity,
+        country: derivedCountry
+      });
     }
   };
 
@@ -137,7 +179,8 @@ export default function ReferralSearch({ onSearch, className = '', initialValues
       keyword: '',
       country: '',
       city: '',
-      experience: ''
+      experience: '',
+      location: ''
     };
     setFormData(clearedData);
     // onSearch(clearedData);

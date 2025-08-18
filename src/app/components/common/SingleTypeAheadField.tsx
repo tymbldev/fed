@@ -19,6 +19,8 @@ interface SingleTypeAheadFieldProps {
   onSuggestionSelect?: (suggestion: Suggestion) => void;
   maxResults?: number;
   debounceMs?: number;
+  openByDefault?: boolean;
+  showSuggestionsOnEmpty?: boolean;
 }
 
 const SingleTypeAheadField: React.FC<SingleTypeAheadFieldProps> = ({
@@ -34,7 +36,9 @@ const SingleTypeAheadField: React.FC<SingleTypeAheadFieldProps> = ({
   className = '',
   onSuggestionSelect,
   maxResults = 50,
-  debounceMs = 150
+  debounceMs = 150,
+  openByDefault = false,
+  showSuggestionsOnEmpty = false
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [filteredSuggestions, setFilteredSuggestions] = useState<Suggestion[]>([]);
@@ -94,6 +98,23 @@ const SingleTypeAheadField: React.FC<SingleTypeAheadFieldProps> = ({
     return results;
   }, [suggestions, maxResults]);
 
+  // Open suggestions by default if requested
+  useEffect(() => {
+    if (!openByDefault) return;
+    const hasPrefilledValue = Boolean(value && value.trim());
+    if (hasPrefilledValue) {
+      const filtered = filterSuggestions(value);
+      setFilteredSuggestions(filtered);
+      setIsOpen(true);
+      setSelectedIndex(filtered.length > 0 ? 0 : -1);
+    } else {
+      const initial = showSuggestionsOnEmpty ? suggestions.slice(0, maxResults) : [];
+      setFilteredSuggestions(initial);
+      setIsOpen(showSuggestionsOnEmpty && initial.length > 0);
+      setSelectedIndex(initial.length > 0 ? 0 : -1);
+    }
+  }, [openByDefault, value, showSuggestionsOnEmpty, suggestions, maxResults, filterSuggestions]);
+
   const handleInputFocus = () => {
     // Scroll the field into view with some offset to make space for dropdown
     setTimeout(() => {
@@ -123,9 +144,10 @@ const SingleTypeAheadField: React.FC<SingleTypeAheadFieldProps> = ({
         setSelectedIndex(-1);
       }, debounceMs);
     } else {
-      setFilteredSuggestions([]);
-      setIsOpen(false);
-      setSelectedIndex(-1);
+      const initial = showSuggestionsOnEmpty ? suggestions.slice(0, maxResults) : [];
+      setFilteredSuggestions(initial);
+      setIsOpen(openByDefault || (showSuggestionsOnEmpty && initial.length > 0));
+      setSelectedIndex(initial.length > 0 ? 0 : -1);
     }
   };
 
