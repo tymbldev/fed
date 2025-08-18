@@ -5,15 +5,7 @@ import Keywords from './fields/keywords';
 import LocationTypeahead from './fields/LocationTypeahead';
 import SingleExperience from './fields/SingleExperience';
 import { validateField } from '../../utils/validation';
-
-type SearchFormData = {
-  [key: string]: string;
-  keyword: string;
-  country: string;
-  city: string;
-  experience: string;
-  location: string; // single raw field for the UI
-};
+import type { SearchFormData } from './types';
 
 interface ReferralSearchProps {
   onSearch: (searchData: SearchFormData) => void;
@@ -30,7 +22,7 @@ export default function ReferralSearch({ onSearch, className = '', initialValues
     if (initialValues) {
       const city = initialValues.city || '';
       const country = initialValues.country || '';
-      const location = city && country ? `${city}, ${country}` : (city || country);
+      const location = (initialValues.location ?? (city && country ? `${city}, ${country}` : (city || country))) || '';
       return {
         keyword: initialValues.keyword || '',
         country,
@@ -54,7 +46,7 @@ export default function ReferralSearch({ onSearch, className = '', initialValues
     if (initialValues) {
       const city = initialValues.city || '';
       const country = initialValues.country || '';
-      const location = city && country ? `${city}, ${country}` : (city || country);
+      const location = (initialValues.location ?? (city && country ? `${city}, ${country}` : (city || country))) || '';
       setFormData(prev => ({
         ...prev,
         ...initialValues,

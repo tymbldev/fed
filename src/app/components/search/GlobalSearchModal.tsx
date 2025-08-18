@@ -4,14 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import ReferralSearch from './ReferralSearch';
 import { buildSeoPath } from '../../utils/seo';
-
-interface SearchFormData {
-  [key: string]: string;
-  keyword: string;
-  country: string;
-  city: string;
-  experience: string;
-}
+import type { SearchFormData } from './types';
 
 interface GlobalSearchModalProps {
   isOpen: boolean;
@@ -34,21 +27,23 @@ export default function GlobalSearchModal({ isOpen, onClose, initialValues }: Gl
     keyword: '',
     country: '',
     city: '',
-    experience: ''
+    experience: '',
+    location: ''
   });
 
   // Handle initial values and URL parameters when modal opens or values change
   useEffect(() => {
     if (initialValues) {
       // If explicit initial values are provided, use them
-      setCurrentSearchData(initialValues);
+      setCurrentSearchData({ ...initialValues, location: initialValues.location || '' });
     } else if (isSearchResultsPage) {
       // Only read from URL params if we're on a search results page
       setCurrentSearchData({
         keyword: searchParams.get('keyword') || '',
         country: searchParams.get('country') || '',
         city: searchParams.get('city') || '',
-        experience: searchParams.get('experience') || ''
+        experience: searchParams.get('experience') || '',
+        location: ''
       });
     } else {
       // Reset to default values (including India) if not on search results page
@@ -56,7 +51,8 @@ export default function GlobalSearchModal({ isOpen, onClose, initialValues }: Gl
         keyword: '',
         country: 'India',
         city: '',
-        experience: ''
+        experience: '',
+        location: ''
       });
     }
   }, [initialValues, isSearchResultsPage, searchParams]);
@@ -66,20 +62,22 @@ export default function GlobalSearchModal({ isOpen, onClose, initialValues }: Gl
     if (isOpen) {
       // When modal opens, ensure we have the correct data based on current context
       if (initialValues) {
-        setCurrentSearchData(initialValues);
+        setCurrentSearchData({ ...initialValues, location: initialValues.location || '' });
       } else if (isSearchResultsPage) {
         setCurrentSearchData({
           keyword: searchParams.get('keyword') || '',
           country: searchParams.get('country') || '',
           city: searchParams.get('city') || '',
-          experience: searchParams.get('experience') || ''
+          experience: searchParams.get('experience') || '',
+          location: ''
         });
       } else {
         setCurrentSearchData({
           keyword: '',
           country: 'India',
           city: '',
-          experience: ''
+          experience: '',
+          location: ''
         });
       }
     }

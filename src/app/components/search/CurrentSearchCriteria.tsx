@@ -3,15 +3,7 @@
 import { useSearchParams } from 'next/navigation';
 import { useSearchModal } from '../../context/SearchModalContext';
 import Link from 'next/link';
-
-interface SearchFormData {
-  [key: string]: string;
-  keyword: string;
-  keywordId: string;
-  country: string;
-  city: string;
-  experience: string;
-}
+import type { SearchFormData } from './types';
 
 interface CurrentSearchCriteriaProps {
   totalCount?: number;
@@ -32,7 +24,8 @@ export default function CurrentSearchCriteria({ totalCount = 0, derivedSearch }:
     keywordId: '', // No longer reading from URL since we don't push IDs
     country: searchParams.get('country') || derivedSearch?.country || '',
     city: searchParams.get('city') || derivedSearch?.city || '',
-    experience: searchParams.get('experience') || derivedSearch?.experience || ''
+    experience: searchParams.get('experience') || derivedSearch?.experience || '',
+    location: ''
   };
 
   // Check if there are any active search filters

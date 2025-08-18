@@ -3,16 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import ReferralSearch from '../components/search/ReferralSearch';
+import type { SearchFormData } from '../components/search/types';
 import { fetchDropdownOptions } from '../services/api';
 import { buildSeoPath } from '../utils/seo';
-
-interface SearchFormData {
-  [key: string]: string;
-  keyword: string;
-  country: string;
-  city: string;
-  experience: string;
-}
 
 interface LocationOption {
   id: number;
@@ -40,7 +33,8 @@ export default function SearchReferralsPage() {
     keyword: searchParams.get('keyword') || '',
     country: searchParams.get('country') || '',
     city: searchParams.get('city') || '',
-    experience: searchParams.get('experience') || ''
+    experience: searchParams.get('experience') || '',
+    location: ''
   });
 
   // Load location data for name-to-ID conversion
@@ -68,7 +62,8 @@ export default function SearchReferralsPage() {
       keyword: searchParams.get('keyword') || '',
       country: searchParams.get('country') || '',
       city: searchParams.get('city') || '',
-      experience: searchParams.get('experience') || ''
+      experience: searchParams.get('experience') || '',
+      location: ''
     };
     setInitialValues(searchData);
   }, [searchParams, locationData, isLoadingLocation]);
@@ -81,7 +76,8 @@ export default function SearchReferralsPage() {
       keyword: searchParams.get('keyword') || '',
       country: searchParams.get('country') || '',
       city: searchParams.get('city') || '',
-      experience: searchParams.get('experience') || ''
+      experience: searchParams.get('experience') || '',
+      location: ''
     };
     setInitialValues(searchData);
   }, [searchParams, locationData, isLoadingLocation]);
