@@ -21,6 +21,15 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'TymblHub - Referral Platform',
   description: 'Find your dream opportunity or refer talented professionals to top companies.',
+  robots: { index: true, follow: true },
+  openGraph: {
+    title: 'TymblHub - Referral Platform',
+    description: 'Find your dream opportunity or refer talented professionals to top companies.',
+    url: 'https://tymblhub.com/',
+    siteName: 'TymblHub',
+    type: 'website',
+    images: ['/logo.png'],
+  },
 };
 
 export default async function RootLayout({
@@ -54,32 +63,6 @@ export default async function RootLayout({
             gtag('config', 'G-WFGL6NX08T');
           `}
         </Script>
-        {(() => {
-          const origin = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-          const siteName = 'TymblHub';
-          const listingUrl = `${origin}/referrals`;
-          const breadcrumb = JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'BreadcrumbList',
-            itemListElement: [
-              { '@type': 'ListItem', position: 1, item: { '@id': `${origin}/`, name: 'Home' } },
-              { '@type': 'ListItem', position: 2, item: { '@id': listingUrl, name: 'Referrals' } },
-            ],
-          }).replace(/</g, '\\u003c');
-          const itemList = JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'ItemList',
-            url: listingUrl,
-            name: 'Referrals',
-          }).replace(/</g, '\\u003c');
-          return (
-            <>
-              <script id="schema-breadcrumb" type="application/ld+json" dangerouslySetInnerHTML={{ __html: breadcrumb }} />
-              <script id="schema-itemlist" type="application/ld+json" dangerouslySetInnerHTML={{ __html: itemList }} />
-              <meta property="og:site_name" content={siteName} />
-            </>
-          );
-        })()}
       </head>
       <body className={`${inter.className} bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200`}>
         <ClientAuthProvider initialAuthState={authState}>

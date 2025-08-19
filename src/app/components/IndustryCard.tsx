@@ -3,6 +3,7 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { slugify } from '../utils/seo';
 
 interface Company {
   companyId: number;
@@ -34,7 +35,7 @@ const IndustryCard: React.FC<IndustryCardProps> = ({ industry }) => {
       className="block bg-white dark:bg-gray-50 rounded-[20px] shadow-lg w-full min-w-[220px] max-w-full sm:min-w-[300px] sm:max-w-[220px] flex-shrink-0 p-6 flex flex-col justify-between transition-shadow duration-300 hover:shadow-xl h-[200px] hover:scale-105 transition-transform"
     >
       <div className="flex-1">
-        <Link href={`/industries/${industry.industryId}`} className="flex items-center justify-between mb-2">
+        <Link href={`/companies-hiring-in-${slugify(industry.industryName)}`} className="flex items-center justify-between mb-2">
           <div>
             <div className="text-l font-semibold text-gray-900 dark:text-white line-clamp-2 leading-tight min-h-[48px]">
               {industry.industryName}

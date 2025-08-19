@@ -19,6 +19,7 @@ export default function GlobalSearchModal({ isOpen, onClose, initialValues }: Gl
   const [isLoading, setIsLoading] = useState(false);
   const [navigationInProgress, setNavigationInProgress] = useState(false);
   const [animateIn, setAnimateIn] = useState(false);
+  const [targetHref, setTargetHref] = useState<string | null>(null);
 
   // Only read URL parameters if we're on a search results page
   const isSearchResultsPage = pathname === '/referrals' || pathname === '/search-referrals';
@@ -46,10 +47,10 @@ export default function GlobalSearchModal({ isOpen, onClose, initialValues }: Gl
         location: ''
       });
     } else {
-      // Reset to default values (including India) if not on search results page
+      // Reset to empty defaults if not on search results page
       setCurrentSearchData({
         keyword: '',
-        country: 'India',
+        country: '',
         city: '',
         experience: '',
         location: ''
@@ -74,7 +75,7 @@ export default function GlobalSearchModal({ isOpen, onClose, initialValues }: Gl
       } else {
         setCurrentSearchData({
           keyword: '',
-          country: 'India',
+          country: '',
           city: '',
           experience: '',
           location: ''
@@ -89,6 +90,7 @@ export default function GlobalSearchModal({ isOpen, onClose, initialValues }: Gl
       setIsLoading(false);
       setNavigationInProgress(false);
       setAnimateIn(false);
+      setTargetHref(null);
     }
   }, [isOpen]);
 
@@ -100,12 +102,12 @@ export default function GlobalSearchModal({ isOpen, onClose, initialValues }: Gl
     }
   }, [isOpen]);
 
-  const handleSearch = async (searchData: SearchFormData) => {
+  const handleSearch = (searchData: SearchFormData) => {
     setIsLoading(true);
     setNavigationInProgress(true);
 
     try {
-      const pathname = buildSeoPath({
+      const nextPath = buildSeoPath({
         keyword: searchData.keyword || '',
         country: searchData.country || '',
         city: searchData.city || '',
@@ -113,25 +115,39 @@ export default function GlobalSearchModal({ isOpen, onClose, initialValues }: Gl
       });
 
       const params = new URLSearchParams();
-      // params.set('page', '0');
       if (searchData.experience) params.set('experience', searchData.experience);
 
       const qs = params.toString();
-      await router.push(qs ? `${pathname}?${qs}` : pathname);
-
-      // Wait for navigation to complete - use a longer delay for global modal
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      // Close the modal after navigation is complete
-      onClose();
+      const href = qs ? `${nextPath}?${qs}` : nextPath;
+      setTargetHref(href);
+      console.log('pushing to new SRP', href);
+      router.push(href);
     } catch (error) {
       console.error('Navigation error:', error);
       setIsLoading(false);
       setNavigationInProgress(false);
-    } finally {
-      setIsLoading(false);
+      setTargetHref(null);
     }
   };
+
+  // Close the modal after the router has navigated to the intended URL
+  useEffect(() => {
+    if (!navigationInProgress || !targetHref) return;
+
+    const currentQs = searchParams.toString();
+    const currentHref = currentQs ? `${pathname}?${currentQs}` : pathname;
+
+    if (currentHref === targetHref) {
+      // Give the new page a frame to paint before closing the modal
+      const id = requestAnimationFrame(() => {
+        setIsLoading(false);
+        setNavigationInProgress(false);
+        setTargetHref(null);
+        onClose();
+      });
+      return () => cancelAnimationFrame(id);
+    }
+  }, [pathname, searchParams, navigationInProgress, targetHref, onClose]);
 
   if (!isOpen) return null;
 

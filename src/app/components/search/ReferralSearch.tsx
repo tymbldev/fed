@@ -12,17 +12,16 @@ interface ReferralSearchProps {
   className?: string;
   initialValues?: SearchFormData;
   isLoading?: boolean;
-  autoDefaultToIndia?: boolean;
 }
 
-export default function ReferralSearch({ onSearch, className = '', initialValues, isLoading = false, autoDefaultToIndia = false }: ReferralSearchProps) {
+export default function ReferralSearch({ onSearch, className = '', initialValues, isLoading = false }: ReferralSearchProps) {
   const [formData, setFormData] = useState<SearchFormData>(() => {
     console.log('initialValues', initialValues);
     // If initialValues are provided, use them exactly (including empty values)
     if (initialValues) {
       const city = initialValues.city || '';
       const country = initialValues.country || '';
-      const location = (initialValues.location ?? (city && country ? `${city}, ${country}` : (city || country))) || '';
+      const location = (initialValues.location || (city && country ? `${city}, ${country}` : (city || country))) || '';
       return {
         keyword: initialValues.keyword || '',
         country,
@@ -46,14 +45,14 @@ export default function ReferralSearch({ onSearch, className = '', initialValues
     if (initialValues) {
       const city = initialValues.city || '';
       const country = initialValues.country || '';
-      const location = (initialValues.location ?? (city && country ? `${city}, ${country}` : (city || country))) || '';
+      const location = (initialValues.location || (city && country ? `${city}, ${country}` : (city || country))) || '';
       setFormData(prev => ({
         ...prev,
         ...initialValues,
         location
       }));
     } else {
-      // Reset to empty values when no initialValues - Location component will set India as default
+      // Reset to empty values when no initialValues
       setFormData({
         keyword: '',
         country: '',
@@ -208,7 +207,6 @@ export default function ReferralSearch({ onSearch, className = '', initialValues
               onInputChange={handleInputChange}
               onBlur={handleBlur}
               required={false}
-              autoDefaultToIndia={autoDefaultToIndia}
             />
           </div>
 

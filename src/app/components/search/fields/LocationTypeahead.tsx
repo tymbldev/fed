@@ -11,7 +11,6 @@ interface LocationProps {
   onBlur: (field: string) => void;
   required?: boolean;
   label?: string;
-  autoDefaultToIndia?: boolean;
 }
 
 interface LocationOption {
@@ -26,8 +25,7 @@ const LocationTypeahead: React.FC<LocationProps> = ({
   onInputChange,
   onBlur,
   required = false,
-  label = 'Location',
-  autoDefaultToIndia = false
+  label = 'Location'
 }) => {
   const [locationData, setLocationData] = useState<LocationOption[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -85,18 +83,7 @@ const LocationTypeahead: React.FC<LocationProps> = ({
     return [...citySuggestions, ...countrySuggestions];
   }, [locationData]);
 
-  // Optionally default to India if requested and no location set
-  useEffect(() => {
-    if (!autoDefaultToIndia) return;
-    if (!locationData.length) return;
-    const current = (formData.location || '').trim();
-    if (current) return;
-
-    const india = locationData.find(l => l.country === 'India');
-    if (india) {
-      onInputChange({ target: { name: 'location', value: 'India' } } as React.ChangeEvent<HTMLInputElement>);
-    }
-  }, [autoDefaultToIndia, locationData, formData.location, onInputChange]);
+  // No automatic defaulting of location value
 
   // Store the raw single input value; parent will derive city/country on submit
   const handleFreeTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {

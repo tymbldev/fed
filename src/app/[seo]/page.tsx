@@ -3,6 +3,7 @@ import { isSeoSlug, splitSeoSlug } from '../utils/seo';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
+import ListingSchemaHead from '../components/seo/ListingSchemaHead';
 
 export default async function SeoReferralsPage({
   params,
@@ -14,7 +15,13 @@ export default async function SeoReferralsPage({
   const { seo } = await params;
   const slug = (seo || '').toLowerCase();
   if (!isSeoSlug(slug)) return notFound();
-  return ReferralsListing({ searchParams, seoSlug: slug });
+
+  return (
+    <>
+      <ListingSchemaHead seoSlug={slug} renderMeta={false} />
+      {ReferralsListing({ searchParams, seoSlug: slug })}
+    </>
+  );
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ seo: string }> }): Promise<Metadata> {

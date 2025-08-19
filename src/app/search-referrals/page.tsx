@@ -112,7 +112,6 @@ export default function SearchReferralsPage() {
           onSearch={handleSearch}
           initialValues={isEditFlow ? initialValues : undefined}
           isLoading={isLoadingLocation}
-          autoDefaultToIndia={!isEditFlow}
         />
       </div>
     </div>

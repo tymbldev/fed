@@ -14,7 +14,6 @@ interface LocationProps {
   countryLabel?: string;
   cityLabel?: string;
   setValue?: boolean; // If true, will update both ID and label fields
-  autoDefaultToIndia?: boolean; // If true, auto-select India when no country is set
 }
 
 interface LocationOption {
@@ -42,8 +41,7 @@ const Location: React.FC<LocationProps> = ({
   layout = 'vertical',
   countryLabel = "Country",
   cityLabel = "City",
-  setValue = false,
-  autoDefaultToIndia = true
+  setValue = false
 }) => {
   const [locationData, setLocationData] = useState<LocationOption[]>([]);
   const [countries, setCountries] = useState<{ value: string; label: string }[]>([]);
@@ -51,7 +49,6 @@ const Location: React.FC<LocationProps> = ({
   const [isLoadingCities, setIsLoadingCities] = useState(false);
   const [previousCountryId, setPreviousCountryId] = useState('');
   const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const [hasSetDefaultCountry, setHasSetDefaultCountry] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   // Load location data once on component mount
@@ -108,44 +105,7 @@ const Location: React.FC<LocationProps> = ({
     }, 1000);
   }, [locationData, formData.countryId, formData.cityId]);
 
-  // Separate useEffect for setting India default - runs only when location data loads and no country is set
-  useEffect(() => {
-    console.log('Location useEffect - Setting India default...', locationData.length, formData.countryId, formData.country, hasSetDefaultCountry);
-    if (!autoDefaultToIndia) return; // Respect consumer preference
-    if (locationData.length === 0) return;
-    if (formData.countryId || formData.country) return; // Don't override existing values
-    if (hasSetDefaultCountry) return; // Don't set default again
-
-    console.log('Location useEffect - Setting India default...');
-    const indiaLocation = locationData.find(loc => loc.country === 'India');
-    console.log('Location useEffect - India location found:', indiaLocation);
-
-    if (indiaLocation && indiaLocation.countryId) {
-      console.log('Location useEffect - Setting India as default, setValue:', setValue);
-      // Set India as default country
-      onInputChange({
-        target: {
-          name: 'countryId',
-          value: indiaLocation.countryId.toString()
-        }
-      } as React.ChangeEvent<HTMLSelectElement>);
-
-      // If setValue is true, also set the country label
-      if (setValue) {
-        onInputChange({
-          target: {
-            name: 'country',
-            value: indiaLocation.country
-          }
-        } as React.ChangeEvent<HTMLSelectElement>);
-      }
-
-      setHasSetDefaultCountry(true);
-      console.log('Location useEffect - India default set successfully');
-    } else {
-      console.log('Location useEffect - India location not found or invalid');
-    }
-  }, [locationData, hasSetDefaultCountry, formData.countryId, formData.country, setValue, onInputChange, autoDefaultToIndia]);
+  // No automatic defaulting of country
 
   // Handle country change and update cities from cached data
   useEffect(() => {

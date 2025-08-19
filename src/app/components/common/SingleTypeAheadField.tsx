@@ -72,30 +72,27 @@ const SingleTypeAheadField: React.FC<SingleTypeAheadFieldProps> = ({
     if (!inputValue.trim()) return [];
 
     const lowerInput = inputValue.toLowerCase();
-    const results: Suggestion[] = [];
-    let count = 0;
+    const prefixMatches: Suggestion[] = [];
+    const containsMatches: Suggestion[] = [];
 
-    // Use for...of for better performance than filter
+    // Use for...of for better performance than filter and keep stable ordering
     for (const suggestion of suggestions) {
-      if (count >= maxResults) break;
-
       const lowerLabel = suggestion.label.toLowerCase();
 
-      // Check for exact prefix match first (highest priority)
       if (lowerLabel.startsWith(lowerInput)) {
-        results.unshift(suggestion); // Add to beginning for priority
-        count++;
-        continue;
+        // Keep original order for prefix matches
+        prefixMatches.push(suggestion);
+      } else if (lowerLabel.includes(lowerInput)) {
+        containsMatches.push(suggestion);
       }
 
-      // Check for contains match
-      if (lowerLabel.includes(lowerInput)) {
-        results.push(suggestion);
-        count++;
+      // Early exit when we have enough combined results
+      if (prefixMatches.length + containsMatches.length >= maxResults) {
+        break;
       }
     }
 
-    return results;
+    return [...prefixMatches, ...containsMatches].slice(0, maxResults);
   }, [suggestions, maxResults]);
 
   // Open suggestions by default if requested
@@ -212,6 +209,7 @@ const SingleTypeAheadField: React.FC<SingleTypeAheadFieldProps> = ({
           onKeyDown={handleKeyDown}
           onBlur={onBlur}
           placeholder={placeholder}
+          autoComplete='off'
           className={`block h-12 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${error ? 'border-red-500' : ''} ${className}`}
         />
         {isOpen && filteredSuggestions.length > 0 && (

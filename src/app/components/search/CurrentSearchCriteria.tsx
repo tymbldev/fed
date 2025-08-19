@@ -86,7 +86,17 @@ export default function CurrentSearchCriteria({ totalCount = 0, derivedSearch }:
 
           {/* Mobile: Edit button navigates to search page */}
           <Link
-            href={`/search-referrals?${(() => { const p = new URLSearchParams(searchParams.toString()); p.set('edit','true'); return p.toString(); })()}`}
+            href={`/search-referrals?${(() => {
+              const p = new URLSearchParams(searchParams.toString());
+              // Ensure derived values are present if not in URL params
+              if (!p.get('keyword') && (derivedSearch?.keyword || '')) p.set('keyword', derivedSearch?.keyword || '');
+              if (!p.get('country') && (derivedSearch?.country || '')) p.set('country', derivedSearch?.country || '');
+              if (!p.get('city') && (derivedSearch?.city || '')) p.set('city', derivedSearch?.city || '');
+              if (!p.get('experience') && (derivedSearch?.experience || '')) p.set('experience', derivedSearch?.experience || '');
+              // Mark as edit flow
+              p.set('edit','true');
+              return p.toString();
+            })()}`}
             className="md:hidden flex items-center space-x-1 px-3 py-1.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -41,7 +41,7 @@ async function resolveLocation(locationName: string): Promise<{ city: string; co
 async function fetchReferralsForHead(searchFilters: { keyword: string; country: string; city: string }) {
   const requestBody: { page: number; size: number; keywords?: string[]; countryName?: string; cityName?: string } = {
     page: 0,
-    size: 10,
+    size: 20,
   };
 
   if (searchFilters.keyword) requestBody.keywords = [searchFilters.keyword];

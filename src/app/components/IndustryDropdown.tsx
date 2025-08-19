@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { slugify } from "../utils/seo";
 
 interface DropdownIndustry {
   id: number;
@@ -62,7 +63,7 @@ export default function IndustryDropdown({
                 }`}
                 onClick={() => {
                   setOpen(false);
-                  router.push(`/industries/${ind.id}`);
+                  router.push(`/companies-hiring-in-${slugify(ind.name)}`);
                 }}
               >
                 {ind.name}

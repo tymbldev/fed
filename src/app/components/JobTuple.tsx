@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import DesktopNewTabLink from './common/DesktopNewTabLink';
 import { LocationOption } from '../utils/serverData';
 import React from 'react';
 
@@ -74,7 +75,7 @@ export default function JobTuple({
         {/* Header: Title & Company */}
         <div>
           <h3 className="text-xl font-semibold mb-1">
-            <Link href={`/referrals/${id}`} className="hover:underline">{title}</Link>
+            <DesktopNewTabLink href={`/referrals/${id}`} className="hover:underline">{title}</DesktopNewTabLink>
           </h3>
           {companyId ? (
             <Link href={`/companies/${companyId}`} className="text-blue-900 font-medium text-base mb-2 hover:underline">{company}</Link>

@@ -3,7 +3,6 @@ import ReferralStatusBadge from './ReferralStatusBadge';
 import FloatingFilterButton from '../components/FloatingFilterButton';
 import JobTuple from '../components/JobTuple';
 import CurrentSearchCriteria from '../components/search/CurrentSearchCriteria';
-import ListingSchemaHead from '../components/seo/ListingSchemaHead';
 import { fetchLocations } from '../utils/serverData';
 import { splitSeoSlug } from '../utils/seo';
 import Link from 'next/link';
@@ -64,7 +63,7 @@ async function fetchReferrals(page: number = 0, searchFilters: {
   try {
     const requestBody: SearchRequest = {
       page: page,
-      size: 10
+      size: 20
     };
 
     if (searchFilters.keyword) requestBody.keywords = [searchFilters.keyword];
@@ -76,7 +75,7 @@ async function fetchReferrals(page: number = 0, searchFilters: {
       requestBody.maxExperience = experienceValue;
     }
 
-    // console.log('jobsearch/search', requestBody);
+    console.log('jobsearch/search', requestBody);
 
     const response = await fetch(`${BASE_URL}/api/v1/jobsearch/search`, {
       method: 'POST',
@@ -87,13 +86,13 @@ async function fetchReferrals(page: number = 0, searchFilters: {
       cache: 'no-store'
     });
 
-    console.log(response);
-
     if (!response.ok) {
       throw new Error('Failed to fetch referrals');
     }
 
     const data = await response.json();
+
+    console.log("data", data);
 
     const referralsData = data.jobs || data.content || data.data || data || [];
     const totalPagesData = data.totalPages || data.total || 0;
@@ -211,8 +210,7 @@ export default async function ReferralsListing({
 
   return (
     <main className="min-h-screen bg-gray-50 py-6 md:py-12">
-      {/* SEO schema moved here since head.tsx isn't available */}
-      <ListingSchemaHead seoSlug={seoSlug} renderMeta={false} />
+      {/* SEO schema now injected via head.tsx for this route */}
       <div className="container mx-auto px-4">
         <CurrentSearchCriteria totalCount={referralsData.totalElements} derivedSearch={searchFilters} />
         {referralsData.referrals.length === 0 ? (

@@ -1,4 +1,4 @@
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import ReferralDetailsClient from './ReferralDetailsClient';
 import {
   fetchReferralDetails,
@@ -26,6 +26,8 @@ async function getServerData(jobId: string) {
       fetchReferrers(jobId),
       fetchApplicationStatus(jobId, token)
     ]);
+
+    console.log('referral', referral);
 
     if (!referral) {
       return null;
@@ -69,6 +71,14 @@ function formatDate(dateString: string) {
 }
 
 function formatSalaryRange(minSalary: number, maxSalary: number, currencyId: number, currencies: { [key: number]: string }) {
+  // Treat 0 values as "not mentioned"
+  const minIsZero = (minSalary ?? 0) === 0;
+  const maxIsZero = (maxSalary ?? 0) === 0;
+
+  if (minIsZero && maxIsZero) {
+    return 'Not mentioned';
+  }
+
   const currency = currencies[currencyId] || 'USD';
   const formatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -77,11 +87,29 @@ function formatSalaryRange(minSalary: number, maxSalary: number, currencyId: num
     maximumFractionDigits: 0,
   });
 
+  // Only max provided (min is 0 or missing)
+  if ((minIsZero || !minSalary) && !!maxSalary) {
+    return `Up to ${formatter.format(maxSalary)}`;
+  }
+
+  // Only min provided (max is 0 or missing)
+  if (!!minSalary && (maxIsZero || !maxSalary)) {
+    return `${formatter.format(minSalary)}+`;
+  }
+
   if (minSalary === maxSalary) {
     return formatter.format(minSalary);
   }
 
   return `${formatter.format(minSalary)} - ${formatter.format(maxSalary)}`;
+}
+
+function stripHtmlTags(html: string) {
+  try {
+    return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  } catch {
+    return html;
+  }
 }
 
 export default async function ReferralDetailsPage({
@@ -90,6 +118,10 @@ export default async function ReferralDetailsPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const hdrs = await headers();
+  const protocol = hdrs.get('x-forwarded-proto') ?? 'https';
+  const host = hdrs.get('x-forwarded-host') ?? hdrs.get('host') ?? 'localhost:3000';
+  const origin = `${protocol}://${host}`;
   const data = await getServerData(id);
 
   if (!data) {
@@ -104,8 +136,73 @@ export default async function ReferralDetailsPage({
 
   const { referral, currencies, locations, referrers, applicationStatus, applicationId, appliedReferrer, applicationCreatedAt } = data;
 
+  const city = data ? data.locations[data.referral.cityId]?.city : undefined;
+  const country = data ? data.locations[data.referral.cityId]?.country : undefined;
+  const currencyCode = data ? data.currencies[data.referral.currencyId] : undefined;
+
+  const jobPosting = data
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'JobPosting',
+        title: data.referral.title,
+        description: stripHtmlTags(data.referral.description),
+        datePosted: data.referral.createdAt,
+        employmentType: data.referral.jobType || undefined,
+        hiringOrganization: {
+          '@type': 'Organization',
+          name: data.referral.company,
+          logo: `${origin}/logo.png`,
+        },
+        identifier: {
+          '@type': 'PropertyValue',
+          name: data.referral.company,
+          value: String(data.referral.id),
+        },
+        jobLocation: city || country
+          ? {
+              '@type': 'Place',
+              address: {
+                '@type': 'PostalAddress',
+                addressLocality: city || undefined,
+                addressCountry: country || undefined,
+              },
+            }
+          : undefined,
+        estimatedSalary:
+          (data.referral.minSalary || data.referral.maxSalary) && currencyCode
+            ? {
+                '@type': 'MonetaryAmount',
+                currency: currencyCode,
+                value: {
+                  '@type': 'QuantitativeValue',
+                  minValue: data.referral.minSalary || undefined,
+                  maxValue: data.referral.maxSalary || undefined,
+                },
+              }
+            : undefined,
+        jobBenefits: undefined,
+        skills:
+          data.referral.tags && data.referral.tags.length > 0
+            ? data.referral.tags.join(', ')
+            : undefined,
+        experienceRequirements:
+          data.referral.minExperience || data.referral.maxExperience
+            ? `${data.referral.minExperience ?? ''}${
+                data.referral.minExperience && data.referral.maxExperience ? ' - ' : ''
+              }${data.referral.maxExperience ?? ''} years`.trim()
+            : undefined,
+        url: `${origin}/referrals/${data.referral.id}`,
+      }
+    : null;
+
+  const jobPostingJson = jobPosting ? JSON.stringify(jobPosting).replace(/</g, '\\u003c') : '';
+
   return (
-    <main className="min-h-screen bg-[#f6fafd] py-12 md:py-12 py-4">
+    <>
+      {jobPosting ? (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jobPostingJson }} />
+      ) : null}
+      <main className="min-h-screen bg-[#f6fafd] py-12 md:py-12 py-4">
       <div className="container mx-auto px-4 max-w-4xl">
         <div className="bg-white md:rounded-2xl md:shadow-lg md:border md:border-gray-200 p-4 md:p-8 text-left">
           {/* Header Section */}
@@ -200,5 +297,6 @@ export default async function ReferralDetailsPage({
         </div>
       </div>
     </main>
+    </>
   );
 }
