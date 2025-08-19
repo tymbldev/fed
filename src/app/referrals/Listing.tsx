@@ -3,6 +3,7 @@ import ReferralStatusBadge from './ReferralStatusBadge';
 import FloatingFilterButton from '../components/FloatingFilterButton';
 import JobTuple from '../components/JobTuple';
 import CurrentSearchCriteria from '../components/search/CurrentSearchCriteria';
+import ListingSchemaHead from '../components/seo/ListingSchemaHead';
 import { fetchLocations } from '../utils/serverData';
 import { splitSeoSlug } from '../utils/seo';
 import Link from 'next/link';
@@ -38,7 +39,7 @@ interface SearchRequest {
   page: number;
   size: number;
   keywords?: string[];
-  keywordId?: string;
+  // keywordId?: string;
   countryName?: string;
   cityName?: string;
   minExperience?: number;
@@ -75,7 +76,7 @@ async function fetchReferrals(page: number = 0, searchFilters: {
       requestBody.maxExperience = experienceValue;
     }
 
-    console.log('jobsearch/search', requestBody);
+    // console.log('jobsearch/search', requestBody);
 
     const response = await fetch(`${BASE_URL}/api/v1/jobsearch/search`, {
       method: 'POST',
@@ -210,6 +211,8 @@ export default async function ReferralsListing({
 
   return (
     <main className="min-h-screen bg-gray-50 py-6 md:py-12">
+      {/* SEO schema moved here since head.tsx isn't available */}
+      <ListingSchemaHead seoSlug={seoSlug} renderMeta={false} />
       <div className="container mx-auto px-4">
         <CurrentSearchCriteria totalCount={referralsData.totalElements} derivedSearch={searchFilters} />
         {referralsData.referrals.length === 0 ? (

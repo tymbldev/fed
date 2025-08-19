@@ -35,7 +35,7 @@ export default function JobTuple({
   cityName,
   countryName
 }: JobTupleProps) {
-  console.log('companyId', companyId);
+  // console.log('companyId', companyId);
   // Utility to strip HTML tags from a string - consistent between server and client
   function stripHtml(html: string): string {
     if (!html) return '';
