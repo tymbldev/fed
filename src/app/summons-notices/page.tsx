@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Summons & Notices - TymblHub | Legal Information & Compliance',
@@ -270,18 +271,18 @@ export default function SummonsNotices() {
           <div className="bg-white p-6 rounded-lg shadow-sm border">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Legal Resources</h3>
             <div className="space-y-3">
-              <a href="/terms-conditions" className="block text-indigo-600 hover:text-indigo-800 text-sm">
+              <Link href="/terms-conditions" className="block text-indigo-600 hover:text-indigo-800 text-sm">
                 Terms & Conditions
-              </a>
-              <a href="/privacy-policy" className="block text-indigo-600 hover:text-indigo-800 text-sm">
+              </Link>
+              <Link href="/privacy-policy" className="block text-indigo-600 hover:text-indigo-800 text-sm">
                 Privacy Policy
-              </a>
-              <a href="/security-advice" className="block text-indigo-600 hover:text-indigo-800 text-sm">
+              </Link>
+              <Link href="/security-advice" className="block text-indigo-600 hover:text-indigo-800 text-sm">
                 Security Information
-              </a>
-              <a href="/grievances" className="block text-indigo-600 hover:text-indigo-800 text-sm">
+              </Link>
+              <Link href="/grievances" className="block text-indigo-600 hover:text-indigo-800 text-sm">
                 Grievance Procedure
-              </a>
+              </Link>
             </div>
           </div>
         </div>
