@@ -259,7 +259,7 @@ export default async function ReferralDetailsPage({
           {/* Job Description Section */}
           <div className="mb-6">
             <h2 className="text-lg font-bold text-gray-900 mb-2 text-left">Job Description</h2>
-            <div className="prose max-w-none text-gray-700 whitespace-pre-wrap text-left" dangerouslySetInnerHTML={{ __html: referral.description }} />
+            <div className="prose max-w-none text-gray-700 text-left" dangerouslySetInnerHTML={{ __html: referral.description }} />
           </div>
 
           <hr className="my-4 border-gray-200" />

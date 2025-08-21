@@ -1,14 +1,16 @@
 import React from 'react';
-import { fetchIndustries } from './utils/serverData';
+import { fetchIndustries, fetchTopDesignations } from './utils/serverData';
 import AuthDependentContent from './components/AuthDependentContent';
 import AuthDependentCTA from './components/AuthDependentCTA';
 import IndustriesCarousel from "./components/IndustriesCarousel";
+import TopRolesShowcase from './components/TopRolesShowcase';
 import ExploreOpportunitiesButton from './components/ExploreOpportunitiesButton';
 import ReferralProgramGuide from './components/ReferralProgramGuide';
 
 export default async function Home() {
   // Get industries data on the server
   const industries = await fetchIndustries();
+  const { topDesignations } = await fetchTopDesignations();
 
   return (
     <main className="min-h-screen bg-white dark:bg-gray-900">
@@ -55,6 +57,7 @@ export default async function Home() {
 
 
       <IndustriesCarousel industries={industries} />
+      <TopRolesShowcase roles={topDesignations} />
 
       {/* Features Section - SSR */}
       <section className="py-16 bg-gradient-to-b from-gray-50 to-white dark:from-gray-800 dark:to-gray-900">

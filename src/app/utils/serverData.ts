@@ -128,6 +128,17 @@ export interface Job {
   createdAt: string;
 }
 
+export interface TopDesignation {
+  designationName: string;
+  jobCount: number;
+}
+
+export interface TopDesignationsResponse {
+  topDesignations: TopDesignation[];
+  totalJobs: number;
+  totalDesignations: number;
+}
+
 export async function fetchIndustries(): Promise<Industry[]> {
   try {
     // For server-side fetching, we need to use the full URL
@@ -305,5 +316,24 @@ export async function fetchCompanyDetails(companyId: string): Promise<CompanyDet
   } catch (error) {
     console.error('Error fetching company details:', error);
     return null;
+  }
+}
+
+export async function fetchTopDesignations(): Promise<TopDesignationsResponse> {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000';
+    const response = await fetch(`${baseUrl}/api/v1/seo/designations/top?limit=18`, {
+      next: { revalidate: 900 }, // Revalidate every 15 minutes
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch top designations');
+    }
+
+    const data: TopDesignationsResponse = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching top designations:', error);
+    return { topDesignations: [], totalJobs: 0, totalDesignations: 0 };
   }
 }
