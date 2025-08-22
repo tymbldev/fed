@@ -136,6 +136,8 @@ export default async function ReferralDetailsPage({
 
   const { referral, currencies, locations, referrers, applicationStatus, applicationId, appliedReferrer, applicationCreatedAt } = data;
 
+  console.log("referral", referral);
+
   const city = data ? data.locations[data.referral.cityId]?.city : undefined;
   const country = data ? data.locations[data.referral.cityId]?.country : undefined;
   const currencyCode = data ? data.currencies[data.referral.currencyId] : undefined;
@@ -202,9 +204,9 @@ export default async function ReferralDetailsPage({
       {jobPosting ? (
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jobPostingJson }} />
       ) : null}
-      <main className="min-h-screen bg-[#f6fafd] py-12 md:py-12 py-4">
+      <main className="min-h-screen bg-[#f6fafd] py-4 md:py-12">
       <div className="container mx-auto px-4 max-w-4xl">
-        <div className="bg-white md:rounded-2xl md:shadow-lg md:border md:border-gray-200 p-4 md:p-8 text-left">
+        <div className="bg-white md:rounded-2xl md:shadow-lg md:border md:border-gray-200 p-4 pb-0 md:p-8 text-left">
           {/* Header Section */}
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-gray-900 mb-1 text-left">{referral.title}</h1>
@@ -262,10 +264,12 @@ export default async function ReferralDetailsPage({
             <div className="prose max-w-none text-gray-700 text-left" dangerouslySetInnerHTML={{ __html: referral.description }} />
           </div>
 
-          <hr className="my-4 border-gray-200" />
+
 
           {/* Keywords as pills above the apply button */}
           {referral.tags && referral.tags.length > 0 && (
+            <>
+            <hr className="my-4 border-gray-200" />
             <div className="mb-6">
               <h3 className="text-base font-semibold text-gray-900 mb-2 text-left">Keywords</h3>
               <div className="flex flex-wrap gap-3 justify-start text-left">
@@ -279,12 +283,14 @@ export default async function ReferralDetailsPage({
                 ))}
               </div>
             </div>
+            <hr className="my-4 border-gray-200" />
+            </>
           )}
 
-          <hr className="my-4 border-gray-200" />
+
 
           {/* Application Status, Button & Referrer Information - Client Component */}
-          <div className="mt-8">
+          {/* <div className="mt-8 sticky bottom-[10px] z-40"> */}
             <ReferralDetailsClient
               referral={referral}
               referrers={referrers}
@@ -293,7 +299,7 @@ export default async function ReferralDetailsPage({
               initialAppliedReferrer={appliedReferrer}
               applicationCreatedAt={applicationCreatedAt}
             />
-          </div>
+          {/* </div> */}
         </div>
       </div>
     </main>

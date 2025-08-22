@@ -10,6 +10,21 @@ export default function BottomNav() {
   const router = useRouter();
   const { isLoggedIn } = useAuth();
 
+  // Show BottomNav only on designated landing pages
+  const landingPaths = new Set([
+    '/',
+    '/search-referrals',
+    '/referrals',
+    '/post-referral',
+    '/profile',
+    '/my-referrals',
+    '/industries',
+  ]);
+  const isLandingPage = landingPaths.has(pathname);
+  if (!isLandingPage) {
+    return null;
+  }
+
   const handlePostReferral = () => {
     if (isLoggedIn) {
       router.push('/post-referral');

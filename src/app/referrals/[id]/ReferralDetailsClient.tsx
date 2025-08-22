@@ -248,17 +248,7 @@ export default function ReferralDetailsClient({
         </div>
       )}
 
-      <button
-        onClick={() => handleApply()}
-        disabled={!!applicationStatus}
-        className={`w-full mt-2 px-6 py-3 rounded-lg shadow font-semibold text-lg transition duration-200 ${
-          !!applicationStatus
-            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-            : 'bg-[#1a73e8] text-white hover:bg-[#1666c1]'
-        }`}
-      >
-        {applicationStatus ? 'Referral Sent' : 'Send referral'}
-      </button>
+
 
       {/* Referrer Information */}
       {referrers.length > 0 && (
@@ -296,6 +286,24 @@ export default function ReferralDetailsClient({
           )}
         </div>
       )}
+
+      {/* Sticky action bar near bottom: sticks once reached */}
+      <div className="sticky bottom-[0px] h-[72px] py-2 border-t border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+        <div className="mx-auto max-w-4xl h-full">
+          <button
+            onClick={() => handleApply()}
+            disabled={!!applicationStatus}
+            className={`w-full h-full rounded-lg shadow font-semibold text-lg transition duration-200 ${
+              !!applicationStatus
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-[#1a73e8] text-white hover:bg-[#1666c1]'
+            }`}
+          >
+            {applicationStatus ? 'Referral Sent' : 'Send referral'}
+          </button>
+        </div>
+      </div>
+
 
       {/* Referrer Selection Modal */}
       {showReferrerModal && (

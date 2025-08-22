@@ -1,7 +1,11 @@
+'use client';
+
 import Link from 'next/link';
 import DesktopNewTabLink from './common/DesktopNewTabLink';
 import { LocationOption } from '../utils/serverData';
 import React from 'react';
+import { useRouter } from 'next/navigation';
+import { isDesktop } from '../utils/deviceUtils';
 
 interface JobTupleProps {
   id: number;
@@ -69,16 +73,53 @@ export default function JobTuple({
     return 'Location not specified';
   };
 
+  const router = useRouter();
+
+  const handleCardClick = () => {
+    const url = `/referrals/${id}`;
+    if (isDesktop()) {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } else {
+      router.push(url);
+    }
+  };
+
+  const handleKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handleCardClick();
+    }
+  };
+
   return (
     <div className="block">
-      <div className="bg-white rounded-lg shadow p-6 hover:shadow-md transition duration-200 flex flex-col justify-between h-full">
+      <div
+        className="bg-white rounded-lg shadow p-6 hover:shadow-md transition duration-200 flex flex-col justify-between h-full cursor-pointer"
+        role="link"
+        tabIndex={0}
+        onClick={handleCardClick}
+        onKeyDown={handleKeyDown}
+        aria-label={`${title} at ${company}`}
+      >
         {/* Header: Title & Company */}
         <div>
           <h3 className="text-xl font-semibold mb-1">
-            <DesktopNewTabLink href={`/referrals/${id}`} className="hover:underline">{title}</DesktopNewTabLink>
+            <DesktopNewTabLink
+              href={`/referrals/${id}`}
+              className="hover:underline"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {title}
+            </DesktopNewTabLink>
           </h3>
           {companyId ? (
-            <Link href={`/companies/${companyId}`} className="text-blue-900 font-medium text-base mb-2 hover:underline">{company}</Link>
+            <Link
+              href={`/companies/${companyId}`}
+              className="text-blue-900 font-medium text-base mb-2 hover:underline"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {company}
+            </Link>
           ) : (
             <div className="text-blue-900 font-medium text-base mb-2">{company}</div>
           )}
