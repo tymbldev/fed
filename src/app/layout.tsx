@@ -10,6 +10,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import { SearchModalProvider } from './context/SearchModalContext';
 import ClientAuthProvider from './components/ClientAuthProvider';
 import GlobalSearchModalWrapper from './components/search/GlobalSearchModalWrapper';
+import GlobalNavigationLoader from './components/GlobalNavigationLoader';
 import { getServerAuthState } from './utils/serverAuth';
 // import CacheManager from './components/CacheManager';
 
@@ -68,6 +69,9 @@ export default async function RootLayout({
         <ClientAuthProvider initialAuthState={authState}>
           <ThemeProvider>
             <SearchModalProvider>
+              {/* Global Navigation Loader */}
+              <GlobalNavigationLoader />
+
               <div className="min-h-screen flex flex-col">
                 <Header />
                 <main className="flex-grow pb-20 md:pb-0">

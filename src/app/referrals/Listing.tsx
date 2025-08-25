@@ -75,7 +75,7 @@ async function fetchReferrals(page: number = 0, searchFilters: {
       requestBody.maxExperience = experienceValue;
     }
 
-    console.log('jobsearch/search', requestBody);
+    // console.log('jobsearch/search', requestBody);
 
     const response = await fetch(`${BASE_URL}/api/v1/jobsearch/search`, {
       method: 'POST',
@@ -92,7 +92,7 @@ async function fetchReferrals(page: number = 0, searchFilters: {
 
     const data = await response.json();
 
-    console.log("data", data);
+    // console.log("data", data);
 
     const referralsData = data.jobs || data.content || data.data || data || [];
     const totalPagesData = data.totalPages || data.total || 0;

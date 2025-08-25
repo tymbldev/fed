@@ -35,7 +35,7 @@ const IndustryCard: React.FC<IndustryCardProps> = ({ industry }) => {
       className="block bg-white dark:bg-gray-50 rounded-[20px] shadow-lg w-full min-w-[220px] max-w-full sm:min-w-[300px] sm:max-w-[220px] flex-shrink-0 p-6 flex flex-col justify-between transition-shadow duration-300 hover:shadow-xl h-[200px] hover:scale-105 transition-transform"
     >
       <div className="flex-1">
-        <Link href={`/companies-hiring-in-${slugify(industry.industryName)}`} className="flex items-center justify-between mb-2">
+        <Link href={`/companies-hiring-in-${slugify(industry.industryName)}`} className="flex items-center justify-between mb-2 nprogress-trigger">
           <div>
             <div className="text-l font-semibold text-gray-900 dark:text-white line-clamp-2 leading-tight min-h-[48px]">
               {industry.industryName}
@@ -55,7 +55,7 @@ const IndustryCard: React.FC<IndustryCardProps> = ({ industry }) => {
             <Link
               key={company.companyId}
               href={`/companies/${company.companyId}`}
-              className="flex items-center justify-center w-12 h-12 bg-white dark:bg-gray-900 rounded-lg shadow p-2 hover:scale-105 transition-transform z-10 relative"
+              className="flex items-center justify-center w-12 h-12 bg-white dark:bg-gray-900 rounded-lg shadow p-2 hover:scale-105 transition-transform z-10 relative nprogress-trigger"
               onClick={(e) => e.stopPropagation()}
             >
               {company.logoUrl ? (

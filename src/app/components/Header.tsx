@@ -179,7 +179,7 @@ export default function Header() {
                 )
               )}
 
-              <Link href="/" className="text-2xl font-bold text-primary-500 dark:text-primary-400">
+              <Link href="/" className="text-2xl font-bold text-primary-500 dark:text-primary-400 nprogress-trigger">
               <Image
                 src="/logo.svg"
                 alt="TymblHub"
@@ -209,7 +209,7 @@ export default function Header() {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`text-gray-600 dark:text-gray-300 hover:text-primary-500 dark:hover:text-primary-400 transition-colors ${
+                    className={`text-gray-600 dark:text-gray-300 hover:text-primary-500 dark:hover:text-primary-400 transition-colors nprogress-trigger ${
                       pathname === item.href ? 'text-primary-500 dark:text-primary-400' : ''
                     }`}
                   >
@@ -255,7 +255,7 @@ export default function Header() {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`block py-3 px-4 rounded-lg text-gray-600 dark:text-gray-300 hover:text-primary-500 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all ${
+                    className={`block py-3 px-4 rounded-lg text-gray-600 dark:text-gray-300 hover:text-primary-500 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all nprogress-trigger ${
                       pathname === item.href ? 'text-primary-500 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20' : ''
                     }`}
                     onClick={() => setIsMenuOpen(false)}
@@ -299,7 +299,7 @@ export default function Header() {
                         <Link
                           key={link.href}
                           href={link.href}
-                          className="block py-2 px-3 rounded text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                          className="block py-2 px-3 rounded text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors nprogress-trigger"
                           onClick={() => setIsMenuOpen(false)}
                         >
                           {link.label}
@@ -333,7 +333,7 @@ export default function Header() {
                         <Link
                           key={link.href}
                           href={link.href}
-                          className="block py-2 px-3 rounded text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                          className="block py-2 px-3 rounded text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors nprogress-trigger"
                           onClick={() => setIsMenuOpen(false)}
                         >
                           {link.label}
@@ -367,7 +367,7 @@ export default function Header() {
                         <Link
                           key={link.href}
                           href={link.href}
-                          className="block py-2 px-3 rounded text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                          className="block py-2 px-3 rounded text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors nprogress-trigger"
                           onClick={() => setIsMenuOpen(false)}
                         >
                           {link.label}

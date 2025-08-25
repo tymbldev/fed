@@ -39,7 +39,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Logo and Social Links */}
           <div className="space-y-6">
-            <Link href="/" className="flex items-center">
+            <Link href="/" className="flex items-center nprogress-trigger">
               <Image
                 src="/logo.svg"
                 alt="TymblHub"
@@ -82,7 +82,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-gray-500 hover:text-gray-900 text-sm"
+                    className="text-gray-500 hover:text-gray-900 text-sm nprogress-trigger"
                   >
                     {link.label}
                   </Link>
@@ -99,7 +99,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-gray-500 hover:text-gray-900 text-sm"
+                    className="text-gray-500 hover:text-gray-900 text-sm nprogress-trigger"
                   >
                     {link.label}
                   </Link>
@@ -116,7 +116,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-gray-500 hover:text-gray-900 text-sm"
+                    className="text-gray-500 hover:text-gray-900 text-sm nprogress-trigger"
                   >
                     {link.label}
                   </Link>

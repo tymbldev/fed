@@ -29,7 +29,7 @@ export default function ExploreOpportunitiesButton({ className = '', children }:
       {/* Mobile: Link that navigates to search page */}
       <Link
         href="/search-referrals"
-        className={`md:hidden ${className}`}
+        className={`md:hidden ${className} nprogress-trigger`}
       >
         {children}
       </Link>

@@ -78,7 +78,7 @@ const GenericCarousel: React.FC<GenericCarouselProps> = ({
             {viewAllLink && (
               <a
                 href={viewAllLink.href}
-                className="text-[#5B4EFF] font-semibold hover:underline text-lg whitespace-nowrap"
+                className="text-[#5B4EFF] font-semibold hover:underline text-lg whitespace-nowrap nprogress-trigger"
               >
                 {viewAllLink.text}
               </a>

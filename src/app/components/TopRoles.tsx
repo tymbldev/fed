@@ -22,7 +22,7 @@ const RoleCard: React.FC<{ role: TopRole }> = ({ role }) => {
   return (
     <Link
       href={href}
-      className="block bg-white dark:bg-gray-50 rounded-2xl shadow-lg w-full min-w-[220px] max-w-full sm:min-w-[260px] sm:max-w-[220px] flex-shrink-0 p-6 transition-all duration-300 hover:shadow-xl group h-[160px] hover:-translate-y-1 hover:scale-[1.02]"
+      className="block bg-white dark:bg-gray-50 rounded-2xl shadow-lg w-full min-w-[220px] max-w-full sm:min-w-[260px] sm:max-w-[220px] flex-shrink-0 p-6 transition-all duration-300 hover:shadow-xl group h-[160px] hover:-translate-y-1 hover:scale-[1.02] nprogress-trigger"
     >
       <div className="flex items-start justify-between mb-2">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-900 line-clamp-2 pr-3">

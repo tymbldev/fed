@@ -115,7 +115,7 @@ export default function JobTuple({
           {companyId ? (
             <Link
               href={`/companies/${companyId}`}
-              className="text-blue-900 font-medium text-base mb-2 hover:underline"
+              className="text-blue-900 font-medium text-base mb-2 hover:underline nprogress-trigger"
               onClick={(e) => e.stopPropagation()}
             >
               {company}

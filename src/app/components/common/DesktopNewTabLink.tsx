@@ -25,7 +25,7 @@ export default function DesktopNewTabLink({ href, children, className, onClick }
   return (
     <Link
       href={href}
-      className={className}
+      className={`${className || ''} ${!isDesktop ? 'nprogress-trigger' : ''}`}
       target={isDesktop ? '_blank' : undefined}
       rel={isDesktop ? 'noopener noreferrer' : undefined}
       onClick={onClick}

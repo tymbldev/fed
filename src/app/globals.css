@@ -94,6 +94,111 @@ html {
   animation: bounce 1s infinite;
 }
 
+/* NProgress Custom Styles */
+#nprogress {
+  pointer-events: none;
+}
+
+#nprogress .bar {
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6, #3b82f6, #06b6d4);
+  background-size: 300% 100%;
+  animation: gradientShift 2s ease infinite;
+  position: fixed;
+  z-index: 1031;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.6);
+  border-radius: 0 0 2px 2px;
+}
+
+/* Dark mode support */
+.dark #nprogress .bar {
+  background: linear-gradient(90deg, #60a5fa, #a78bfa, #22d3ee, #67e8f9);
+  background-size: 300% 100%;
+  animation: gradientShift 2s ease infinite;
+  box-shadow: 0 0 20px rgba(96, 165, 250, 0.6);
+}
+
+/* Gradient animation */
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+#nprogress .peg {
+  display: block;
+  position: absolute;
+  right: 0px;
+  width: 100px;
+  height: 100%;
+  box-shadow: 0 0 10px #3b82f6, 0 0 5px #3b82f6;
+  opacity: 1.0;
+  transform: rotate(3deg) translate(0px, -4px);
+  animation: pegGlow 1.5s ease-in-out infinite alternate;
+}
+
+.dark #nprogress .peg {
+  box-shadow: 0 0 10px #60a5fa, 0 0 5px #60a5fa;
+  animation: pegGlowDark 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes pegGlowDark {
+  from {
+    box-shadow: 0 0 10px #60a5fa, 0 0 5px #60a5fa;
+  }
+  to {
+    box-shadow: 0 0 20px #60a5fa, 0 0 10px #60a5fa;
+  }
+}
+
+#nprogress .spinner {
+  display: none;
+}
+
+/* Enhanced loading states */
+.nprogress-custom-parent {
+  overflow: hidden;
+  position: relative;
+}
+
+.nprogress-custom-parent #nprogress .bar {
+  position: absolute;
+}
+
+/* Loading overlay for longer operations */
+.nprogress-loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(2px);
+  z-index: 1030;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.nprogress-loading-overlay.show {
+  opacity: 1;
+}
+
+.dark .nprogress-loading-overlay {
+  background: rgba(0, 0, 0, 0.2);
+}
+
 /* Fade in animation */
 @keyframes fadeIn {
   from {

@@ -24,7 +24,7 @@ const RoleTile: React.FC<{ role: TopRole }> = ({ role }) => {
   return (
     <Link
       href={href}
-      className="flex items-start justify-between gap-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5"
+      className="flex items-start justify-between gap-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 nprogress-trigger"
     >
       <div className="min-w-0">
         <div className="text-[15px] font-semibold text-gray-900 dark:text-white truncate">

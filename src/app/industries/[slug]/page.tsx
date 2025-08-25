@@ -196,7 +196,7 @@ const IndustryPage = async ({
       {/* Companies Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mb-10">
         {companiesData.content.map(company => (
-          <Link key={company.id} href={`/companies/${company.id}`}>
+          <Link key={company.id} href={`/companies/${company.id}`} className="nprogress-trigger">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-shadow cursor-pointer p-6 flex flex-col items-center border border-gray-200 dark:border-gray-700">
               {company.logoUrl && (
                 <Image

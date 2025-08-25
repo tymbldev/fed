@@ -177,7 +177,7 @@ export default function BottomNav() {
               <Link
                 key={index}
                 href={item.href}
-                className={`group relative flex flex-col items-center justify-center p-2 rounded-2xl transition-all duration-300 ease-out transform hover:scale-105 active:scale-95 ${
+                className={`group relative flex flex-col items-center justify-center p-2 rounded-2xl transition-all duration-300 ease-out transform hover:scale-105 active:scale-95 nprogress-trigger ${
                   isActive
                     ? 'text-blue-600 dark:text-blue-400'
                     : 'text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400'

@@ -45,7 +45,7 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, baseUr
       {currentPage > 1 && (
         <Link
           href={`${baseUrl}?page=${currentPage - 1}`}
-          className="px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 transition-colors"
+          className="px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 transition-colors nprogress-trigger"
         >
           Previous
         </Link>
@@ -56,7 +56,7 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, baseUr
         <Link
           key={page}
           href={`${baseUrl}?page=${page}`}
-          className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+          className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors nprogress-trigger ${
             page === currentPage
               ? 'bg-blue-600 text-white border border-blue-600'
               : 'text-gray-500 bg-white border border-gray-300 hover:bg-gray-50 hover:text-gray-700'
@@ -70,7 +70,7 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, baseUr
       {currentPage < totalPages && (
         <Link
           href={`${baseUrl}?page=${currentPage + 1}`}
-          className="px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 transition-colors"
+          className="px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 transition-colors nprogress-trigger"
         >
           Next
         </Link>

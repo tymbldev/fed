@@ -60,7 +60,7 @@ const Companies = () => {
         </div>
         <div className="grid grid-cols-2 gap-8 text-gray-500 sm:gap-12 md:grid-cols-3 lg:grid-cols-6 dark:text-gray-400">
           {companies.map((company) => (
-            <Link key={company.id} href={`/companies/${company.id}`}>
+            <Link key={company.id} href={`/companies/${company.id}`} className="nprogress-trigger">
               <div className="flex items-center justify-center flex-col hover:scale-105 rounded-lg transition-colors cursor-pointer">
                 <div className="w-24 h-24 mb-2 p-4 rounded-lg shadow-md bg-white flex items-center justify-center">
                   {company.logoUrl ? (
@@ -83,10 +83,8 @@ const Companies = () => {
           ))}
         </div>
         <div className="text-center mt-12">
-            <Link href="/companies" legacyBehavior>
-                <a className="inline-flex items-center justify-center px-5 py-3 text-base font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-900">
-                    View all companies
-                </a>
+            <Link href="/companies" className="inline-flex items-center justify-center px-5 py-3 text-base font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-900 nprogress-trigger">
+                View all companies
             </Link>
         </div>
       </div>

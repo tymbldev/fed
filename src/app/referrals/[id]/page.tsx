@@ -27,7 +27,7 @@ async function getServerData(jobId: string) {
       fetchApplicationStatus(jobId, token)
     ]);
 
-    console.log('referral', referral);
+    // console.log('referral', referral);
 
     if (!referral) {
       return null;
@@ -136,7 +136,7 @@ export default async function ReferralDetailsPage({
 
   const { referral, currencies, locations, referrers, applicationStatus, applicationId, appliedReferrer, applicationCreatedAt } = data;
 
-  console.log("referral", referral);
+  // console.log("referral", referral);
 
   const city = data ? data.locations[data.referral.cityId]?.city : undefined;
   const country = data ? data.locations[data.referral.cityId]?.country : undefined;
