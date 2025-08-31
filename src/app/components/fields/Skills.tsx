@@ -58,9 +58,9 @@ const Skills: React.FC<SkillsProps> = ({
           const fetchedSkills = await fetchSkills('');
           // console.log(fetchedSkills);
           // Convert the fetched skills to the expected format
-          const convertedSkills = fetchedSkills.map((skill: { value: string; label: string }) => ({
-            id: skill.value,
-            name: skill.label
+          const convertedSkills = fetchedSkills.map((skill: { id: string; name: string }) => ({
+            id: skill.id,
+            name: skill.name
           }));
           setSkills(convertedSkills);
         } catch (error) {

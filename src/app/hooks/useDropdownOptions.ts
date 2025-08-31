@@ -5,14 +5,14 @@ import { fetchDropdownOptions, refreshDropdownCache } from '../services/api';
 import { toast } from 'sonner';
 
 interface UseDropdownOptionsReturn {
-  options: { value: string; label: string }[];
+  options: { id: string; name: string }[];
   isLoading: boolean;
   error: string | null;
   refresh: () => Promise<void>;
 }
 
 export const useDropdownOptions = (type: string): UseDropdownOptionsReturn => {
-  const [options, setOptions] = useState<{ value: string; label: string }[]>([]);
+  const [options, setOptions] = useState<{ id: string; name: string }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

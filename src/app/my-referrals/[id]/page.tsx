@@ -68,8 +68,8 @@ export default function ReferralApplications() {
   const fetchCurrencies = async () => {
     try {
       const data = await fetchDropdownOptions('currencies');
-      const currencyMap = data.reduce((acc: { [key: number]: string }, currency: { value: string; label: string }) => {
-        acc[parseInt(currency.value)] = currency.label;
+      const currencyMap = data.reduce((acc: { [key: number]: string }, currency: { id: string; name: string }) => {
+        acc[parseInt(currency.id)] = currency.name;
         return acc;
       }, {});
       setCurrencies(currencyMap);

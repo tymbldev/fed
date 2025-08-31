@@ -67,7 +67,7 @@ export default function ReferralSearch({ onSearch, className = '', initialValues
   const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    console.log('handleInputChange', e.target.name, e.target.value);
+    // console.log('handleInputChange', e.target.name, e.target.value);
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -178,7 +178,7 @@ export default function ReferralSearch({ onSearch, className = '', initialValues
   };
 
   return (
-    <div className={`bg-white rounded-lg shadow-sm border border-gray-200 p-6 ${className}`}>
+    <div className={`md:bg-white md:rounded-lg md:shadow-sm md:border md:border-gray-200 md:p-6 ${className}`}>
       <form onSubmit={handleSubmit} className="space-y-6" noValidate>
         {/* Search Fields Row */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -192,9 +192,8 @@ export default function ReferralSearch({ onSearch, className = '', initialValues
               onBlur={handleBlur}
               required={true}
               label="Keyword"
-              fieldName="keyword"
               updateFieldName="keyword"
-              placeholder="Enter job title or designation..."
+              placeholder="Search for skills, designations, or companies..."
             />
           </div>
 

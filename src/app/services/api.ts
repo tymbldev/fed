@@ -1,6 +1,6 @@
 import { indexedDBService } from './indexedDB';
 
-export const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+export const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000';
 
 // TypeScript declarations for File System Access API
 declare global {
@@ -99,12 +99,13 @@ export const updateProfile = async (profileData: {
   return data;
 };
 
-export const fetchDropdownOptions = async (type: string): Promise<{ value: string; label: string }[]> => {
+export const fetchDropdownOptions = async (type: string): Promise<{ id: string; name: string }[]> => {
   try {
-    console.log("fetchDropdownOptions", type);
+    console.log("fetchDropdownOptions called for type:", type);
     // Check if we're in a browser environment
     if (typeof window === 'undefined') {
       // Server-side rendering - fetch directly
+      console.log("Server-side rendering, fetching directly");
       return await fetchDropdownOptionsFromAPI(type);
     }
 
@@ -118,7 +119,7 @@ export const fetchDropdownOptions = async (type: string): Promise<{ value: strin
     // If no cached data, fetch from API
     console.log(`Fetching ${type} data from API`);
     const data = await fetchDropdownOptionsFromAPI(type);
-    console.log('fetchDropdownOptionsFromAPI data', data);
+    // console.log(`fetchDropdownOptionsFromAPI data for ${type}`, data);
 
     // Cache the data
     try {
@@ -137,36 +138,47 @@ export const fetchDropdownOptions = async (type: string): Promise<{ value: strin
 };
 
 // Helper function to fetch dropdown options from API
-const fetchDropdownOptionsFromAPI = async (type: string): Promise<{ value: string; label: string }[]> => {
-  // Special handling for skills
+const fetchDropdownOptionsFromAPI = async (type: string): Promise<{ id: string; name: string }[]> => {
+  // console.log(`fetchDropdownOptionsFromAPI called for type: ${type}`);
+
+  // Special handling for skills (different endpoint structure)
   if (type === 'skills') {
+    // console.log(`Fetching skills from: ${BASE_URL}/api/v1/skills`);
     const response = await fetch(`${BASE_URL}/api/v1/skills`);
     if (!response.ok) {
       throw new Error('Failed to fetch skills');
     }
     const data = await response.json();
-    return data;
+    // console.log('Skills raw data:', data);
+    const mappedData = data.map((skill: { id: number; name: string }) => ({
+      id: skill.id.toString(),
+      name: skill.name
+    }));
+    // console.log('Skills mapped data:', mappedData);
+    return mappedData;
   }
 
-  // // Special handling for companies
-  // if (type === 'companies') {
-  //   const response = await fetch(`${BASE_URL}/api/v1/companies`);
-  //   if (!response.ok) {
-  //     throw new Error('Failed to fetch companies');
-  //   }
-  //   const data = await response.json();
-  //   return data;
-  // }
-
-  // For other dropdowns, use the dropdowns endpoint
+  // For all other dropdowns (including companies and designations), use the standard endpoint
   console.log('fetchDropdownOptionsFromAPI', `${BASE_URL}/api/v1/dropdowns/${type}`);
   const response = await fetch(`${BASE_URL}/api/v1/dropdowns/${type}`);
   if (!response.ok) {
     throw new Error(`Failed to fetch ${type}`);
   }
   const data = await response.json();
-  console.log('data', data);
-  return data;
+  console.log(`all dropdowns data for ${type}`, data);
+
+  // Special handling for location and currency - return as-is
+  if (type === 'locations' || type === 'currency') {
+    return data;
+  }
+
+  // Ensure all other dropdowns return consistent {id, name} format
+  const mappedData = data.map((item: { id: number; name: string }) => ({
+    id: item.id.toString(),
+    name: item.name
+  }));
+
+  return mappedData;
 };
 
 export const fetchSkills = async (query: string) => {
@@ -184,8 +196,8 @@ export const fetchSkills = async (query: string) => {
 
   const data = await response.json();
   return data.map((skill: { id: number; name: string }) => ({
-    value: skill.id,
-    label: skill.name
+    id: skill.id.toString(),
+    name: skill.name
   }));
 };
 
@@ -343,7 +355,7 @@ export const clearDropdownCache = async (type?: string): Promise<void> => {
   }
 };
 
-export const refreshDropdownCache = async (type: string): Promise<{ value: string; label: string }[]> => {
+export const refreshDropdownCache = async (type: string): Promise<{ id: string; name: string }[]> => {
   // Clear the cache for this type
   await clearDropdownCache(type);
 

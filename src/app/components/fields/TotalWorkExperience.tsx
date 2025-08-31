@@ -39,7 +39,7 @@ const TotalWorkExperience: React.FC<TotalWorkExperienceProps> = ({
             onChange={onInputChange}
             onBlur={() => onBlur('yearsOfExperience')}
             required={required}
-            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm ${
+            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm ${
               touched.yearsOfExperience && errors.yearsOfExperience
                 ? 'border-red-500'
                 : ''
@@ -63,7 +63,7 @@ const TotalWorkExperience: React.FC<TotalWorkExperienceProps> = ({
             onChange={onInputChange}
             onBlur={() => onBlur('monthsOfExperience')}
             required={required}
-            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm ${
+            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm ${
               touched.monthsOfExperience && errors.monthsOfExperience
                 ? 'border-red-500'
                 : ''

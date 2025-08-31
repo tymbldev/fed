@@ -6,21 +6,9 @@ import ReferralSearch from '../components/search/ReferralSearch';
 import type { SearchFormData } from '../components/search/types';
 import { fetchDropdownOptions } from '../services/api';
 import { buildSeoPath } from '../utils/seo';
+import { LocationOption } from '../types/common';
 
-interface LocationOption {
-  id: number;
-  addressLine1: string | null;
-  addressLine2: string | null;
-  city: string;
-  cityId: number;
-  country: string;
-  countryId: number;
-  displayName: string;
-  locationDisplay: string;
-  remote: boolean;
-  state: string;
-  zipCode: string;
-}
+
 
 export default function SearchReferralsPage() {
   const router = useRouter();

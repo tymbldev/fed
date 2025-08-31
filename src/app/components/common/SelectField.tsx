@@ -47,7 +47,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
         value={value}
         onChange={onChange}
         onBlur={onBlur}
-        className={`block w-full h-12 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${error ? 'border-red-500' : ''}`}
+        className={`block w-full h-12 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm ${error ? 'border-red-500' : ''}`}
         required={required}
         {...rest}
       >

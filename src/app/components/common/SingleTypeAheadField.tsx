@@ -21,6 +21,7 @@ interface SingleTypeAheadFieldProps {
   debounceMs?: number;
   openByDefault?: boolean;
   showSuggestionsOnEmpty?: boolean;
+  idRequired?: boolean;
 }
 
 const SingleTypeAheadField: React.FC<SingleTypeAheadFieldProps> = ({
@@ -38,7 +39,8 @@ const SingleTypeAheadField: React.FC<SingleTypeAheadFieldProps> = ({
   maxResults = 50,
   debounceMs = 150,
   openByDefault = false,
-  showSuggestionsOnEmpty = false
+  showSuggestionsOnEmpty = false,
+  idRequired = true
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [filteredSuggestions, setFilteredSuggestions] = useState<Suggestion[]>([]);
@@ -164,6 +166,46 @@ const SingleTypeAheadField: React.FC<SingleTypeAheadFieldProps> = ({
     setSelectedIndex(-1);
   };
 
+  const handleBlur = () => {
+    console.log('handleBlur', value, idRequired);
+
+    // If idRequired is false, hide the listing without any conditions
+    if (!idRequired) {
+      setIsOpen(false);
+      setSelectedIndex(-1);
+    } else if (value.trim()) {
+      // If idRequired is true, check if the current value matches any suggestion
+      console.log('value', value);
+      // console.log('suggestions', suggestions);
+      const exactMatch = suggestions.find(suggestion =>
+        suggestion.label.toLowerCase() === value.toLowerCase()
+      );
+      console.log('exactMatch', exactMatch);
+
+      if (exactMatch) {
+        // If exact match found, set the value to the suggestion label and hide dropdown
+        const event = {
+          target: {
+            name,
+            value: exactMatch.label
+          }
+        } as React.ChangeEvent<HTMLInputElement>;
+        onChange(event);
+        setIsOpen(false);
+        setSelectedIndex(-1);
+      } else {
+        // If no exact match found, hide the dropdown
+        // setIsOpen(false);
+        // setSelectedIndex(-1);
+      }
+    }
+
+    // Call the original onBlur if provided
+    if (onBlur) {
+      onBlur();
+    }
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!isOpen || filteredSuggestions.length === 0) return;
 
@@ -207,13 +249,13 @@ const SingleTypeAheadField: React.FC<SingleTypeAheadFieldProps> = ({
           onChange={handleInputChange}
           onFocus={handleInputFocus}
           onKeyDown={handleKeyDown}
-          onBlur={onBlur}
+          onBlur={handleBlur}
           placeholder={placeholder}
           autoComplete='off'
-          className={`block h-12 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${error ? 'border-red-500' : ''} ${className}`}
+          className={`block h-12 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm ${error ? 'border-red-500' : ''} ${className}`}
         />
         {isOpen && filteredSuggestions.length > 0 && (
-          <ul className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+          <ul className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
             {filteredSuggestions.map((suggestion, index) => (
               <li
                 key={`${suggestion.value}-${index}`}

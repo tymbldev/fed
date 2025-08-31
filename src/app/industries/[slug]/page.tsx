@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { redirect } from 'next/navigation';
 import { BASE_URL, fetchDropdownOptions } from './../../services/api';
+import { buildCompanySeoPath } from '../../utils/seo';
 import IndustryDropdown from './../../components/IndustryDropdown';
 import Pagination from './../../components/Pagination';
 import { slugify } from '../../utils/seo';
@@ -171,7 +172,7 @@ const IndustryPage = async ({
     itemListElement: companiesData.content.map((company, index) => ({
       '@type': 'ListItem',
       position: index + 1,
-      url: `${origin}/companies/${company.id}`,
+      url: `${origin}${buildCompanySeoPath({ name: company.name, id: company.id })}`,
       name: company.name,
     })),
   }).replace(/</g, '\\u003c');
@@ -196,7 +197,7 @@ const IndustryPage = async ({
       {/* Companies Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mb-10">
         {companiesData.content.map(company => (
-          <Link key={company.id} href={`/companies/${company.id}`} className="nprogress-trigger">
+          <Link key={company.id} href={buildCompanySeoPath({ name: company.name, id: company.id })} className="nprogress-trigger">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-shadow cursor-pointer p-6 flex flex-col items-center border border-gray-200 dark:border-gray-700">
               {company.logoUrl && (
                 <Image

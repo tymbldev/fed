@@ -6,7 +6,7 @@ const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
 interface CachedDropdownData {
   type: string;
-  data: { value: string; label: string }[];
+  data: { id: string; name: string }[];
   timestamp: number;
 }
 
@@ -42,7 +42,7 @@ class IndexedDBService {
     });
   }
 
-  async getDropdownOptions(type: string): Promise<{ value: string; label: string }[] | null> {
+  async getDropdownOptions(type: string): Promise<{ id: string; name: string }[] | null> {
     try {
       const db = await this.initDB();
       const transaction = db.transaction([DROPDOWN_STORE], 'readonly');
@@ -80,7 +80,7 @@ class IndexedDBService {
     }
   }
 
-  async setDropdownOptions(type: string, data: { value: string; label: string }[]): Promise<void> {
+  async setDropdownOptions(type: string, data: { id: string; name: string }[]): Promise<void> {
     try {
       const db = await this.initDB();
       const transaction = db.transaction([DROPDOWN_STORE], 'readwrite');

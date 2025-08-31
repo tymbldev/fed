@@ -1,17 +1,13 @@
 import { headers } from 'next/headers';
-import { splitSeoSlug } from '../../utils/seo';
+import { splitSeoSlug, buildJobDetailsSeoPath } from '../../utils/seo';
 import { fetchLocations } from '../../utils/serverData';
 import { BASE_URL } from '../../services/api';
 import GlobalMetaHead from './GlobalMetaHead';
+import { Referral } from '../../types/common';
 
 type Props = {
   seoSlug?: string;
 };
-
-interface Referral {
-  id: number;
-  title: string;
-}
 
 async function resolveLocation(locationName: string): Promise<{ city: string; country: string }> {
   try {
@@ -121,7 +117,15 @@ export default async function ListingSchemaHead({ seoSlug, renderMeta = true }: 
     itemListElement: referrals.map((referral, index) => ({
       '@type': 'ListItem',
       position: index + 1,
-      url: `${origin}/referrals/${referral.id}`,
+      url: `${origin}${buildJobDetailsSeoPath({
+        title: referral.title,
+        cityName: referral.cityName || '',
+        countryName: referral.countryName || '',
+        companyName: referral.companyName,
+        minExperience: referral.minExperience || 0,
+        maxExperience: referral.maxExperience || 0,
+        id: referral.id
+      })}`,
       name: referral.title,
     })),
   } as const;

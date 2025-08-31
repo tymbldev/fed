@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import SelectField from '../common/SelectField';
 import { fetchDropdownOptions } from '../../services/api';
 import { toast } from 'sonner';
+import { LocationOption } from '../../types/common';
 
 interface LocationProps {
   formData: { [key: string]: string };
@@ -16,20 +17,7 @@ interface LocationProps {
   setValue?: boolean; // If true, will update both ID and label fields
 }
 
-interface LocationOption {
-  id: number;
-  addressLine1: string | null;
-  addressLine2: string | null;
-  city: string;
-  cityId: number;
-  country: string;
-  countryId: number;
-  displayName: string;
-  locationDisplay: string;
-  remote: boolean;
-  state: string;
-  zipCode: string;
-}
+
 
 const Location: React.FC<LocationProps> = ({
   formData,

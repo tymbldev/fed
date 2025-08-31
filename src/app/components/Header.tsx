@@ -149,7 +149,7 @@ export default function Header() {
       }`}>
         <nav className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center">
               {/* Mobile: hamburger on landing pages; back button elsewhere. Hidden on register page */}
               {!isRegisterPage && (
                 isLandingPage ? (
@@ -185,7 +185,7 @@ export default function Header() {
                 alt="TymblHub"
                 width={180}
                 height={50}
-                className="h-12 w-auto"
+                className="h-8 md:h-12 w-auto"
                 priority
               />
               </Link>

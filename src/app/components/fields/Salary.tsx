@@ -77,7 +77,7 @@ const Salary: React.FC<SalaryProps> = ({
             value={formData[currencyFieldName] || ''}
             onChange={onInputChange}
             onBlur={() => onBlur(currencyFieldName)}
-            className={`block w-full h-12 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${touched[currencyFieldName] && errors[currencyFieldName] ? 'border-red-500' : ''}`}
+            className={`block w-full h-12 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm ${touched[currencyFieldName] && errors[currencyFieldName] ? 'border-red-500' : ''}`}
             required={required}
           >
             <option value="">{currencyPlaceholder}</option>
@@ -103,7 +103,7 @@ const Salary: React.FC<SalaryProps> = ({
             maxLength={9}
             pattern="[0-9]*"
             onKeyDown={handleKeyPress}
-            className={`block w-full h-12 px-3 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base sm:text-sm ${touched[salaryFieldName] && errors[salaryFieldName] ? 'border-red-500' : ''}`}
+            className={`block w-full h-12 px-3 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm ${touched[salaryFieldName] && errors[salaryFieldName] ? 'border-red-500' : ''}`}
           />
           {touched[salaryFieldName] && errors[salaryFieldName] && (
             <p className="mt-1 text-sm text-red-600">{errors[salaryFieldName]}</p>

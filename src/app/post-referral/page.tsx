@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
 import { validateFields } from '../utils/validation';
 import { BASE_URL } from '../services/api';
+import { buildJobDetailsSeoPath } from '../utils/seo';
 
 // Import field components
 import Designation from '../components/fields/Designation';
@@ -123,7 +124,7 @@ function PostReferralForm() {
       value = e;
     } else {
       // Handle form input events
-      console.log('handleInputChange', e.target.name, e.target.value);
+      // console.log('handleInputChange', e.target.name, e.target.value);
       name = e.target.name;
       value = e.target.value;
     }
@@ -202,10 +203,34 @@ function PostReferralForm() {
     }
   };
 
-  const handleViewExistingJob = () => {
+  const handleViewExistingJob = async () => {
     if (!conflictJobId) return;
     setShowConflictDialog(false);
-    router.push(`/referrals/${conflictJobId}`);
+
+    try {
+      // Fetch job details to build SEO-friendly URL
+      const response = await fetch(`${BASE_URL}/api/v1/jobsearch/job/${conflictJobId}`);
+      if (response.ok) {
+        const jobData = await response.json();
+        const seoUrl = buildJobDetailsSeoPath({
+          title: jobData.title,
+          cityName: jobData.cityName || '',
+          countryName: jobData.countryName || '',
+          companyName: jobData.company,
+          minExperience: jobData.minExperience || 0,
+          maxExperience: jobData.maxExperience || 0,
+          id: jobData.id
+        });
+        router.push(seoUrl);
+      } else {
+        // Fallback to numeric ID if job details fetch fails
+        router.push(`/referrals/${conflictJobId}`);
+      }
+    } catch (error) {
+      console.error('Error fetching job details:', error);
+      // Fallback to numeric ID
+      router.push(`/referrals/${conflictJobId}`);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

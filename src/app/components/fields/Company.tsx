@@ -158,6 +158,7 @@ const Company: React.FC<CompanyProps> = ({
       }))}
       required={required}
       onSuggestionSelect={handleSuggestionSelect}
+      idRequired={true}
     />
   );
 };

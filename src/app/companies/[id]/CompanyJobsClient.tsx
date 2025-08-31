@@ -1,7 +1,8 @@
 "use client";
 
 import JobTuple from "../../components/JobTuple";
-import { Job, LocationOption } from "../../utils/serverData";
+import { Job } from "../../utils/serverData";
+import { LocationOption } from "../../types/common";
 
 interface CompanyJobsClientProps {
   jobs: Job[];

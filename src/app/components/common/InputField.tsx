@@ -61,7 +61,7 @@ const InputField: React.FC<InputFieldProps> = ({
         max={max}
         maxLength={maxLength}
         pattern={pattern}
-        className={`block w-full h-10 px-3 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base sm:text-sm ${error ? 'border-red-500' : ''} ${disabled ? 'bg-gray-100 cursor-not-allowed' : ''} ${className}`}
+        className={`block w-full h-10 px-3 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm ${error ? 'border-red-500' : ''} ${disabled ? 'bg-gray-100 cursor-not-allowed' : ''} ${className}`}
       />
       {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
     </div>

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { buildCompanySeoPath } from '../utils/seo';
 import { BASE_URL } from '../services/api';
 
 interface Company {
@@ -60,7 +61,7 @@ const Companies = () => {
         </div>
         <div className="grid grid-cols-2 gap-8 text-gray-500 sm:gap-12 md:grid-cols-3 lg:grid-cols-6 dark:text-gray-400">
           {companies.map((company) => (
-            <Link key={company.id} href={`/companies/${company.id}`} className="nprogress-trigger">
+            <Link key={company.id} href={buildCompanySeoPath({ name: company.name, id: company.id })} className="nprogress-trigger">
               <div className="flex items-center justify-center flex-col hover:scale-105 rounded-lg transition-colors cursor-pointer">
                 <div className="w-24 h-24 mb-2 p-4 rounded-lg shadow-md bg-white flex items-center justify-center">
                   {company.logoUrl ? (

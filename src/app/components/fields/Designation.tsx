@@ -165,6 +165,7 @@ const Designation: React.FC<DesignationProps> = ({
       onSuggestionSelect={handleSuggestionSelect}
       maxResults={100}
       debounceMs={200}
+      idRequired={true}
     />
   );
 };

@@ -40,7 +40,7 @@ const SingleExperience: React.FC<SingleExperienceProps> = ({
         onChange={onInputChange}
         onBlur={() => onBlur(fieldName)}
         required={required}
-        className={`block w-full h-12 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${
+        className={`block w-full h-12 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm ${
           touched[fieldName] && errors[fieldName]
             ? 'border-red-500'
             : ''

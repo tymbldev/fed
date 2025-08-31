@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import SingleTypeAheadField from '../../common/SingleTypeAheadField';
 import { fetchDropdownOptions } from '../../../services/api';
 import { toast } from 'sonner';
+import { LocationOption } from '../../../types/common';
 
 interface LocationProps {
   formData: { [key: string]: string };
@@ -13,10 +14,7 @@ interface LocationProps {
   label?: string;
 }
 
-interface LocationOption {
-  city: string;
-  country: string;
-}
+
 
 const LocationTypeahead: React.FC<LocationProps> = ({
   formData,
@@ -35,16 +33,13 @@ const LocationTypeahead: React.FC<LocationProps> = ({
       try {
         setIsLoading(true);
         const raw = await fetchDropdownOptions('locations') as unknown as unknown[];
-        // Normalize to simplified shape
-        const normalized: LocationOption[] = (Array.isArray(raw) ? raw : []).map((item: unknown) => {
+        // Use the full LocationOption type directly
+        const normalized: LocationOption[] = (Array.isArray(raw) ? raw : []).filter((item: unknown) => {
           const obj = item as { city?: unknown; country?: unknown };
           const cityVal = typeof obj.city === 'string' ? obj.city : '';
           const countryVal = typeof obj.country === 'string' ? obj.country : '';
-          return {
-            city: cityVal.trim(),
-            country: countryVal.trim()
-          };
-        }).filter(d => d.city || d.country);
+          return cityVal.trim() || countryVal.trim();
+        }) as LocationOption[];
         setLocationData(normalized);
       } catch (err) {
         console.error('Failed to fetch locations:', err);
@@ -118,6 +113,7 @@ const LocationTypeahead: React.FC<LocationProps> = ({
         debounceMs={150}
         openByDefault={false}
         showSuggestionsOnEmpty
+        idRequired={false}
       />
     </div>
   );

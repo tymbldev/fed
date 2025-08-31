@@ -1,19 +1,19 @@
 import { cookies, headers } from 'next/headers';
-import ReferralDetailsClient from './ReferralDetailsClient';
+import ReferralDetailsClient from '../referrals/[id]/ReferralDetailsClient';
 import {
   fetchReferralDetails,
   fetchCurrencies,
   fetchLocations,
   fetchReferrers,
   fetchApplicationStatus
-} from '../../utils/serverData';
+} from '../utils/serverData';
+import { buildJobDetailsSeoPath, buildCompanySeoPath } from '../utils/seo';
 import Link from 'next/link';
-import { buildCompanySeoPath } from '../../utils/seo';
 
 // Force dynamic rendering since this page uses cookies for authentication
 export const dynamic = 'force-dynamic';
 
-async function getServerData(jobId: string) {
+async function getJobDetailsData(jobId: string) {
   try {
     // Get auth token from cookies
     const cookieStore = await cookies();
@@ -27,8 +27,6 @@ async function getServerData(jobId: string) {
       fetchReferrers(jobId),
       fetchApplicationStatus(jobId, token)
     ]);
-
-    // console.log('referral', referral);
 
     if (!referral) {
       return null;
@@ -113,17 +111,17 @@ function stripHtmlTags(html: string) {
   }
 }
 
-export default async function ReferralDetailsPage({
-  params,
-}: {
+interface ReferralDetailsPageProps {
   params: Promise<{ id: string }>;
-}) {
+}
+
+export default async function ReferralDetailsPage({ params }: ReferralDetailsPageProps) {
   const { id } = await params;
   const hdrs = await headers();
   const protocol = hdrs.get('x-forwarded-proto') ?? 'https';
   const host = hdrs.get('x-forwarded-host') ?? hdrs.get('host') ?? 'localhost:3000';
   const origin = `${protocol}://${host}`;
-  const data = await getServerData(id);
+  const data = await getJobDetailsData(id);
 
   if (!data) {
     return (
@@ -137,8 +135,7 @@ export default async function ReferralDetailsPage({
 
   const { referral, currencies, locations, referrers, applicationStatus, applicationId, appliedReferrer, applicationCreatedAt } = data;
 
-  // console.log("referral", referral);
-
+  // Get location data
   const city = data ? data.locations[data.referral.cityId]?.city : undefined;
   const country = data ? data.locations[data.referral.cityId]?.country : undefined;
   const currencyCode = data ? data.currencies[data.referral.currencyId] : undefined;
@@ -194,7 +191,15 @@ export default async function ReferralDetailsPage({
                 data.referral.minExperience && data.referral.maxExperience ? ' - ' : ''
               }${data.referral.maxExperience ?? ''} years`.trim()
             : undefined,
-        url: `${origin}/referrals/${data.referral.id}`,
+        url: `${origin}${buildJobDetailsSeoPath({
+          title: referral.title,
+          cityName: '',
+          countryName: '',
+          companyName: referral.company,
+          minExperience: referral.minExperience || 0,
+          maxExperience: referral.maxExperience || 0,
+          id: referral.id
+        })}`,
       }
     : null;
 
@@ -265,8 +270,6 @@ export default async function ReferralDetailsPage({
             <div className="prose max-w-none text-gray-700 text-left" dangerouslySetInnerHTML={{ __html: referral.description }} />
           </div>
 
-
-
           {/* Keywords as pills above the apply button */}
           {referral.tags && referral.tags.length > 0 && (
             <>
@@ -288,19 +291,15 @@ export default async function ReferralDetailsPage({
             </>
           )}
 
-
-
           {/* Application Status, Button & Referrer Information - Client Component */}
-          {/* <div className="mt-8 sticky bottom-[10px] z-40"> */}
-            <ReferralDetailsClient
-              referral={referral}
-              referrers={referrers}
-              initialApplicationStatus={applicationStatus}
-              initialApplicationId={applicationId}
-              initialAppliedReferrer={appliedReferrer}
-              applicationCreatedAt={applicationCreatedAt}
-            />
-          {/* </div> */}
+          <ReferralDetailsClient
+            referral={referral}
+            referrers={referrers}
+            initialApplicationStatus={applicationStatus}
+            initialApplicationId={applicationId}
+            initialAppliedReferrer={appliedReferrer}
+            applicationCreatedAt={applicationCreatedAt}
+          />
         </div>
       </div>
     </main>

@@ -20,6 +20,7 @@ export const dynamic = 'force-dynamic';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://tymblhub.com'),
   title: 'TymblHub - Referral Platform',
   description: 'Find your dream opportunity or refer talented professionals to top companies.',
   robots: { index: true, follow: true },
@@ -49,7 +50,7 @@ export default async function RootLayout({
           name="viewport"
           content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0"
         />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="mobile-web-app-capable" content="yes" />
         <meta name="Content-Language" content="en" />
         {/* Google Analytics */}
         <Script

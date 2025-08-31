@@ -3,6 +3,7 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { buildCompanySeoPath } from '../utils/seo';
 import { slugify } from '../utils/seo';
 
 interface Company {
@@ -54,7 +55,7 @@ const IndustryCard: React.FC<IndustryCardProps> = ({ industry }) => {
           {topCompanies.map((company) => (
             <Link
               key={company.companyId}
-              href={`/companies/${company.companyId}`}
+              href={buildCompanySeoPath({ name: company.companyName, id: company.companyId })}
               className="flex items-center justify-center w-12 h-12 bg-white dark:bg-gray-900 rounded-lg shadow p-2 hover:scale-105 transition-transform z-10 relative nprogress-trigger"
               onClick={(e) => e.stopPropagation()}
             >

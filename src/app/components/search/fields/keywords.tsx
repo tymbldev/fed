@@ -11,7 +11,6 @@ interface KeywordsProps {
   onBlur: (field: string) => void;
   required?: boolean;
   label?: string;
-  fieldName?: string;
   placeholder?: string;
   updateFieldName?: string;
 }
@@ -19,6 +18,7 @@ interface KeywordsProps {
 interface Option {
   id: string;
   name: string;
+  type: 'skill' | 'designation' | 'company';
 }
 
 const Keywords: React.FC<KeywordsProps> = ({
@@ -28,31 +28,57 @@ const Keywords: React.FC<KeywordsProps> = ({
   onInputChange,
   // onBlur,
   required = false,
-  label = "Designation",
-  fieldName = "designationId",
-  placeholder,
-  updateFieldName = "designation"
+  label = "Enter Skills, Designations or Company Names",
+  placeholder = "Search for skills, designations, or companies...",
+  updateFieldName = "keywords"
 }) => {
   const [options, setOptions] = useState<Option[]>([]);
 
   useEffect(() => {
-    const loadOptions = async () => {
+    const loadAllOptions = async () => {
       try {
-        const data: Option[] = await fetchDropdownOptions('designations') as unknown as Option[];
-        setOptions(data);
+        // Fetch all three types of data in parallel
+        const [designationsData, companiesData, skillsData] = await Promise.all([
+          fetchDropdownOptions('designations'),
+          fetchDropdownOptions('companies'),
+          fetchDropdownOptions('skills')
+        ]);
+
+        // Combine all options with type indicators
+        const allOptions: Option[] = [
+          // Add designations
+          ...(designationsData).map((item) => ({
+            id: item.id,
+            name: item.name,
+            type: 'designation' as const
+          })),
+          // Add companies
+          ...(companiesData).map((item) => ({
+            id: item.id,
+            name: item.name,
+            type: 'company' as const
+          })),
+          // Add skills
+          ...(skillsData).map((item) => ({
+            id: item.id,
+            name: item.name,
+            type: 'skill' as const
+          }))
+        ];
+        setOptions(allOptions);
       } catch (err) {
-        console.error('Failed to fetch designations:', err);
-        toast.error('Failed to load designations. Please try again.');
+        console.error('Failed to fetch keywords data:', err);
+        toast.error('Failed to load keywords data. Please try again.');
       }
     };
 
-    loadOptions();
+    loadAllOptions();
   }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
 
-    // Update both the specified field and fieldName
+    // Update the keywords field
     const updateEvent = {
       target: {
         name: updateFieldName,
@@ -61,62 +87,83 @@ const Keywords: React.FC<KeywordsProps> = ({
     } as React.ChangeEvent<HTMLInputElement>;
     onInputChange(updateEvent);
 
-    // Clear fieldName when user types
+    // Clear related fields when user types
     if (inputValue === '') {
-      const fieldNameEvent = {
-        target: {
-          name: fieldName,
-          value: ''
-        }
-      } as React.ChangeEvent<HTMLInputElement>;
-      onInputChange(fieldNameEvent);
+      const clearFields = ['skillIds', 'designationId', 'companyId'];
+      clearFields.forEach(field => {
+        const clearEvent = {
+          target: {
+            name: field,
+            value: ''
+          }
+        } as React.ChangeEvent<HTMLInputElement>;
+        onInputChange(clearEvent);
+      });
     }
   };
 
-  // const handleBlur = () => {
-  //   // Call the original onBlur
-  //   onBlur(updateFieldName);
-  // };
-
   const handleSuggestionSelect = (suggestion: { value: string; label: string }) => {
-    const selectedOption = options.find(opt => opt.name === suggestion.label);
-    if (selectedOption) {
-      // Update fieldName
-      const fieldNameEvent = {
-        target: {
-          name: fieldName,
-          value: selectedOption.id
-        }
-      } as React.ChangeEvent<HTMLInputElement>;
-      onInputChange(fieldNameEvent);
+    // Find the selected option by ID
+    const selectedOption = options.find(opt => opt.id === suggestion.value);
 
-      // Update the specified field name
-      const updateEvent = {
+    if (selectedOption) {
+      // Update the keywords field
+      const keywordsEvent = {
         target: {
           name: updateFieldName,
           value: selectedOption.name
         }
       } as React.ChangeEvent<HTMLInputElement>;
-      onInputChange(updateEvent);
-    } else {
-      // No mapping found, set ID to 1000
-      const fieldNameEvent = {
-        target: {
-          name: fieldName,
-          value: '1000'
-        }
-      } as React.ChangeEvent<HTMLInputElement>;
-      onInputChange(fieldNameEvent);
+      onInputChange(keywordsEvent);
 
-      // Update the specified field name with the input value
-      const updateEvent = {
+      // Update the appropriate field based on type
+      switch (selectedOption.type) {
+        case 'skill':
+          const skillEvent = {
+            target: {
+              name: 'skillIds',
+              value: selectedOption.id
+            }
+          } as React.ChangeEvent<HTMLInputElement>;
+          onInputChange(skillEvent);
+          break;
+        case 'designation':
+          const designationEvent = {
+            target: {
+              name: 'designationId',
+              value: selectedOption.id
+            }
+          } as React.ChangeEvent<HTMLInputElement>;
+          onInputChange(designationEvent);
+          break;
+        case 'company':
+          const companyEvent = {
+            target: {
+              name: 'companyId',
+              value: selectedOption.id
+            }
+          } as React.ChangeEvent<HTMLInputElement>;
+          onInputChange(companyEvent);
+          break;
+      }
+    } else {
+      // No mapping found, update keywords field with the input value
+      const keywordsEvent = {
         target: {
           name: updateFieldName,
           value: suggestion.label
         }
       } as React.ChangeEvent<HTMLInputElement>;
-      onInputChange(updateEvent);
+      onInputChange(keywordsEvent);
     }
+  };
+
+  // Filter and format suggestions without type indicators
+  const getSuggestions = () => {
+    return options.map(opt => ({
+      value: opt.id,
+      label: opt.name
+    }));
   };
 
   return (
@@ -126,16 +173,13 @@ const Keywords: React.FC<KeywordsProps> = ({
       placeholder={placeholder}
       value={formData[updateFieldName] || ''}
       onChange={handleInputChange}
-      // onBlur={handleBlur}
       error={touched[updateFieldName] ? errors[updateFieldName] : undefined}
-      suggestions={options.map(opt => ({
-        value: opt.id,
-        label: opt.name
-      }))}
+      suggestions={getSuggestions()}
       required={required}
       onSuggestionSelect={handleSuggestionSelect}
       maxResults={100}
       debounceMs={200}
+      idRequired={false}
     />
   );
 };

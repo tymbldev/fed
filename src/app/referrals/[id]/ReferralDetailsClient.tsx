@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { BASE_URL } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import LoginForm from '../../components/auth/LoginForm';
-import { Referral, Referrer } from '../../utils/serverData';
+import { Referral, Referrer } from '../../types/common';
 import { SWITCH_CONFIG } from '../../config/switchConfig';
 
 interface ReferralDetailsClientProps {
@@ -201,7 +201,7 @@ export default function ReferralDetailsClient({
     }
   };
 
-  return (
+    return (
     <>
       {/* Application Status & Button */}
       {isLoggedIn && applicationStatus && (
@@ -288,7 +288,7 @@ export default function ReferralDetailsClient({
       )}
 
       {/* Sticky action bar near bottom: sticks once reached */}
-      <div className="sticky bottom-[0px] h-[72px] py-2 border-t border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+      <div className="sticky bottom-[0px] h-[72px] py-2 border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
         <div className="mx-auto max-w-4xl h-full">
           <button
             onClick={() => handleApply()}

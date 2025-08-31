@@ -1,6 +1,6 @@
 import { BASE_URL } from '../services/api';
 import ReferralStatusBadge from './ReferralStatusBadge';
-import FloatingFilterButton from '../components/FloatingFilterButton';
+// import FloatingFilterButton from '../components/FloatingFilterButton';
 import JobTuple from '../components/JobTuple';
 import CurrentSearchCriteria from '../components/search/CurrentSearchCriteria';
 import { fetchLocations } from '../utils/serverData';
@@ -8,7 +8,7 @@ import { splitSeoSlug } from '../utils/seo';
 import Link from 'next/link';
 import { cookies } from 'next/headers';
 
-interface Referral {
+interface ReferralListing {
   id: number;
   title: string;
   description: string;
@@ -56,7 +56,7 @@ async function fetchReferrals(page: number = 0, searchFilters: {
   city: '',
   experience: ''
 }): Promise<{
-  referrals: Referral[];
+  referrals: ReferralListing[];
   totalPages: number;
   totalElements: number;
 }> {
@@ -219,7 +219,7 @@ export default async function ReferralsListing({
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {referralsData.referrals.map((referral: Referral) => (
+            {referralsData.referrals.map((referral: ReferralListing) => (
               <JobTuple
                 key={referral.id}
                 id={referral.id}
@@ -323,7 +323,12 @@ export default async function ReferralsListing({
           </div>
         )}
       </div>
-      <FloatingFilterButton />
+      {/* <FloatingFilterButton
+        keyword={searchFilters.keyword}
+        country={searchFilters.country}
+        city={searchFilters.city}
+        experience={searchFilters.experience}
+      /> */}
     </main>
   );
 }

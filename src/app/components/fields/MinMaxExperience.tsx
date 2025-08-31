@@ -35,7 +35,7 @@ const MinMaxExperience: React.FC<MinMaxExperienceProps> = ({
         onChange={onInputChange}
         onBlur={() => onBlur(minExperienceFieldName)}
         placeholder="Min"
-        className="block w-full h-12 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+        className="block w-full h-12 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
         required={required}
       />
       <span>to</span>
@@ -48,7 +48,7 @@ const MinMaxExperience: React.FC<MinMaxExperienceProps> = ({
         onChange={onInputChange}
         onBlur={() => onBlur(maxExperienceFieldName)}
         placeholder="Max"
-        className="block w-full h-12 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+        className="block w-full h-12 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
         required={required}
       />
     </div>
