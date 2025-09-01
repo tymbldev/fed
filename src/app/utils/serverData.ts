@@ -63,6 +63,17 @@ export interface TopDesignationsResponse {
   totalDesignations: number;
 }
 
+export interface TopSkill {
+  skillName: string;
+  jobCount: number;
+}
+
+export interface TopSkillsResponse {
+  topSkills: TopSkill[];
+  totalSkills: number;
+  totalJobs: number;
+}
+
 export async function fetchIndustries(): Promise<Industry[]> {
   try {
     // For server-side fetching, we need to use the full URL
@@ -259,5 +270,24 @@ export async function fetchTopDesignations(): Promise<TopDesignationsResponse> {
   } catch (error) {
     console.error('Error fetching top designations:', error);
     return { topDesignations: [], totalJobs: 0, totalDesignations: 0 };
+  }
+}
+
+export async function fetchTopSkills(): Promise<TopSkillsResponse> {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000';
+    const response = await fetch(`${baseUrl}/api/v1/seo/skills/top?limit=27`, {
+      next: { revalidate: 900 }, // Revalidate every 15 minutes
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch top skills');
+    }
+
+    const data: TopSkillsResponse = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching top skills:', error);
+    return { topSkills: [], totalSkills: 0, totalJobs: 0 };
   }
 }

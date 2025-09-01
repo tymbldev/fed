@@ -3,6 +3,7 @@ import ReferralStatusBadge from './ReferralStatusBadge';
 // import FloatingFilterButton from '../components/FloatingFilterButton';
 import JobTuple from '../components/JobTuple';
 import CurrentSearchCriteria from '../components/search/CurrentSearchCriteria';
+import JobInterlinking from '../components/JobInterlinking';
 import { fetchLocations } from '../utils/serverData';
 import { splitSeoSlug } from '../utils/seo';
 import Link from 'next/link';
@@ -211,8 +212,9 @@ export default async function ReferralsListing({
   return (
     <main className="min-h-screen bg-gray-50 py-6 md:py-12">
       {/* SEO schema now injected via head.tsx for this route */}
-      <div className="container mx-auto px-4">
+            <div className="container mx-auto px-4">
         <CurrentSearchCriteria totalCount={referralsData.totalElements} derivedSearch={searchFilters} />
+
         {referralsData.referrals.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-gray-500">No referrals found matching your criteria.</p>
@@ -239,6 +241,12 @@ export default async function ReferralsListing({
             ))}
           </div>
         )}
+
+        {/* Job Interlinking Component - Moved below listings */}
+        <JobInterlinking
+          keyword={searchFilters.keyword}
+          location={searchFilters.city || searchFilters.country}
+        />
 
         {referralsData.totalPages > 1 && (
           <div className="mt-8 flex justify-center">
